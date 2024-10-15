@@ -8,26 +8,21 @@ def roll():
     """
     return randint(1, 6), randint(1, 6)
 
-def isValidMove(board, dest, colour, src):
-    """Checks a move is valid
+def is_blot(dest, opp_colour):
+    """Checks if the destination is a blot (if it contains a tile that can be hit)
 
     Args:
-        board (Board.board): The 3D-list representing the board
-        dest (list): 2D-list representing location of desired move
-        colour (str): W or B representing black or white
-        src (list): 2D-list representing position of checker before move
+        dest (str): The piece(s) on that point.
+        opp_colour (str): The first character of the opponents tile colour
+
     Returns:
-        _type_: _description_
+        bool: Whether or not the destination point is a blot
     """
-    src_row, src_segment, src_col = src[0],src[1], src[2]
-    if len(board.board[src_row][src_segment][src_col]) == 0:
-        return False
-    # IMPLEMENT NO MOVING BACKWARDS
-    dest_row, dest_segment, dest_col = dest[0],dest[1], dest[2]
-    if len(board.board[dest_row][dest_segment][dest_col]) < 2:
-        return True
-    else:
-        if board.board[dest_row][dest_segment][dest_col][0] == colour:
-            return True
-        else:
-            return False
+    # If the checker can be hit then it will be a single character, either b or w
+    # Which are the two possible options of opp_colour, so a simple == check suffices
+    return dest == opp_colour
+    
+    
+def is_double(die1, die2):
+    return die1 == die2
+
