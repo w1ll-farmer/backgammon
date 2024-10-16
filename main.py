@@ -47,19 +47,22 @@ class Board:
     
 
 
-colour_list = ['Black', 'White']
-colourDict = {'b':"Black", 'w':'White'}
-inp = input("Black, White, or random? b/w/default=random").lower()
+# colour_list = ['Black', 'White']
+# colourDict = {'b':"Black", 'w':'White'}
+inp = input("Black, White, or random? b/w/default=random").upper()
 
-if inp in colourDict:
-    colour = colourDict[inp]
-else:
-    c_index = randint(0,1)
-    colour = colour_list[c_index]
+# if inp in colourDict:
+#     colour = colourDict[inp]
+# else:
+#     c_index = randint(0,1)
+#     colour = colour_list[c_index]
+if inp == 'B' or inp == 'W': colour = inp
+else: colour = ['B','W'][randint(0,1)]
+
     
 # Initialise player objects and board object
 player = Player(colour)
-cpu = Player(colour_list[not(c_index)])
+cpu = Player([c for c in ['B','W'] if c != colour])
 board = Board()
 board.show()
 
