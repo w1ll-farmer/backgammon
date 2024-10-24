@@ -1,6 +1,7 @@
 from random import randint
 import numpy as np
 import copy
+board = [-2,0,0,0,0,5,0,3,0,0,0,-5,5,0,0,0,-3,0,-5,0,0,0,0,2,0,0,0,0]
 def roll():
     """Simulates the rolling of 2 dice
     
@@ -29,7 +30,20 @@ def is_double(die1, die2):
     return die1 == die2
 
 def update_board(board, move):
-    pass
+    start, end = move
+    if board[start] > 0:
+        board[start] -=1
+        if board[end] == -1:
+            board[end] = 1
+        else:
+            board[end] += 1
+    else:
+        board[start] += 1
+        if board[end] == 1:
+            board[end] = -1
+        else:
+            board[end] -= 1
+    return board
 
 def must_enter(board, colour):
     if colour > 0 and board[25] > 0:
@@ -57,33 +71,48 @@ def can_enter(colour, board, die):
         # return True
     return (24.5+(colour/2),enter)
 
+def all_checkers_home(colour, board):
+    if colour == -1:
+        if len([i for i in board[0:18] if i < 0]) == 0:
+            return True
+    else:
+        if len([i for i in board[6:24] if i > 0]) == 0:
+            return True
+    return False
+
 def get_valid_moves(colour, board, roll):
     moves = []
     boards = []
 
 def get_legal_move(colour, board, die):
     valid_moves = []
+    # If the player has a checker on the bar
     if must_enter(board, colour):
         move = can_enter(colour, board, die)
         if move:
             valid_moves.append(move)
     else:
-        if colour == -1:
-            possible_starts = [i for i in range(0,24) if board[i] < 0]
-            for p in possible_starts:
-                if board[p+die] < 2:
-                    valid_moves.append((p, p+die))
-        else:
-            possible_starts = [i for i in range(0,24) if board[i] > 0]
-            for p in possible_starts:
-                if board[p-die] > 2:
-                    valid_moves.append((p, p-die))
+        if colour == -1: # Black player's move
+            if all_checkers_home(colour, board):
+                pass
+            else:
+                possible_starts = [i for i in range(0,24) if board[i] < 0]
+                for p in possible_starts:
+                    if board[p+die] < 2:
+                        valid_moves.append((p, p+die))
+        else: # White player's move
+            if all_checkers_home(colour, board):
+                pass
+            else:
+                possible_starts = [i for i in range(0,24) if board[i] > 0]
+                for p in possible_starts:
+                    if board[p-die] > 2:
+                        valid_moves.append((p, p-die))
 
-def can_bear_off(colour, board):
-    pass
+
 
 def game_over(board):
-    return board[24] == 15 or board[25] == -15
+    return board[27] == 15 or board[26] == -15
 
 def is_gammon(board):
     pass
