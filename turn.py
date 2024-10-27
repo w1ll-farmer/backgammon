@@ -37,19 +37,20 @@ def update_board(board, move):
         [int]: The board after the move has been played
     """
     start, end = move
-    if board[start] > 0:
-        board[start] -=1
-        if board[end] == -1:
-            board[end] = 1
+    board_copy = copy.deepcopy(board)
+    if board_copy[start] > 0:
+        board_copy[start] -=1
+        if board_copy[end] == -1:
+            board_copy[end] = 1
         else:
-            board[end] += 1
+            board_copy[end] += 1
     else:
-        board[start] += 1
-        if board[end] == 1:
-            board[end] = -1
+        board_copy[start] += 1
+        if board_copy[end] == 1:
+            board_copy[end] = -1
         else:
-            board[end] -= 1
-    return board
+            board_copy[end] -= 1
+    return board_copy
 
 
 def must_enter(board, colour):
@@ -117,9 +118,14 @@ def all_checkers_home(colour, board):
 
 
 def get_valid_moves(colour, board, roll):
-    moves = []
-    boards = []
+    # make sure check for doubles so player gets four moves
+    possible_first_moves = get_legal_move(colour, board, roll[0])
+    for move in possible_first_moves:
+        temp_board = update_board(board, move)
+        # possible_second_moves
 
+    
+    
 def get_legal_move(colour, board, die):
     """Identifies all valid moves for a single die roll
 
