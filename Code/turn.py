@@ -1,6 +1,8 @@
 from random import randint
 import numpy as np
 import copy
+import pandas as pd
+print(pd.__version__)
 board = [
         -2,0,0,0,0,5,  0,3,0,0,0,-5,
          5,0,0,0,-3,0, -5,0,0,0,0,2,
@@ -278,10 +280,6 @@ def get_valid_moves(colour, board, roll):
     return moves, boards
 
 
-# print(get_valid_moves(-1, board, [1,1]))
-                        
-
-
 def game_over(board):
     # Checks if the game is over
     return board[27] == 15 or board[26] == -15
@@ -294,53 +292,6 @@ def is_gammon(board):
     # Checks for a gammon
     return board[26] == 0 or board[27] == 0
 
-def turn(colour, board, roll):
-    temp_board = copy.deepcopy(board)
-    if must_enter(board, colour):
-        valid_entries = can_enter(colour, board,roll)
-        if  len(valid_entries) < 1:
-            print("No valid moves")
-            return []
-        else:
-            # Enter a piece from the bar to the board
-            print(f"Valid moves: {valid_entries}")
-            move = input("Choose move destination\n")
-            while move not in valid_entries:
-                print(f"Valid moves: {valid_entries}")
-                move = input("Choose move destination\n")
-            
-            
-            
-
-# print(can_enter(1,board = [-2,0,0,0,0,5,0,3,0,0,0,-5,5,0,0,0,-3,0,-5,0,0,0,0,2,0,0,0,0], roll=[1,2]))
-# print(game_over([-2,0,0,0,0,5,0,3,0,0,0,-5,5,0,0,0,-3,0,-5,0,0,0,0,2,0,0,0,0]))
-
-"""
-roll_dice()
-repeat getlegamoves once a move is confirmed
-getlegalmoves(colour, board, roll) calls getlegalmove(colour, board, die) for each die
-    valid = []
-    if must_enter(colour, board):
-        if can_enter(colour, board, roll):
-            valid += [bar, point]
-        return valid
-    else:
-        for point occupied by player's checker
-            if valid move?
-                valid += [start_point, end_point]
-            
-            
-valid move:
-    if all checkers home:
-        if die = exact distance to move off board, bear off
-        if furthest occupied point not as far as die roll: bear off checker on furthest point 
-        otherwise skip
-At end of game check for gammon:
-    if sum([beard off]) == 0: points = 2
-backgammon too
-
-also give opportunity for doubling cube throughout: implement after core engine
-    """
     
     
     
