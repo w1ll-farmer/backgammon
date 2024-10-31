@@ -1,8 +1,20 @@
 from random import randint
 import numpy as np
 import copy
-board = [-2,0,0,0,0,5,0,3,0,0,0,-5,5,0,0,0,-3,0,-5,0,0,0,0,2,0,0,0,0]
-def roll():
+board = [
+        -2,0,0,0,0,5,  0,3,0,0,0,-5,
+         5,0,0,0,-3,0, -5,0,0,0,0,2,
+         0,0,0,0
+         ]
+
+def print_board(board):
+    print("Board:")
+    print(board[0:6],'\t',board[6:12])
+    print(board[12:18],'\t',board[18:24])
+    print(board[24:])
+
+print_board(board)
+def roll_dice():
     # Returns the value of the two dice rolled
     return randint(1, 6), randint(1, 6)
 
@@ -21,9 +33,9 @@ def is_blot(dest, opp_colour):
     return dest == opp_colour
     
     
-def is_double(die1, die2):
+def is_double(roll):
     # Checks if two identical dice are rolled
-    return die1 == die2
+    return roll[0] == roll[1]
 
 
 def update_board(board, move):
@@ -116,16 +128,6 @@ def all_checkers_home(colour, board):
             return True
     return False
 
-
-def get_valid_moves(colour, board, roll):
-    # make sure check for doubles so player gets four moves
-    possible_first_moves = get_legal_move(colour, board, roll[0])
-    for move in possible_first_moves:
-        temp_board = update_board(board, move)
-        # possible_second_moves
-
-    
-    
 def get_legal_move(colour, board, die):
     """Identifies all valid moves for a single die roll
 
@@ -201,6 +203,83 @@ def get_legal_move(colour, board, die):
                     if board[p-die] > -2:
                         valid_moves.append((p, p-die))
     return valid_moves
+
+
+
+def get_valid_moves(colour, board, roll):
+    # make sure check for doubles so player gets four moves
+    moves = []
+    boards = []
+    possible_moves = [[],[],[],[]]
+    # Using first die 
+    possible_moves[0] = get_legal_move(colour, board, roll[0])
+    for move1 in possible_moves[0]:
+        # Generate a temporary board if any possible move is taken
+        temp_board = update_board(board, move1)
+        # Generate all possible second moves based on each temporary board
+        possible_moves[1] = get_legal_move(colour, temp_board, roll[1])
+        
+        # If they can only move once
+        if len(possible_moves[1]) == 0:
+            moves.append([move1])
+            boards.append(update_board(temp_board, move1))
+            
+        for move2 in possible_moves[1]:
+            if not is_double(roll):
+                # If only two die (not a double, append all possible pairs of moves)
+                moves.append([move1, move2])
+                boards.append(update_board(temp_board, move2))
+            else:
+                # If a double is rolled, they get 4 moves, rather than 2
+                # Generate another temporary board based on first 2 moves
+                temp_board = update_board(temp_board, move2)
+                # Generate all possible 3rd moves
+                possible_moves[2] = get_legal_move(colour, temp_board, roll[0])
+                
+                # In case the player can only use 2/4 of their rolls
+                if len(possible_moves[2]) == 0:
+                    moves.append([move1, move2])
+                    boards.append(update_board(temp_board, move2))
+                    
+                for move3 in possible_moves[2]:
+                    # Generate all possible boards based on first 3 moves
+                    temp_board = update_board(temp_board, move3)
+                    # Enumerate all possible fourth moves
+                    possible_moves[3] = get_legal_move(colour, temp_board, roll[1])
+                    
+                    # In case player can only use 3/4 of their rolls
+                    if len(possible_moves[3]) == 0:
+                        moves.append([move1, move2, move3])
+                        boards.append(update_board(temp_board, move3))
+                        
+                    for move4 in possible_moves[3]:
+                        # Append all possible sets of moves
+                        moves.append([move1,move2,move3,move4])
+                        boards.append(update_board(temp_board, move4))
+    # In case there are moves that are only possible if die2 is used first
+    # If dice are same then no need to swap order
+    if not is_double(roll): 
+        possible_moves[0] = get_legal_move(colour, board, roll[1])
+        for move1 in possible_moves[0]:
+            # Get the resulting board of a potential move
+            temp_board = update_board(board, move1)
+            # Generate all possible second moves based on each first move
+            possible_moves[1] = get_legal_move(colour, temp_board, roll[0])
+            
+            # If only one move can be used
+            if len(possible_moves[1]) == 0:
+                moves.append([move1, move2])
+                boards.append(update_board(temp_board, move2))
+                
+            for move2 in possible_moves[1]:
+                moves.append([move1, move2])
+                boards.append(update_board(temp_board, move2))
+        
+    return moves, boards
+
+
+# print(get_valid_moves(-1, board, [1,1]))
+                        
 
 
 def game_over(board):
