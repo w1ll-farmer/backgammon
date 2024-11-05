@@ -2,8 +2,10 @@ from random import randint
 import numpy as np
 import copy
 import pandas as pd
-print(pd.__version__)
-board = [
+
+
+def make_board():
+    return [
         -2,0,0,0,0,5,  0,3,0,0,0,-5,
          5,0,0,0,-3,0, -5,0,0,0,0,2,
          0,0,0,0
@@ -15,7 +17,6 @@ def print_board(board):
     print(board[12:18],'\t',board[18:24])
     print(board[24:])
 
-print_board(board)
 def roll_dice():
     # Returns the value of the two dice rolled
     return randint(1, 6), randint(1, 6)

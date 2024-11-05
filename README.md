@@ -21,11 +21,20 @@
  - Each die can move a piece n pieces forward, n = score on die
  - White starts
 ### AI
-
+ - Random Agent to test Robustness of engine
+ - Genetic Alg
+ - Greedy Alg
+ - ACO (?)
+ - ML
+ - RL
+ - Adaptive
+ 
 ### Endgame
  - Move pieces to home board + bear them off
  - Number rolled must equactly = distance to home board to be beared off
 ### Win
  - All pieces beared off
 ### Graphics
-
+ - In backend player (opponent) will be player -1 and AI will be player 1
+ - User gets to choose their colour at the start
+ - Die is rolled on-screen to determ
