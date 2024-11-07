@@ -1,6 +1,6 @@
 from random import randint
 def generate_random_move():
-    return (randint(0,27), randint(1,6))
+    return (randint(0,27), randint(0,27))
 
 
 

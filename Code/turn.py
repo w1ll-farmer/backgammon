@@ -52,21 +52,29 @@ def update_board(board, move):
         [int]: The board after the move has been played
     """
     start, end = move
+    # Copies by value
     board_copy = copy.deepcopy(board)
+    
     if board_copy[start] > 0:
+        # Move piece away from point
         board_copy[start] -=1
         if board_copy[end] == -1:
+            # Hit a piece off the board
             board_copy[end] = 1
+            board_copy[24] -= 1
         else:
             board_copy[end] += 1
+            
     else:
+        # Move piece away from point
         board_copy[start] += 1
         if board_copy[end] == 1:
+            # Hit a piece off the board
             board_copy[end] = -1
+            board_copy[25] = 1
         else:
             board_copy[end] -= 1
     return board_copy
-
 
 def must_enter(board, colour):
     """Checks if the player has a checker on the bar
@@ -79,8 +87,10 @@ def must_enter(board, colour):
         bool: Whether the player has a checker on the bar
     """
     if colour > 0 and board[25] > 0:
+        # 25 is bar for player 1
         return True
     elif colour < 0 and board[24] < 0:
+        # 24 is bar for player -1
         return True
     else:
         return False
@@ -111,7 +121,7 @@ def can_enter(colour, board, die):
         # print(opp_home[(die)-1])
         enter = (opp_cords[(die)-1])
         # return True
-    return (24.5+(colour/2),enter)
+    return (int(24.5+(colour/2)),enter)
 
 def all_checkers_home(colour, board):
     """Checks all checker are home so they can be beard off
@@ -145,14 +155,17 @@ def get_legal_move(colour, board, die):
     valid_moves = []
     # If the player has a checker on the bar
     if must_enter(board, colour):
+        # print(f"Must Enter {die}")
         move = can_enter(colour, board, die)
         if move:
             valid_moves.append(move)
     else:
         if colour == -1: # Black player's move
             if all_checkers_home(colour, board):
+                print(f"All home")
                 # Can a piece be beard off directly?
                 if board[24-die] < 0:
+                    print(f"Bearing off {24-die, die}")
                     valid_moves.append((24-die, 26))
                     
                 # Can a piece be beard off due to all checkers being closer than die
@@ -171,14 +184,15 @@ def get_legal_move(colour, board, die):
                     # If the die roll is greater than furthest back occupied point
                     # Then a checker on that point can be beard off
                     if die > 24-furthest_back:
-                        valid_moves.append((24-furthest_back, 26))
+                        valid_moves.append((furthest_back, 26))
                         
             else:
                 possible_starts = [i for i in range(0,24) if board[i] < 0]
                 # print(possible_starts)
                 for p in possible_starts:
-                    if board[p+die] < 2:
-                        valid_moves.append((p, p+die))
+                    if p+die < 24:
+                        if board[p+die] < 2:
+                            valid_moves.append((p, p+die))
                         
         else: # White player's move
             if all_checkers_home(colour, board):
@@ -203,10 +217,10 @@ def get_legal_move(colour, board, die):
                 possible_starts = [i for i in range(0,24) if board[i] > 0]
                 # print(possible_starts)
                 for p in possible_starts:
-                    if board[p-die] > -2:
-                        valid_moves.append((p, p-die))
+                    if p - die >= 0:
+                        if board[p-die] > -2:
+                            valid_moves.append((p, p-die))
     return valid_moves
-
 
 
 def get_valid_moves(colour, board, roll):
@@ -279,7 +293,6 @@ def get_valid_moves(colour, board, roll):
                 boards.append(update_board(temp_board, move2))
         
     return moves, boards
-
 
 def game_over(board):
     # Checks if the game is over
