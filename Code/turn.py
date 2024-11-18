@@ -63,6 +63,14 @@ def update_board(board, move):
             board_copy[end] -= 1
     return board_copy
 
+def get_home_info(player):
+    if player == 1:
+        cords = [i for i in range(0,6)]
+        home = board[0:6]
+    else:
+        cords = [i for i in range(23,17,-1)]
+        home = board[18:24][::-1]
+    return cords, home
 
 def must_enter(board, colour):
     """Checks if the player has a checker on the bar
@@ -95,12 +103,7 @@ def can_enter(colour, board, die):
     Returns:
         (int, int): The start and end points of the valid move
     """
-    if colour == -1:
-        opp_cords = [i for i in range(0,6)]
-        opp_home = board[0:6]
-    else:
-        opp_cords = [i for i in range(23,17,-1)]
-        opp_home = board[18:24][::-1]
+    opp_cords, opp_home = get_home_info(-colour)
     enter = 0
     if abs(opp_home[(die)-1]) < 2:
         enter = (opp_cords[(die)-1])
