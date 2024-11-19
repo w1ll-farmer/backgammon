@@ -1,78 +1,13 @@
 import pygame
+import numpy as np
 from pygame.locals import *
 from random_agent import *
 from turn import *
-import numpy as np
 from time import sleep 
 from greedy_agent import *
-global GUI_FLAG
-global USER_PLAY
-global SCREEN_HEIGHT
-global SCREEN_WIDTH
-global FPS
-global window
-global framesPerSec
-global black
-global white 
-
-GUI_FLAG = False
-USER_PLAY = False
-if GUI_FLAG:
-    SCREEN_HEIGHT, SCREEN_WIDTH = 800, 800
-    black = [0,0,0]
-    white = [255,255,255]
-    pygame.init()
-    FPS = 30
-    framesPerSec = pygame.time.Clock()
-    window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pygame.display.set_caption("Backgammon")
-    window.fill(black)
-
-class Background: #creates a background
-    def __init__(self,backgroundImage):
-        # super().__init__()
-        # Sets background to passed in image
-        self.backgroundImage = pygame.image.load(backgroundImage)
-        self.backgroundImage = pygame.transform.scale(self.backgroundImage, (800, 700))
-        # Creates a rectangle around it  for co-ordinates
-        self.backgroundRect = self.backgroundImage.get_rect()
-        
-        # Sets X co-ordinates
-        self.backgroundX1 = 0 
-        # Sets Y co-ordinates
-        self.backgroundY1 = (SCREEN_HEIGHT-self.backgroundRect.height)//4 
-        # self.backgroundY1 = 0
-        
-    def render(self): #Renders in the background
-        window.blit(self.backgroundImage, (self.backgroundX1, self.backgroundY1))
-        
-    def update(self,backgroundImage): #Updates the background image
-        self.backgroundImage = pygame.image.load(backgroundImage)
-        self.backgroundRect = self.backgroundImage.get_rect()
-
-class Shape: #Same as box but takes on an image instead of a colour
-    def __init__(self,image,x,y, width=60, height=48):
-        self.image = pygame.image.load(image)
-        self.image = pygame.transform.scale(self.image, (width, height))
-        self.rect = self.image.get_rect(center = (x,y))
-        self.font = pygame.font.SysFont('Calibri',20)
-    def move(self,window,x,y): #moves Shape
-        self.rect=self.image.get_rect(center=(x,y))
-    def draw(self,window): #displays Shape
-        window.blit(self.image,self.rect)
-    def addText(self,window,text,colour):
-        text_surface = self.font.render(text, True, colour)
-        
-        # Get the text's rect
-        text_rect = text_surface.get_rect()
-
-        # Center the text inside the Shape's rect
-        text_rect.center = self.rect.center
-        
-        # Blit the text onto the window
-        window.blit(text_surface, text_rect)
-        
-        
+from constants import *
+from gui import *
+              
 def start_turn(player, board):
     """Rolls the dice and finds all possible moves.
 
@@ -84,7 +19,8 @@ def start_turn(player, board):
         ([(int, int)], [int], [int]): Possible moves, associated boards, diceroll
     """
     roll = roll_dice()
-    print(f"Player {player} rolled {roll}")
+    if commentary:
+        print(f"Player {player} rolled {roll}")
     moves, boards = get_valid_moves(player, board, roll)
     return moves, boards, roll
 
@@ -134,7 +70,8 @@ def randobot_play(roll, moves, boards):
         attempts += 1
     # In case no random move was valid
     if attempts == 200000:
-        print('no found moves')
+        if commentary:
+            print('Randobot cannot find moves')
     if move not in moves:
         if len(moves) > 1:
             move = moves[randint(0, len(moves)-1)]
@@ -146,16 +83,29 @@ def randobot_play(roll, moves, boards):
     return board, move
 
 def greedy_play(moves, boards, current_board, player):
+    """Greedy agent makes a move
+
+    Args:
+        moves ([(int, int)]): Start-end pairs of all valid moves
+        boards ([int]): Board representation
+        current_board ([int]): Board before greedy plays
+        player (int): The player making the move
+
+    Returns:
+        [int]: The board resulting from move made
+    """
     scores = [evaluate(moves[i], current_board, boards[i], player) for i in range(len(moves))]
-    sorted_pairs = sorted(zip(scores, boards), key=lambda x: x[0], reverse=True)
-    sorted_scores, sorted_boards = zip(*sorted_pairs)
+    sorted_triplets = sorted(zip(scores, boards, moves), key=lambda x: x[0], reverse=True)
+    sorted_scores, sorted_boards, sorted_moves = zip(*sorted_triplets)
+    if commentary:
+        print(f"Player {player} played {sorted_moves[0][0]}, {sorted_moves[0][1]}")
     return list(sorted_boards)[0]
     
 
 ###############
 ## MAIN BODY ##
 ###############
-def backgammon():
+def backgammon(games=1):
     if GUI_FLAG == True:
         background_board = Background('Images/board_unaltered.png')
         white_score = Shape('Images/White-score.png', 38, SCREEN_HEIGHT-150)
@@ -175,101 +125,156 @@ def backgammon():
             black_score.draw(window)
             black_score.addText(window, '0/5',white)
             white_checker.draw(window)
+            
+    p1vector = [0,0,0] #win, gammon win, backgammon win
+    pminus1vector = [0,0,0] #win, gammon win, backgammon win
+    
+    for _ in range(games):
+        time_step = 1
     # Each player rolls a die to determine who moves first
-    black_roll, white_roll = roll_dice()
-    # Loops in scenario rolls are equal
-    while black_roll == white_roll:
         black_roll, white_roll = roll_dice()
-        
-    print(f"Black rolled {black_roll}")
-    print(f"White rolled {white_roll}")
-    # Black starts first
-    if black_roll > white_roll:
-        print("Computer starts")
-        player1 = -1
-        player2 = 1
-    else:
-        # White starts first
-        print("User Starts")
-        player1 = 1
-        player2 = -1
-        
-    # running = True
-    time_step = 1
-    board = make_board()
-    while not game_over(board):
-        print(time_step)
-        if time_step == 1:
-            # Initial roll made up of both starting dice
-            roll = [black_roll, white_roll]
-            moves1, boards1 = get_valid_moves(player1, board, roll)
-            print_board(board)
-            print(f"Player {player1} rolled {roll}")
+        # Loops in scenario rolls are equal
+        while black_roll == white_roll:
+            black_roll, white_roll = roll_dice()
+        if commentary:
+            print(f"Black rolled {black_roll}")
+            print(f"White rolled {white_roll}")
+        # Black starts first
+        if black_roll > white_roll:
+            if commentary:
+                print("Computer starts")
+            player1 = -1
+            player2 = 1
         else:
-            # All other rolls are generated on spot
-            moves1, boards1, roll = start_turn(player1, board)
-        if USER_PLAY:
-            sleep(0.5)
-        if player1 == 1:
-            if USER_PLAY:
-                board = human_play(moves1, boards1)
+            # White starts first
+            if commentary:
+                print("User Starts")
+            player1 = 1
+            player2 = -1
+        # running = True
+        board = make_board()
+        while not game_over(board) and not is_error(board):
+            print(time_step)
+            if time_step == 1:
+                # Initial roll made up of both starting dice
+                roll = [black_roll, white_roll]
+                moves1, boards1 = get_valid_moves(player1, board, roll)
+                print_board(board)
+                if commentary:
+                    print(f"Player {player1} rolled {roll}")
             else:
-                board, move = randobot_play(roll, moves1, boards1)
-                print(f"Move Taken: {move}")
+                # All other rolls are generated on spot
+                moves1, boards1, roll = start_turn(player1, board)
+            if USER_PLAY:
+                sleep(0.5)
+            if player1 == 1:
+                if len(moves1) > 0:
+                    if USER_PLAY:
+                        board = human_play(moves1, boards1)
+                    else:
+                        board, move = randobot_play(roll, moves1, boards1)
+                        if commentary:
+                            print(f"Move Taken: {move}")
+                else:
+                    if commentary:
+                        print("No move can be played")
+                print_board(board)
+                
+                # Game ends?
+                if is_error(board):
+                    sleep(10)
+                    break
+                if game_over(board):
+                    break
+                if USER_PLAY:
+                    sleep(1)
+                
+                # Player 2's turn
+                
+                moves2, boards2, roll = start_turn(player2, board)
+                if len(moves2) > 0:
+                    board, move = randobot_play(roll, moves2, boards2)
+                    if commentary:
+                        print(f"Move Taken: {move}")
+                else:
+                    if commentary:
+                        print("No move can be played")
+            else:
+                if len(moves1) > 0:
+                    board, move = randobot_play(roll, moves1, boards1)
+                    if commentary:    
+                        print(f"Move Taken: {move}")
+                else:
+                    if commentary:
+                        print("No move can be played")
+                print_board(board)
+                if USER_PLAY:
+                    sleep(1)
+                if is_error(board):
+                    sleep(10)
+                    break
+                if game_over(board):
+                    break
+                # Player 2 turn
+                moves2, boards2, roll = start_turn(player2, board)
+                if len(moves2) > 0:
+                    if USER_PLAY:
+                        board = human_play(moves2, boards2)
+                    else:
+                        board, move = randobot_play(roll, moves2, boards2)
+                        if commentary:
+                            print(f"Move Taken: {move}")
+                else:
+                    if commentary:
+                        print("No move can be played")
             print_board(board)
-            
-            # Game ends?
             if is_error(board):
-                sleep(2)
+                sleep(10)
                 break
-            if game_over(board):
-                break
+            time_step +=1
             if USER_PLAY:
                 sleep(1)
-            
-            # Player 2's turn
-            
-            moves2, boards2, roll = start_turn(player2, board)
-            board, move = randobot_play(roll, moves2, boards2)
-            print(f"Move Taken: {move}")
-        else:
-            board, move = randobot_play(roll, moves1, boards1)
-            print(f"Move Taken: {move}")
-            print_board(board)
-            if USER_PLAY:
-                sleep(1)
-            if is_error(board):
-                sleep(2)
-                break
-            if game_over(board):
-                break
-            # Player 2 turn
-            moves2, boards2, roll = start_turn(player2, board)
-            if USER_PLAY:
-                board = human_play(moves2, boards2)
+        if game_over(board):
+            if commentary:
+                print("GAME OVER")
+            if is_backgammon(board):
+                if board[26] == -15:
+                    pminus1vector[2] +=1
+                    if commentary:
+                        print("Player -1 win")
+                else:
+                    p1vector[2] +=1
+                    if commentary:
+                        print("Player 1 win")
+                if commentary:
+                    print("By backgammon")
+            elif is_gammon(board):
+                if board[26] == -15:
+                    pminus1vector[1] +=1
+                    if commentary:
+                        print("Player -1 win")
+                else:
+                    p1vector[1] +=1
+                    if commentary:
+                        print("Player 1 win")
+                if commentary:
+                    print("By gammon")
             else:
-                board, move = randobot_play(roll, moves2, boards2)
-                print(f"Move Taken: {move}")
-        print_board(board)
-        if is_error(board):
-            sleep(2)
-            break
-        time_step +=1
-        if USER_PLAY:
-            sleep(1)
-    if game_over(board):
-        print("GAME OVER")
-        if board[26] == -15:
-            print("Player -1 win")
-        else:
-            print("Player 1 win")
-        if is_backgammon:
-            print("By backgammon")
-        elif is_gammon:
-            print("By gammon")
+                if board[26] == -15:
+                    pminus1vector[0] +=1
+                    if commentary:
+                        print("Player -1 win")
+                else:
+                    p1vector[0] +=1
+                    if commentary:
+                        print("Player 1 win")
+    return p1vector, pminus1vector
             
-if __name__ == "__main__":         
-    backgammon()
+            
+if __name__ == "__main__":
+    games = 5      
+    p1vector, pminus1vector = backgammon(games)
+    print(p1vector,pminus1vector)
             
             
                 
