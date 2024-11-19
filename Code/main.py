@@ -5,7 +5,8 @@ from turn import *
 import numpy as np
 from time import sleep 
 from greedy_agent import *
-global GRAPHICS_ON
+global GUI_FLAG
+global USER_PLAY
 global SCREEN_HEIGHT
 global SCREEN_WIDTH
 global FPS
@@ -13,11 +14,11 @@ global window
 global framesPerSec
 global black
 global white 
+
 GUI_FLAG = False
 USER_PLAY = False
 if GUI_FLAG:
     SCREEN_HEIGHT, SCREEN_WIDTH = 800, 800
-    GRAPHICS_ON = False
     black = [0,0,0]
     white = [255,255,255]
     pygame.init()
@@ -145,124 +146,132 @@ def randobot_play(roll, moves, boards):
     return board, move
 
 def greedy_play(moves, boards, current_board, player):
-    #scores = [evaluate(moves[i], current_board, boards[i], player) for i in range(len(moves))]
-    pass
+    scores = [evaluate(moves[i], current_board, boards[i], player) for i in range(len(moves))]
+    sorted_pairs = sorted(zip(scores, boards), key=lambda x: x[0], reverse=True)
+    sorted_scores, sorted_boards = zip(*sorted_pairs)
+    return list(sorted_boards)[0]
+    
+
 ###############
 ## MAIN BODY ##
 ###############
-if GUI_FLAG == True:
-    background_board = Background('Images/board_unaltered.png')
-    white_score = Shape('Images/White-score.png', 38, SCREEN_HEIGHT-150)
-    black_score = Shape('Images/Black-score.png', 40, 150)
-    white_checker = Shape('Images/black_pawn.png', 200, 200, 42, 42)
-    while True:
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                pygame.quit()
-        pygame.display.update()
-        framesPerSec.tick(30)
-        background_board.render()
-        
-        white_score.draw(window)
-        white_score.addText(window, '0/5',black)
-        
-        black_score.draw(window)
-        black_score.addText(window, '0/5',white)
-        white_checker.draw(window)
-# Each player rolls a die to determine who moves first
-black_roll, white_roll = roll_dice()
-# Loops in scenario rolls are equal
-while black_roll == white_roll:
+def backgammon():
+    if GUI_FLAG == True:
+        background_board = Background('Images/board_unaltered.png')
+        white_score = Shape('Images/White-score.png', 38, SCREEN_HEIGHT-150)
+        black_score = Shape('Images/Black-score.png', 40, 150)
+        white_checker = Shape('Images/black_pawn.png', 200, 200, 42, 42)
+        while True:
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+            pygame.display.update()
+            framesPerSec.tick(30)
+            background_board.render()
+            
+            white_score.draw(window)
+            white_score.addText(window, '0/5',black)
+            
+            black_score.draw(window)
+            black_score.addText(window, '0/5',white)
+            white_checker.draw(window)
+    # Each player rolls a die to determine who moves first
     black_roll, white_roll = roll_dice()
-    
-print(f"Black rolled {black_roll}")
-print(f"White rolled {white_roll}")
-# Black starts first
-if black_roll > white_roll:
-    print("Computer starts")
-    player1 = -1
-    player2 = 1
-else:
-    # White starts first
-    print("User Starts")
-    player1 = 1
-    player2 = -1
-    
-# running = True
-time_step = 1
-board = make_board()
-while not game_over(board):
-    print(time_step)
-    if time_step == 1:
-        # Initial roll made up of both starting dice
-        roll = [black_roll, white_roll]
-        moves1, boards1 = get_valid_moves(player1, board, roll)
-        print_board(board)
-        print(f"Player {player1} rolled {roll}")
+    # Loops in scenario rolls are equal
+    while black_roll == white_roll:
+        black_roll, white_roll = roll_dice()
+        
+    print(f"Black rolled {black_roll}")
+    print(f"White rolled {white_roll}")
+    # Black starts first
+    if black_roll > white_roll:
+        print("Computer starts")
+        player1 = -1
+        player2 = 1
     else:
-        # All other rolls are generated on spot
-        moves1, boards1, roll = start_turn(player1, board)
-    if USER_PLAY:
-        sleep(0.5)
-    if player1 == 1:
+        # White starts first
+        print("User Starts")
+        player1 = 1
+        player2 = -1
+        
+    # running = True
+    time_step = 1
+    board = make_board()
+    while not game_over(board):
+        print(time_step)
+        if time_step == 1:
+            # Initial roll made up of both starting dice
+            roll = [black_roll, white_roll]
+            moves1, boards1 = get_valid_moves(player1, board, roll)
+            print_board(board)
+            print(f"Player {player1} rolled {roll}")
+        else:
+            # All other rolls are generated on spot
+            moves1, boards1, roll = start_turn(player1, board)
         if USER_PLAY:
-            board = human_play(moves1, boards1)
+            sleep(0.5)
+        if player1 == 1:
+            if USER_PLAY:
+                board = human_play(moves1, boards1)
+            else:
+                board, move = randobot_play(roll, moves1, boards1)
+                print(f"Move Taken: {move}")
+            print_board(board)
+            
+            # Game ends?
+            if is_error(board):
+                sleep(2)
+                break
+            if game_over(board):
+                break
+            if USER_PLAY:
+                sleep(1)
+            
+            # Player 2's turn
+            
+            moves2, boards2, roll = start_turn(player2, board)
+            board, move = randobot_play(roll, moves2, boards2)
+            print(f"Move Taken: {move}")
         else:
             board, move = randobot_play(roll, moves1, boards1)
             print(f"Move Taken: {move}")
+            print_board(board)
+            if USER_PLAY:
+                sleep(1)
+            if is_error(board):
+                sleep(2)
+                break
+            if game_over(board):
+                break
+            # Player 2 turn
+            moves2, boards2, roll = start_turn(player2, board)
+            if USER_PLAY:
+                board = human_play(moves2, boards2)
+            else:
+                board, move = randobot_play(roll, moves2, boards2)
+                print(f"Move Taken: {move}")
         print_board(board)
-        
-        # Game ends?
         if is_error(board):
             sleep(2)
             break
-        if game_over(board):
-            break
+        time_step +=1
         if USER_PLAY:
             sleep(1)
-        
-        # Player 2's turn
-        
-        moves2, boards2, roll = start_turn(player2, board)
-        board, move = randobot_play(roll, moves2, boards2)
-        print(f"Move Taken: {move}")
-    else:
-        board, move = randobot_play(roll, moves1, boards1)
-        print(f"Move Taken: {move}")
-        print_board(board)
-        if USER_PLAY:
-            sleep(1)
-        if is_error(board):
-            sleep(2)
-            break
-        if game_over(board):
-            break
-        # Player 2 turn
-        moves2, boards2, roll = start_turn(player2, board)
-        if USER_PLAY:
-            board = human_play(moves2, boards2)
+    if game_over(board):
+        print("GAME OVER")
+        if board[26] == -15:
+            print("Player -1 win")
         else:
-            board, move = randobot_play(roll, moves2, boards2)
-            print(f"Move Taken: {move}")
-    print_board(board)
-    if is_error(board):
-        sleep(2)
-        break
-    time_step +=1
-    if USER_PLAY:
-        sleep(1)
-if game_over(board):
-    print("GAME OVER")
-    if board[26] == -15:
-        print("Player -1 win")
-    else:
-        print("Player 1 win")
-    if is_backgammon:
-        print("By backgammon")
-    elif is_gammon:
-        print("By gammon")
-        
-        
+            print("Player 1 win")
+        if is_backgammon:
+            print("By backgammon")
+        elif is_gammon:
+            print("By gammon")
             
+if __name__ == "__main__":         
+    backgammon()
+            
+            
+                
 
-        
+            
