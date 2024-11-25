@@ -2,8 +2,7 @@ from random import randint
 import numpy as np
 import copy
 import pandas as pd
-
-
+from constants import *
 def make_board():
     return [
         -2,0,0,0,0,5,  0,3,0,0,0,-5,
@@ -12,12 +11,11 @@ def make_board():
          ]
 
 def print_board(board):
-    print("Board:")
-    print(board[0:6],'\t',board[6:12])
-    print(board[12:18],'\t',board[18:24])
-    print(board[24:])
-    # for i in range(len(board)):
-    #     print(board[])
+    if commentary:
+        print("Board:")
+        print(board[0:6],'\t',board[6:12])
+        print(board[12:18],'\t',board[18:24])
+        print(board[24:])
 
 def roll_dice():
     # Returns the value of the two dice rolled
@@ -63,7 +61,7 @@ def update_board(board, move):
             board_copy[end] -= 1
     return board_copy
 
-def get_home_info(player):
+def get_home_info(player, board):
     if player == 1:
         cords = [i for i in range(0,6)]
         home = board[0:6]
@@ -103,16 +101,15 @@ def can_enter(colour, board, die):
     Returns:
         (int, int): The start and end points of the valid move
     """
-    opp_cords, opp_home = get_home_info(-colour)
+    opp_cords, opp_home = get_home_info(-colour, board)
     enter = 0
-    if abs(opp_home[(die)-1]) < 2:
+    if colour == 1 and opp_home[die-1] > -2:
         enter = (opp_cords[(die)-1])
-        # return True
-    elif opp_home[(die)-1] * colour > 0:
-        # print(opp_home[(die)-1])
-        enter = (opp_cords[(die)-1])
-        # return True
-    return (int(24.5+(colour/2)),enter)
+        return (int(24.5+(colour/2)),enter)
+    elif colour == -1 and opp_home[die-1] < 2:
+        enter = opp_cords[die-1]
+        return (int(24.5+(colour/2)),enter)
+    return False
 
 def all_checkers_home(colour, board):
     """Checks all checker are home so they can be beard off
@@ -149,14 +146,21 @@ def get_legal_move(colour, board, die):
         # print(f"Must Enter {die}")
         move = can_enter(colour, board, die)
         if move:
+            if commentary:
+                print(move)
             valid_moves.append(move)
+        else:
+            if commentary:
+                print("Player must enter but cannot")
     else:
         if colour == -1: # Black player's move
             if all_checkers_home(colour, board):
-                print(f"All home")
+                if commentary:
+                    print(f"All home")
                 # Can a piece be beard off directly?
                 if board[24-die] < 0:
-                    print(f"Bearing off {24-die, die}")
+                    if commentary:
+                        print(f"Bearing off {24-die, die}")
                     valid_moves.append((24-die, 26))
                     
                 # Can a piece be beard off due to all checkers being closer than die
@@ -212,92 +216,6 @@ def get_legal_move(colour, board, die):
                         if board[p-die] > -2:
                             valid_moves.append((p, p-die))
     return valid_moves
-
-
-# def get_valid_moves(colour, board, roll):
-#     # make sure check for doubles so player gets four moves
-#     moves = []
-#     boards = []
-#     possible_moves = [[],[],[],[]]
-#     # Using first die 
-#     possible_moves[0] = get_legal_move(colour, board, roll[0])
-#     for move1 in possible_moves[0]:
-#         # Generate a temporary board if any possible move is taken
-#         temp_board = update_board(board, move1)
-#         print_board(temp_board)
-#         print(move1)
-#         # Generate all possible second moves based on each temporary board
-#         possible_moves[1] = get_legal_move(colour, temp_board, roll[1])
-        
-#         # If they can only move once
-#         if len(possible_moves[1]) == 0:
-#             moves.append([move1])
-#             boards.append(update_board(temp_board, move1))
-#             print('Only move once')
-#         else:    
-#             for move2 in possible_moves[1]:
-#                 print_board(temp_board)
-#                 # print(move1,move2)
-#                 temp_board = update_board(temp_board, move2)
-#                 if not is_double(roll):
-#                     # If only two die (not a double, append all possible pairs of moves)
-#                     moves.append([move1, move2])
-#                     boards.append(temp_board)
-#                     print('Not double')
-#                 else:
-#                     # If a double is rolled, they get 4 moves, rather than 2
-#                     # Generate another temporary board based on first 2 moves
-                    
-#                     # print_board(temp_board)
-#                     # print(move1, move2,"\n")
-#                     # Generate all possible 3rd moves
-#                     possible_moves[2] = get_legal_move(colour, temp_board, roll[0])
-                    
-#                     # In case the player can only use 2/4 of their rolls
-#                     if len(possible_moves[2]) == 0:
-#                         moves.append([move1, move2])
-#                         boards.append(temp_board)
-#                         print('Only move twice')
-#                     else:
-#                         for move3 in possible_moves[2]:
-#                             # Generate all possible boards based on first 3 moves
-#                             temp_board = update_board(temp_board, move3)
-#                             # Enumerate all possible fourth moves
-#                             possible_moves[3] = get_legal_move(colour, temp_board, roll[1])
-                            
-#                             # In case player can only use 3/4 of their rolls
-#                             if len(possible_moves[3]) == 0:
-#                                 moves.append([move1, move2, move3])
-#                                 boards.append(temp_board)
-#                                 print('Only move 3')
-#                             else:
-#                                 for move4 in possible_moves[3]:
-#                                     # Append all possible sets of moves
-#                                     moves.append([move1,move2,move3,move4])
-#                                     boards.append(update_board(temp_board, move4))
-#                                     # print(move1,move2,move3,move4)
-#                                     # print_board(update_board(temp_board, move4))
-#     # In case there are moves that are only possible if die2 is used first
-#     # If dice are same then no need to swap order
-#     if not is_double(roll): 
-#         print("Not a double")
-#         possible_moves[0] = get_legal_move(colour, board, roll[1])
-#         for move1 in possible_moves[0]:
-#             # Get the resulting board of a potential move
-#             temp_board = update_board(board, move1)
-#             # Generate all possible second moves based on each first move
-#             possible_moves[1] = get_legal_move(colour, temp_board, roll[0])
-            
-#             # If only one move can be used
-#             if len(possible_moves[1]) == 0:
-#                 moves.append([move1])
-#                 boards.append(temp_board)
-                
-#             for move2 in possible_moves[1]:
-#                 moves.append([move1, move2])
-#                 boards.append(update_board(temp_board, move2))
-        
-#     return moves, boards
 
 def get_valid_moves(colour, board, roll):
     moves = []
@@ -362,14 +280,6 @@ def get_valid_moves(colour, board, roll):
 
     return moves, boards
 
-
-board = make_board()
-# moves, boards = get_valid_moves(-1, board, [1,1])
-# for i in range(len(boards)):
-#     print_board(boards[i])
-#     print(moves[i])
-# print_board(board)
-
 def game_over(board):
     # Checks if the game is over
     return board[27] == 15 or board[26] == -15
@@ -385,6 +295,9 @@ def is_gammon(board):
 def is_error(board):
     if sum([i for i in board if i < 0]) != -15 or sum([i for i in board if i > 0]) != 15:
         print(sum([i for i in board if i < 0]),sum([i for i in board if i > 0]))
+        errorFile = open('Error.txt','a')
+        errorFile.write(f"Board: {board}\n")
+        return True
     else:
         return False
 

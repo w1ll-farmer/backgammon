@@ -6,7 +6,7 @@ class Background: #creates a background
         # super().__init__()
         # Sets background to passed in image
         self.backgroundImage = pygame.image.load(backgroundImage)
-        self.backgroundImage = pygame.transform.scale(self.backgroundImage, (800, 700))
+        self.backgroundImage = pygame.transform.scale(self.backgroundImage, (SCREEN_WIDTH, SCREEN_HEIGHT))
         # Creates a rectangle around it  for co-ordinates
         self.backgroundRect = self.backgroundImage.get_rect()
         
@@ -44,3 +44,54 @@ class Shape: #Same as box but takes on an image instead of a colour
         
         # Blit the text onto the window
         window.blit(text_surface, text_rect)
+        
+# class Pawn:
+#     def __init__(self, colour, cords=None):
+#         self.colour = colour
+#         if self.colour == 1:
+#             self.image = pygame.image.load("Images/white_pawn.png")
+#         else:
+#             self.image = pygame.image.load("Images/black_pawn.png")
+        
+#         if cords is not None:
+#             self.X = cords[0]
+#             self.Y = cords[1]
+
+def get_top_row_checker_pos(point, checker):
+    offset_x = 88
+    offset_y = 51
+    if point > 5:
+        offset_x += 56
+    return (offset_x + (point*56), offset_y+(checker*56))
+
+def get_bottom_row_checker_pos(point, checker):
+    offset_x = SCREEN_WIDTH - 141
+    offset_y = 93
+    if point > 5:
+        offset_x -= 56
+    return (offset_x - (point*56), SCREEN_HEIGHT-(offset_y+(checker*56)))
+    
+
+def display_board(board):
+    for point in range(0,12):
+        for checker in range(abs(board[point])):
+            if board[point] > 0:
+                window.blit(pygame.image.load("Images/white_pawn.png"), get_top_row_checker_pos(point, checker))
+            elif board[point] < 0:
+                window.blit(pygame.image.load("Images/black_pawn.png"),get_top_row_checker_pos(point, checker))
+    for point in range(12, 24):        
+        for checker in range(abs(board[point])):
+            if board[point] > 0:
+                window.blit(pygame.image.load("Images/white_pawn.png"), get_bottom_row_checker_pos(point-12, checker))
+            elif board[point] < 0:
+                window.blit(pygame.image.load("Images/black_pawn.png"),get_bottom_row_checker_pos(point-12, checker))
+    if board[24] < 0:
+        black_bar_checker = Shape("Images/black_pawn.png", SCREEN_WIDTH//2 + 3,SCREEN_HEIGHT//2 - 40, 56, 56)
+        black_bar_checker.draw(window)
+        if board[24] < -1:
+            black_bar_checker.addText(window, f"{abs(board[24])}", white)
+    if board[25] > 0:
+        white_bar_checker = Shape("Images/black_pawn.png", SCREEN_WIDTH//2 + 3,SCREEN_HEIGHT//2 - 40, 56, 56)
+        white_bar_checker.draw(window)
+        if white_bar_checker > 1:
+            white_bar_checker.addText(window, f"{board[25]}", black)

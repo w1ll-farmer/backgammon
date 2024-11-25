@@ -7,7 +7,28 @@ from time import sleep
 from greedy_agent import *
 from constants import *
 from gui import *
-              
+
+def assign():
+    if USER_PLAY and not RANDOM_PLAY and not GREEDY_PLAY:
+        # human vs human
+        pass
+    elif USER_PLAY and RANDOM_PLAY:
+        # human vs random
+        pass
+    elif USER_PLAY and GREEDY_PLAY:
+        # human vs greedy
+        pass
+    elif RANDOM_PLAY and not USER_PLAY and not GREEDY_PLAY:
+        # random vs random
+        pass
+    elif RANDOM_PLAY and GREEDY_PLAY:
+        # random vs greedy
+        pass
+    elif GREEDY_PLAY and not RANDOM_PLAY and not USER_PLAY:
+        # greedy vs greedy
+        pass
+        
+
 def start_turn(player, board):
     """Rolls the dice and finds all possible moves.
 
@@ -106,11 +127,14 @@ def greedy_play(moves, boards, current_board, player):
 ## MAIN BODY ##
 ###############
 def backgammon(games=1):
+    white_score, black_score = 0,0
+    board = make_board()
     if GUI_FLAG == True:
-        background_board = Background('Images/board_unaltered.png')
-        white_score = Shape('Images/White-score.png', 38, SCREEN_HEIGHT-150)
-        black_score = Shape('Images/Black-score.png', 40, 150)
-        white_checker = Shape('Images/black_pawn.png', 200, 200, 42, 42)
+        
+        background_board = Background('Images/two_players_back.png')
+        white_score = Shape('Images/White-score.png', SCREEN_WIDTH-36, SCREEN_HEIGHT//2 + 40)
+        black_score = Shape('Images/Black-score.png', SCREEN_WIDTH-35, SCREEN_HEIGHT//2 - 40)
+        # white_checker = Shape('Images/white_pawn.png', 15+88, 51+56, 56, 56)
         while True:
             for event in pygame.event.get():
                 if event.type == QUIT:
@@ -118,43 +142,39 @@ def backgammon(games=1):
             pygame.display.update()
             framesPerSec.tick(30)
             background_board.render()
-            
             white_score.draw(window)
-            white_score.addText(window, '0/5',black)
+            white_score.addText(window, f'{white_score}/5',black)
             
             black_score.draw(window)
-            black_score.addText(window, '0/5',white)
-            white_checker.draw(window)
+            black_score.addText(window, f'{black_score}/5',white)
+            # white_checker.draw(window)
+            display_board(board)
             
-    p1vector = [0,0,0] #win, gammon win, backgammon win
-    pminus1vector = [0,0,0] #win, gammon win, backgammon win
-    
-    for _ in range(games):
+    # Make vectors for win, gammon, backgammon
+    p1vector = [0,0,0] 
+    pminus1vector = [0,0,0] 
+    for game in range(games):
         time_step = 1
-    # Each player rolls a die to determine who moves first
+        # Each player rolls a die to determine who moves first
         black_roll, white_roll = roll_dice()
-        # Loops in scenario rolls are equal
         while black_roll == white_roll:
             black_roll, white_roll = roll_dice()
+            
         if commentary:
             print(f"Black rolled {black_roll}")
             print(f"White rolled {white_roll}")
+            
         # Black starts first
         if black_roll > white_roll:
-            if commentary:
-                print("Computer starts")
             player1 = -1
             player2 = 1
         else:
             # White starts first
-            if commentary:
-                print("User Starts")
             player1 = 1
             player2 = -1
-        # running = True
+            
         board = make_board()
         while not game_over(board) and not is_error(board):
-            print(time_step)
             if time_step == 1:
                 # Initial roll made up of both starting dice
                 roll = [black_roll, white_roll]
@@ -165,6 +185,7 @@ def backgammon(games=1):
             else:
                 # All other rolls are generated on spot
                 moves1, boards1, roll = start_turn(player1, board)
+                
             if USER_PLAY:
                 sleep(0.5)
             if player1 == 1:
@@ -207,7 +228,8 @@ def backgammon(games=1):
                 else:
                     if commentary:
                         print("No move can be played")
-                print_board(board)
+                if commentary:
+                    print_board(board)
                 if USER_PLAY:
                     sleep(1)
                 if is_error(board):
@@ -237,6 +259,7 @@ def backgammon(games=1):
         if game_over(board):
             if commentary:
                 print("GAME OVER")
+                
             if is_backgammon(board):
                 if board[26] == -15:
                     pminus1vector[2] +=1
@@ -248,6 +271,7 @@ def backgammon(games=1):
                         print("Player 1 win")
                 if commentary:
                     print("By backgammon")
+                    
             elif is_gammon(board):
                 if board[26] == -15:
                     pminus1vector[1] +=1
@@ -259,6 +283,7 @@ def backgammon(games=1):
                         print("Player 1 win")
                 if commentary:
                     print("By gammon")
+                    
             else:
                 if board[26] == -15:
                     pminus1vector[0] +=1
@@ -268,6 +293,14 @@ def backgammon(games=1):
                     p1vector[0] +=1
                     if commentary:
                         print("Player 1 win")
+            if board[26] == -15:
+                player1 = -1
+                player2 = 1
+                black_score = pminus1vector[0] + 2*pminus1vector[1] + 3*pminus1vector[2]
+            else:
+                player1 = 1
+                player2 = -1
+                white_score = p1vector[0] + 2*p1vector[1] + 3*p1vector[2]
     return p1vector, pminus1vector
             
             
