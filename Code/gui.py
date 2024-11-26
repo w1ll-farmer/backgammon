@@ -70,28 +70,39 @@ def get_bottom_row_checker_pos(point, checker):
     if point > 5:
         offset_x -= 56
     return (offset_x - (point*56), SCREEN_HEIGHT-(offset_y+(checker*56)))
-    
+
+def get_white_home_pos(checker):
+    return (839, 743 - (checker * 12))  
+
+def get_black_home_pos(checker):
+    return (839, 43 + (checker * 12))
 
 def display_board(board):
     for point in range(0,12):
         for checker in range(abs(board[point])):
             if board[point] > 0:
-                window.blit(pygame.image.load("Images/white_pawn.png"), get_top_row_checker_pos(point, checker))
+                window.blit(pygame.image.load("Images/white_pawn.png"), get_bottom_row_checker_pos(point, checker))
             elif board[point] < 0:
-                window.blit(pygame.image.load("Images/black_pawn.png"),get_top_row_checker_pos(point, checker))
+                window.blit(pygame.image.load("Images/black_pawn.png"),get_bottom_row_checker_pos(point, checker))
     for point in range(12, 24):        
         for checker in range(abs(board[point])):
             if board[point] > 0:
-                window.blit(pygame.image.load("Images/white_pawn.png"), get_bottom_row_checker_pos(point-12, checker))
+                window.blit(pygame.image.load("Images/white_pawn.png"), get_top_row_checker_pos(point-12, checker))
             elif board[point] < 0:
-                window.blit(pygame.image.load("Images/black_pawn.png"),get_bottom_row_checker_pos(point-12, checker))
+                window.blit(pygame.image.load("Images/black_pawn.png"),get_top_row_checker_pos(point-12, checker))
     if board[24] < 0:
         black_bar_checker = Shape("Images/black_pawn.png", SCREEN_WIDTH//2 + 3,SCREEN_HEIGHT//2 - 40, 56, 56)
         black_bar_checker.draw(window)
         if board[24] < -1:
             black_bar_checker.addText(window, f"{abs(board[24])}", white)
     if board[25] > 0:
-        white_bar_checker = Shape("Images/black_pawn.png", SCREEN_WIDTH//2 + 3,SCREEN_HEIGHT//2 - 40, 56, 56)
+        white_bar_checker = Shape("Images/white_pawn.png", SCREEN_WIDTH//2 + 3,SCREEN_HEIGHT//2 + 40, 56, 56)
         white_bar_checker.draw(window)
-        if white_bar_checker > 1:
+        if board[25] > 1:
             white_bar_checker.addText(window, f"{board[25]}", black)
+    if board[26] < 0:
+        for checker in range(-board[26]):
+            window.blit(pygame.image.load("Images/black_pawn_outside.png"), get_black_home_pos(checker))
+    if board[27] > 0:
+        for checker in range(board[27]):
+            window.blit(pygame.image.load("Images/white_pawn_outside.png"), get_white_home_pos(checker))

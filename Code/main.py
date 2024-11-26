@@ -127,7 +127,7 @@ def greedy_play(moves, boards, current_board, player):
 ## MAIN BODY ##
 ###############
 def backgammon(games=1):
-    white_score, black_score = 0,0
+    w_score, b_score = 0,0
     board = make_board()
     if GUI_FLAG == True:
         
@@ -143,10 +143,10 @@ def backgammon(games=1):
             framesPerSec.tick(30)
             background_board.render()
             white_score.draw(window)
-            white_score.addText(window, f'{white_score}/5',black)
+            white_score.addText(window, f'{w_score}/5',black)
             
             black_score.draw(window)
-            black_score.addText(window, f'{black_score}/5',white)
+            black_score.addText(window, f'{b_score}/5',white)
             # white_checker.draw(window)
             display_board(board)
             
