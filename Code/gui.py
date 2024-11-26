@@ -1,6 +1,7 @@
 import pygame
 from constants import *
-
+from turn import roll_dice
+from time import sleep
 class Background: #creates a background
     def __init__(self,backgroundImage):
         # super().__init__()
@@ -98,16 +99,26 @@ def display_board(board):
     pygame.display.update()
     
     
+def display_dice_roll(colour):
+    if colour == 1:
+        mult = 3
+        dice_list = white_dice
+    else:
+        mult = 1
+        dice_list = black_dice
+    for i in range(60):
+        die1, die2 = roll_dice()
+        window.blit(dice_list[die1-1], (mult*SCREEN_WIDTH//4-28, SCREEN_HEIGHT//2))
+        window.blit(dice_list[die2-1], (mult*SCREEN_WIDTH//4+28, SCREEN_HEIGHT//2))
+        pygame.display.update()
+    sleep(1)
+    return die1, die2
     
 def update_screen(background, white_score, black_score, board, w_score, b_score, include_bground=False):
     if include_bground:
         background.render()
-        print("background render")
     white_score.draw(window)
     white_score.addText(window, f'{w_score}/5',black)
-    print("white score added")
     black_score.draw(window)
     black_score.addText(window, f'{b_score}/5',white)
-    print('black score added')
     display_board(board)
-    print('board displayed')
