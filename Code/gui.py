@@ -45,17 +45,6 @@ class Shape: #Same as box but takes on an image instead of a colour
         # Blit the text onto the window
         window.blit(text_surface, text_rect)
         
-# class Pawn:
-#     def __init__(self, colour, cords=None):
-#         self.colour = colour
-#         if self.colour == 1:
-#             self.image = pygame.image.load("Images/white_pawn.png")
-#         else:
-#             self.image = pygame.image.load("Images/black_pawn.png")
-        
-#         if cords is not None:
-#             self.X = cords[0]
-#             self.Y = cords[1]
 
 def get_top_row_checker_pos(point, checker):
     offset_x = 88
@@ -106,3 +95,19 @@ def display_board(board):
     if board[27] > 0:
         for checker in range(board[27]):
             window.blit(pygame.image.load("Images/white_pawn_outside.png"), get_white_home_pos(checker))
+    pygame.display.update()
+    
+    
+    
+def update_screen(background, white_score, black_score, board, w_score, b_score, include_bground=False):
+    if include_bground:
+        background.render()
+        print("background render")
+    white_score.draw(window)
+    white_score.addText(window, f'{w_score}/5',black)
+    print("white score added")
+    black_score.draw(window)
+    black_score.addText(window, f'{b_score}/5',white)
+    print('black score added')
+    display_board(board)
+    print('board displayed')

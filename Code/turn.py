@@ -3,6 +3,10 @@ import numpy as np
 import copy
 import pandas as pd
 from constants import *
+if GUI_FLAG:
+    import pygame
+    pygame.init()
+    
 def make_board():
     return [
         -2,0,0,0,0,5,  0,3,0,0,0,-5,
