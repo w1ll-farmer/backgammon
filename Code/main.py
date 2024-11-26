@@ -40,6 +40,8 @@ def start_turn(player, board):
         ([(int, int)], [int], [int]): Possible moves, associated boards, diceroll
     """
     roll = roll_dice()
+    if GUI_FLAG:
+        roll = display_dice_roll(player)
     if commentary:
         print(f"Player {player} rolled {roll}")
     moves, boards = get_valid_moves(player, board, roll)
@@ -129,26 +131,6 @@ def greedy_play(moves, boards, current_board, player):
 def backgammon(games=1):
     w_score, b_score = 0,0
     board = make_board()
-    # if GUI_FLAG == True:
-        
-    #     background = Background('Images/two_players_back.png')
-    #     white_score = Shape('Images/White-score.png', SCREEN_WIDTH-36, SCREEN_HEIGHT//2 + 40)
-    #     black_score = Shape('Images/Black-score.png', SCREEN_WIDTH-35, SCREEN_HEIGHT//2 - 40)
-    #     # white_checker = Shape('Images/white_pawn.png', 15+88, 51+56, 56, 56)
-    #     while True:
-    #         for event in pygame.event.get():
-    #             if event.type == QUIT:
-    #                 pygame.quit()
-    #         pygame.display.update()
-    #         framesPerSec.tick(30)
-    #         background.render()
-    #         white_score.draw(window)
-    #         white_score.addText(window, f'{w_score}/5',black)
-            
-    #         black_score.draw(window)
-    #         black_score.addText(window, f'{b_score}/5',white)
-    #         # white_checker.draw(window)
-    #         display_board(board)
             
     # Make vectors for win, gammon, backgammon
     p1vector = [0,0,0] 
@@ -160,6 +142,10 @@ def backgammon(games=1):
             
         
         while not game_over(board) and not is_error(board):
+            if GUI_FLAG:
+                for event in pygame.event.get():
+                        if event.type == QUIT:
+                            pygame.quit()
             if time_step == 1:
                 # Each player rolls a die to determine who moves first
                 black_roll, white_roll = roll_dice()
@@ -167,13 +153,12 @@ def backgammon(games=1):
                     background = Background('Images/two_players_back.png')
                     white_score = Shape('Images/White-score.png', SCREEN_WIDTH-36, SCREEN_HEIGHT//2 + 40)
                     black_score = Shape('Images/Black-score.png', SCREEN_WIDTH-35, SCREEN_HEIGHT//2 - 40)
-                    for event in pygame.event.get():
-                        if event.type == QUIT:
-                            pygame.quit()
+                    
                     pygame.display.update()
                     framesPerSec.tick(30)
                     update_screen(background, white_score, black_score, board, w_score, b_score, True)
                     pygame.display.update()
+                    sleep(1)
                     for i in range(60):
                         black_roll, white_roll = roll_dice()
                         window.blit(black_dice[black_roll-1], (SCREEN_WIDTH//4-28, SCREEN_HEIGHT//2))
@@ -187,7 +172,7 @@ def backgammon(games=1):
                         window.blit(white_dice[white_roll-1], (3*SCREEN_WIDTH//4+28, SCREEN_HEIGHT//2))
                         pygame.display.update()
                 if USER_PLAY or GUI_FLAG:
-                    sleep(0.5)
+                    sleep(1)
                 
                 if commentary:
                     print(f"Black rolled {black_roll}")
@@ -209,9 +194,10 @@ def backgammon(games=1):
                         window.blit(white_dice[black_roll-1], (3*SCREEN_WIDTH//4-28, SCREEN_HEIGHT//2))
                         window.blit(white_dice[white_roll-1], (3*SCREEN_WIDTH//4+28, SCREEN_HEIGHT//2))
                 
-                update_screen(background, white_score, black_score, board, w_score, b_score)
-               
-                pygame.display.update()
+                if GUI_FLAG:
+                    update_screen(background, white_score, black_score, board, w_score, b_score)
+                    pygame.display.update()
+                    sleep(1)
                 # Initial roll made up of both starting dice
                 roll = [black_roll, white_roll]
                 moves1, boards1 = get_valid_moves(player1, board, roll)
@@ -222,7 +208,7 @@ def backgammon(games=1):
                 # All other rolls are generated on spot
                 moves1, boards1, roll = start_turn(player1, board)
                 
-            if USER_PLAY:
+            if USER_PLAY or GUI_FLAG:
                 sleep(0.5)
             if player1 == 1:
                 if len(moves1) > 0:
@@ -234,6 +220,8 @@ def backgammon(games=1):
                             print(f"Move Taken: {move}")
                     if GUI_FLAG:
                         update_screen(background, white_score, black_score, board, w_score, b_score, True)
+                        pygame.display.update()
+                        sleep(1)
                 else:
                     if commentary:
                         print("No move can be played")
@@ -260,7 +248,9 @@ def backgammon(games=1):
                         print("No move can be played")
                 
                 if GUI_FLAG:
-                        update_screen(background, white_score, black_score, board, w_score, b_score, True)
+                    update_screen(background, white_score, black_score, board, w_score, b_score, True)
+                    pygame.display.update()
+                    sleep(1)
             else:
                 if len(moves1) > 0:
                     board, move = randobot_play(roll, moves1, boards1)
@@ -269,9 +259,13 @@ def backgammon(games=1):
                 else:
                     if commentary:
                         print("No move can be played")
+                if GUI_FLAG:
+                    update_screen(background, white_score, black_score, board, w_score, b_score, True)
+                    pygame.display.update()
+                    sleep(1)
                 if commentary:
                     print_board(board)
-                if USER_PLAY:
+                if USER_PLAY or GUI_FLAG:
                     sleep(1)
                 if is_error(board):
                     sleep(10)
@@ -290,6 +284,10 @@ def backgammon(games=1):
                 else:
                     if commentary:
                         print("No move can be played")
+            if GUI_FLAG:
+                update_screen(background, white_score, black_score, board, w_score, b_score, True)
+                pygame.display.update()
+                sleep(1)
             print_board(board)
             if is_error(board):
                 sleep(10)
@@ -337,11 +335,11 @@ def backgammon(games=1):
             if board[26] == -15:
                 player1 = -1
                 player2 = 1
-                black_score = pminus1vector[0] + 2*pminus1vector[1] + 3*pminus1vector[2]
+                b_score = pminus1vector[0] + 2*pminus1vector[1] + 3*pminus1vector[2]
             else:
                 player1 = 1
                 player2 = -1
-                white_score = p1vector[0] + 2*p1vector[1] + 3*p1vector[2]
+                w_score = p1vector[0] + 2*p1vector[1] + 3*p1vector[2]
     return p1vector, pminus1vector
             
             
