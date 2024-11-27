@@ -113,7 +113,7 @@ def display_dice_roll(colour):
         pygame.display.update()
     sleep(1)
     return die1, die2
-    
+
 def update_screen(background, white_score, black_score, board, w_score, b_score, include_bground=False):
     if include_bground:
         background.render()

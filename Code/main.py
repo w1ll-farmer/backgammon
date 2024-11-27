@@ -128,14 +128,14 @@ def greedy_play(moves, boards, current_board, player):
 ###############
 ## MAIN BODY ##
 ###############
-def backgammon(games=1):
+def backgammon(score_to=1):
     w_score, b_score = 0,0
     board = make_board()
             
     # Make vectors for win, gammon, backgammon
     p1vector = [0,0,0] 
     pminus1vector = [0,0,0] 
-    for game in range(games):
+    while max([w_score, b_score]) < score_to:
         board = make_board()
         time_step = 1
         
@@ -344,8 +344,8 @@ def backgammon(games=1):
             
             
 if __name__ == "__main__":
-    games = 5      
-    p1vector, pminus1vector = backgammon(games)
+    score_to = 5      
+    p1vector, pminus1vector = backgammon(score_to)
     print(p1vector,pminus1vector)
             
             
