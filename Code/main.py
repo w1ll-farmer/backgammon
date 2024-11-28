@@ -247,9 +247,9 @@ def backgammon(score_to=1):
                                 highlight_checker(start_checkers[i], start_point[i], player1)
                                 pygame.display.update()
                                 sleep(0.5)
-                            update_screen(background, white_score, black_score, board, w_score, b_score, True)
-                            pygame.display.update()
-                            for i in range(len(end_point)):
+                            # update_screen(background, white_score, black_score, board, w_score, b_score, True)
+                                # pygame.display.update()
+                            # for i in range(len(end_point)):
                                 highlight_checker(end_checkers[i], end_point[i], player1)
                                 pygame.display.update()
                                 sleep(0.5)
@@ -292,9 +292,9 @@ def backgammon(score_to=1):
                             highlight_checker(start_checkers[i], start_point[i], player2)
                             pygame.display.update()
                             sleep(0.5)
-                        update_screen(background, white_score, black_score, board, w_score, b_score, True)
-                        pygame.display.update()
-                        for i in range(len(end_point)):
+                        # update_screen(background, white_score, black_score, board, w_score, b_score, True)
+                        # pygame.display.update()
+                        # for i in range(len(end_point)):
                             highlight_checker(end_checkers[i], end_point[i], player2)
                             pygame.display.update()
                             sleep(0.5)
@@ -325,9 +325,9 @@ def backgammon(score_to=1):
                             highlight_checker(start_checkers[i], start_point[i], player1)
                             pygame.display.update()
                             sleep(0.5)
-                        update_screen(background, white_score, black_score, board, w_score, b_score, True)
-                        pygame.display.update()
-                        for i in range(len(end_point)):
+                        # update_screen(background, white_score, black_score, board, w_score, b_score, True)
+                        # pygame.display.update()
+                        # for i in range(len(end_point)):
                             highlight_checker(end_checkers[i], end_point[i], player1)
                             pygame.display.update()
                             sleep(0.5)
@@ -370,9 +370,9 @@ def backgammon(score_to=1):
                         highlight_checker(start_checkers[i], start_point[i], player2)
                         pygame.display.update()
                         sleep(0.5)
-                    update_screen(background, white_score, black_score, board, w_score, b_score, True)
-                    pygame.display.update()
-                    for i in range(len(end_point)):
+                    # update_screen(background, white_score, black_score, board, w_score, b_score, True)
+                    # pygame.display.update()
+                    # for i in range(len(end_point)):
                         highlight_checker(end_checkers[i], end_point[i], player2)
                         pygame.display.update()
                         sleep(0.5)
