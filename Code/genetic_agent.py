@@ -1,5 +1,4 @@
 from random import randint, uniform
-from main import backgammon
 def get_parent(P):
     # Get fitness values of population
     # get threshold value between 0 and sum of total fitness
@@ -16,8 +15,10 @@ def reproduce(mother, father):
 
 
 def calc_fitness(individual):
-    fitness = backgammon(1, "GENETIC",individual, "GREEDY")[1]
-    return fitness
+    
+    # fitness = backgammon(1, "GENETIC",individual, "GREEDY")[1]
+    pass
+    # return fitness
 
 
 def calc_overall_fitness(P):
