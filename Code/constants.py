@@ -1,10 +1,9 @@
 
 SCREEN_WIDTH, SCREEN_HEIGHT = 900, 790
-commentary = True
+commentary = False
 USER_PLAY = False
 RANDOM_PLAY = False
-GREEDY_PLAY = True
-GUI_FLAG = True
+GUI_FLAG = False
 black = [0,0,0]
 white = [255,255,255]
 FPS = 30
