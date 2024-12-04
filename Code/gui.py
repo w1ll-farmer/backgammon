@@ -1,6 +1,6 @@
 import pygame
 from constants import *
-from turn import roll_dice
+from turn import roll_dice, update_board
 from time import sleep
 class Background: #creates a background
     def __init__(self,backgroundImage):
@@ -127,6 +127,23 @@ def display_dice_roll(colour):
     sleep(1)
     return die1, die2
 
+
+def fix_same_checker(start_points, start_checkers, end_points, end_checkers):
+    
+    new_start, new_end = start_checkers, end_checkers
+    for i in range(len(start_points)):
+        # dupes = sum([j for j in range(i+1, len(start_points)) if start_points[i] == start_points[j] and start_checkers[i] == start_checkers[j]])
+        for j in range(i+1, len(start_points)):
+            if start_points[i] == start_points[j]:
+                if start_checkers[i] == start_checkers[j]:
+                    new_start[i] +=1
+            if end_points[i] == end_points[j]:
+                if end_checkers[i] == end_checkers[j]:
+                    new_end[i] -= 2
+    
+    return new_start, new_end
+
+
 def parse_move(board, move):
     # Extracts which checker is being moved and to where for animation 
     start_point, end_point = [], []
@@ -138,31 +155,31 @@ def parse_move(board, move):
     for point in range(len(start_point)):
         start_checkers.append(abs(board[start_point[point]]))
         end_checkers.append(abs(board[end_point[point]])-1)
+    start_checkers, end_checkers = fix_same_checker(start_point, start_checkers, end_point, end_checkers)
     return start_point, start_checkers, end_point, end_checkers
 
-def highlight_checker(checker, point, colour):
+
+# print(fix_same_checker([23, 21, 23, 23], [3, 3, 3, 3], [19, 20, 21, 18], [3,3,3,3])) 
+
+
+        
+def highlight_checker(checker, point, img_path):
     if checker < 0: checker = 0
     # Highlights checker to show move 
     if point < 12:
-        if colour == 1:
-            window.blit(pygame.image.load("Images/white_highlight.png"), get_bottom_row_checker_pos(point, checker))
-        else:
-            window.blit(pygame.image.load("Images/black_highlight.png"), get_bottom_row_checker_pos(point, checker))
+        window.blit(pygame.image.load(img_path), get_bottom_row_checker_pos(point, checker))
+        
     elif point < 24:
-        if colour == 1:
-            window.blit(pygame.image.load("Images/white_highlight.png"), get_top_row_checker_pos(point-12, checker))
-        else:
-            window.blit(pygame.image.load("Images/black_highlight.png"), get_top_row_checker_pos(point-12, checker))
+        window.blit(pygame.image.load(img_path), get_top_row_checker_pos(point-12, checker))
+        
     elif point < 26:
-        if colour == 1:
-            white_bar_checker_highlight = Shape("Images/white_highlight.png", SCREEN_WIDTH//2 + 3,SCREEN_HEIGHT//2 + 40, 56, 56)
+        if "white" in img_path:
+            white_bar_checker_highlight = Shape(img_path, SCREEN_WIDTH//2 + 3,SCREEN_HEIGHT//2 + 40, 56, 56)
             white_bar_checker_highlight.draw(window)
         else:
-            black_bar_checker_highlight = Shape("Images/black_highlight.png", SCREEN_WIDTH//2 + 3,SCREEN_HEIGHT//2 - 40, 56, 56)
+            black_bar_checker_highlight = Shape(img_path, SCREEN_WIDTH//2 + 3,SCREEN_HEIGHT//2 - 40, 56, 56)
             black_bar_checker_highlight.draw(window)
         
-
-
 def update_screen(background, white_score, black_score, board, w_score, b_score, include_bground=False):
     if include_bground:
         background.render()

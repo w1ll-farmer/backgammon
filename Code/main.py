@@ -7,27 +7,8 @@ from time import sleep
 from greedy_agent import *
 from constants import *
 from gui import *
+from genetic_agent import genetic
 
-def assign():
-    if USER_PLAY and not RANDOM_PLAY and not GREEDY_PLAY:
-        # human vs human
-        pass
-    elif USER_PLAY and RANDOM_PLAY:
-        # human vs random
-        pass
-    elif USER_PLAY and GREEDY_PLAY:
-        # human vs greedy
-        pass
-    elif RANDOM_PLAY and not USER_PLAY and not GREEDY_PLAY:
-        # random vs random
-        pass
-    elif RANDOM_PLAY and GREEDY_PLAY:
-        # random vs greedy
-        pass
-    elif GREEDY_PLAY and not RANDOM_PLAY and not USER_PLAY:
-        # greedy vs greedy
-        pass
-        
 
 def start_turn(player, board):
     """Rolls the dice and finds all possible moves.
@@ -115,25 +96,32 @@ def greedy_play(moves, boards, current_board, player):
         player (int): The player making the move
 
     Returns:
+        [(int, int)]: The move made
         [int]: The board resulting from move made
     """
     scores = [evaluate(moves[i], current_board, boards[i], player) for i in range(len(moves))]
     sorted_triplets = sorted(zip(scores, boards, moves), key=lambda x: x[0], reverse=True)
     sorted_scores, sorted_boards, sorted_moves = zip(*sorted_triplets)
-    if commentary:
-        print(f"Player {player} played {sorted_moves[0][0]}, {sorted_moves[0][1]}")
-    return list(sorted_boards)[0]
+    return [sorted_moves[0][0], sorted_moves[0][1]], list(sorted_boards)[0]
     
+    
+    
+def genetic_play(moves, boards, weights):
+    pass
+
+
 
 ###############
 ## MAIN BODY ##
 ###############
-def backgammon(score_to=1):
+def backgammon(score_to=1,player1strat="GREEDY", weights1 = None, player2strat="GREEDY", weights2 = None):
     #### SCORE INITIALISATION ####
     w_score, b_score = 0,0
-    board = make_board()   
     p1vector = [0,0,0] 
     pminus1vector = [0,0,0] 
+    
+    if player1strat == "USER" and GUI_FLAG == False:
+        commentary = True
     
     #### MAIN LOOP ####
     while max([w_score, b_score]) < score_to:
@@ -231,12 +219,16 @@ def backgammon(score_to=1):
             if player1 == 1:
                 #### WHITE PLAYER 1'S TURN ####
                 if len(moves1) > 0:
-                    if USER_PLAY:
+                    if player1strat == "USER":
                         move, board = human_play(moves1, boards1)
-                    else:
+                    elif player1strat == "RANDOM":
                         board, move = randobot_play(roll, moves1, boards1)
-                        if commentary:
-                            print(f"Move Taken: {move}")
+                    elif player1strat == "GREEDY":
+                        move, board = greedy_play(moves1, boards1, board, player1)
+                    elif player1strat == "GENETIC":
+                        pass
+                    if commentary:
+                        print(f"Move Taken: {move}")
                     if GUI_FLAG:
                         for event in pygame.event.get():
                             if event.type == QUIT:
@@ -244,15 +236,17 @@ def backgammon(score_to=1):
                         if len(moves1) > 0:
                             start_point, start_checkers, end_point, end_checkers = parse_move(board, move)
                             for i in range(len(start_point)):
-                                highlight_checker(start_checkers[i], start_point[i], player1)
+                                highlight_checker(start_checkers[i], start_point[i], "Images/white_highlight.png")
                                 pygame.display.update()
-                                sleep(0.5)
-                            # update_screen(background, white_score, black_score, board, w_score, b_score, True)
-                                # pygame.display.update()
-                            # for i in range(len(end_point)):
-                                highlight_checker(end_checkers[i], end_point[i], player1)
+                                sleep(1)
+                                
+                                highlight_checker(end_checkers[i], end_point[i], "Images/white_highlight.png")
                                 pygame.display.update()
-                                sleep(0.5)
+                                sleep(1)
+                                
+                                # update_screen(background, white_score, black_score, board, w_score, b_score, True)
+                                highlight_checker(end_checkers[i], end_point[i], "Images/white_pawn.png")
+                                pygame.display.update()
                         update_screen(background, white_score, black_score, board, w_score, b_score, True)
                         pygame.display.update()
                         sleep(1)
@@ -275,7 +269,14 @@ def backgammon(score_to=1):
                 
                 moves2, boards2, roll = start_turn(player2, board)
                 if len(moves2) > 0:
-                    board, move = randobot_play(roll, moves2, boards2)
+                    if player2strat == "USER":
+                        move, board = human_play(moves2, boards2)
+                    elif player2strat == "RANDOM":
+                        board, move = randobot_play(roll, moves2, boards2)
+                    elif player2strat == "GREEDY":
+                        move, board = greedy_play(moves2, boards2, board, player2)
+                    elif player2strat == "GENETIC":
+                        pass
                     if commentary:
                         print(f"Move Taken: {move}")
                 else:
@@ -284,20 +285,22 @@ def backgammon(score_to=1):
                 
                 if GUI_FLAG:
                     for event in pygame.event.get():
-                            if event.type == QUIT:
-                                pygame.quit()
+                        if event.type == QUIT:
+                            pygame.quit()
                     if len(moves2) > 0:
                         start_point, start_checkers, end_point, end_checkers = parse_move(board, move)
                         for i in range(len(start_point)):
-                            highlight_checker(start_checkers[i], start_point[i], player2)
+                            highlight_checker(start_checkers[i], start_point[i], "Images/black_highlight.png")
                             pygame.display.update()
-                            sleep(0.5)
-                        # update_screen(background, white_score, black_score, board, w_score, b_score, True)
-                        # pygame.display.update()
-                        # for i in range(len(end_point)):
-                            highlight_checker(end_checkers[i], end_point[i], player2)
+                            sleep(1)
+                            
+                            highlight_checker(end_checkers[i], end_point[i], "Images/black_highlight.png")
                             pygame.display.update()
-                            sleep(0.5)
+                            sleep(1)
+                            
+                            # update_screen(background, white_score, black_score, board, w_score, b_score, True)
+                            highlight_checker(end_checkers[i], end_point[i], "Images/black_pawn.png")
+                            pygame.display.update()
                     update_screen(background, white_score, black_score, board, w_score, b_score, True)
                     pygame.display.update()
                     sleep(1)
@@ -308,7 +311,14 @@ def backgammon(score_to=1):
                 #### BLACK PLAYER 1'S TURN ####
                 
                 if len(moves1) > 0:
-                    board, move = randobot_play(roll, moves1, boards1)
+                    if player1strat == "USER":
+                        move, board = human_play(moves1, boards1)
+                    elif player1strat == "RANDOM":
+                        board, move = randobot_play(roll, moves1, boards1)
+                    elif player1strat == "GREEDY":
+                        move, board = greedy_play(moves1, boards1, board, player1)
+                    elif player1strat == "GENETIC":
+                        pass
                     if commentary:    
                         print(f"Move Taken: {move}")
                 else:
@@ -322,15 +332,18 @@ def backgammon(score_to=1):
                     if len(moves1) > 0:          
                         start_point, start_checkers, end_point, end_checkers = parse_move(board, move)
                         for i in range(len(start_point)):
-                            highlight_checker(start_checkers[i], start_point[i], player1)
+                            highlight_checker(start_checkers[i], start_point[i], "Images/black_highlight.png")
                             pygame.display.update()
-                            sleep(0.5)
-                        # update_screen(background, white_score, black_score, board, w_score, b_score, True)
-                        # pygame.display.update()
-                        # for i in range(len(end_point)):
-                            highlight_checker(end_checkers[i], end_point[i], player1)
+                            sleep(1)
+                            
+                            highlight_checker(end_checkers[i], end_point[i], "Images/black_highlight.png")
                             pygame.display.update()
-                            sleep(0.5)
+                            sleep(1)
+                            
+                            # update_screen(background, white_score, black_score, board, w_score, b_score, True)
+                            highlight_checker(end_checkers[i], end_point[i], "Images/black_pawn.png")
+                            pygame.display.update()
+                            
                     update_screen(background, white_score, black_score, board, w_score, b_score, True)
                     pygame.display.update()
                     sleep(1)
@@ -347,38 +360,47 @@ def backgammon(score_to=1):
                 if game_over(board):
                     break
                 
-                #### WHITE PLAYER 1'S TURN ####
+                #### WHITE PLAYER 2'S TURN ####
                 
                 moves2, boards2, roll = start_turn(player2, board)
                 if len(moves2) > 0:
-                    if USER_PLAY:
+                    if player2strat == "USER":
                         move, board = human_play(moves2, boards2)
-                    else:
+                    elif player2strat == "RANDOM":
                         board, move = randobot_play(roll, moves2, boards2)
+                    elif player2strat == "GREEDY":
+                        move, board = greedy_play(moves2, boards2, board, player2)
+                    elif player2strat == "GENETIC":
+                        pass
                         if commentary:
                             print(f"Move Taken: {move}")
                 else:
                     if commentary:
                         print("No move can be played")
-            if GUI_FLAG:
-                for event in pygame.event.get():
-                    if event.type == QUIT:
-                        pygame.quit()
-                if len(moves2) > 0:
-                    start_point, start_checkers, end_point, end_checkers = parse_move(board, move)
-                    for i in range(len(start_point)):
-                        highlight_checker(start_checkers[i], start_point[i], player2)
-                        pygame.display.update()
-                        sleep(0.5)
-                    # update_screen(background, white_score, black_score, board, w_score, b_score, True)
-                    # pygame.display.update()
-                    # for i in range(len(end_point)):
-                        highlight_checker(end_checkers[i], end_point[i], player2)
-                        pygame.display.update()
-                        sleep(0.5)
-                update_screen(background, white_score, black_score, board, w_score, b_score, True)
-                pygame.display.update()
-                sleep(1)
+                if GUI_FLAG:
+                    for event in pygame.event.get():
+                        if event.type == QUIT:
+                            pygame.quit()
+                    if len(moves2) > 0:
+                        start_point, start_checkers, end_point, end_checkers = parse_move(board, move)
+                        
+                        # if len(set(start_checkers)) < len(start_checkers) or len(set(end_checkers)) < len(end_checkers):
+                            # fix_same_checker(start_checkers, end_checkers)
+                        for i in range(len(start_point)):
+                            highlight_checker(start_checkers[i], start_point[i], "Images/white_highlight.png")
+                            pygame.display.update()
+                            sleep(1)
+                            
+                            highlight_checker(end_checkers[i], end_point[i], "Images/white_highlight.png")
+                            pygame.display.update()
+                            sleep(1)
+                            
+                            # update_screen(background, white_score, black_score, board, w_score, b_score, True)
+                            highlight_checker(end_checkers[i], end_point[i], "Images/white_pawn.png")
+                            pygame.display.update()
+                    update_screen(background, white_score, black_score, board, w_score, b_score, True)
+                    pygame.display.update()
+                    sleep(1)
                 
             #### END OF WHITE PLAYER 2'S TURN ####
             
@@ -438,12 +460,18 @@ def backgammon(score_to=1):
                 
         #### CHECKS FOR GAME OVER AND WINNING POINTS ####
         
-    return p1vector, pminus1vector
+    return p1vector, w_score, pminus1vector, b_score
             
             
 if __name__ == "__main__":
-    score_to = 5      
-    p1vector, pminus1vector = backgammon(score_to)
+    score_to = 5
+    player1strat = "GREEDY"
+    player2strat = "GREEDY"
+    if player1strat == "GENETIC":
+        weights1 = genetic(50,100)
+    if player2strat == "GENETIC":
+        weights2 = genetic(50,100)
+    p1vector, pminus1vector = backgammon(score_to,player1strat,weights1,player2strat,weights2)
     print(p1vector,pminus1vector)
             
             
