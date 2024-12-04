@@ -65,6 +65,24 @@ def update_board(board, move):
             board_copy[end] -= 1
     return board_copy
 
+def all_past(board):
+    white_remaing = 15 - board[27]
+    black_remaining = 15 + board[26]
+    furthest_back_white = 0
+    furthest_back_black = 23
+    while board[furthest_back_white] < 1:
+        furthest_back_white+=1
+    while board[furthest_back_black] > -1:
+        furthest_back_black -=1
+        
+    if furthest_back_black < furthest_back_white:
+        return True
+    else:
+        return False
+
+
+
+
 def get_home_info(player, board):
     if player == 1:
         cords = [i for i in range(0,6)]
