@@ -108,6 +108,12 @@ def greedy_play(moves, boards, current_board, player):
     
 def genetic_play(moves, boards, weights):
     pass
+    # Weights are assigned to different types of moves
+    # Examine boards and compare which boards should be in which categories
+    # Use weights to determine which category is being used, roulette wheel
+    # For tiebreakers, check if moves fall into multiple categories. 
+    # Evaluate weights assigned to the other categories, perform roulette wheel again
+    # If absolute tiebreak, choose first move in remaining list
 
 
 
