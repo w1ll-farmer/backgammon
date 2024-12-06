@@ -100,7 +100,7 @@ def greedy_play(moves, boards, current_board, player, roll):
         [(int, int)]: The move made
         [int]: The board resulting from move made
     """
-    scores = [evaluate(moves[i], current_board, boards[i], player) for i in range(len(moves))]
+    scores = [evaluate(current_board, boards[i], player) for i in range(len(moves))]
     sorted_triplets = sorted(zip(scores, boards, moves), key=lambda x: x[0], reverse=True)
     sorted_scores, sorted_boards, sorted_moves = zip(*sorted_triplets)
     log(current_board, roll, sorted_moves[0], list(sorted_boards)[0])
