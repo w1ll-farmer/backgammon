@@ -63,7 +63,24 @@ def update_board(board, move):
             board_copy[25] += 1
         else:
             board_copy[end] -= 1
+    
     return board_copy
+
+def all_past(board):
+    if board[24] < 0 or board[25] > 0:
+        return False
+    furthest_back_white = 0
+    furthest_back_black = 23
+    while board[furthest_back_white] < 1:
+        furthest_back_white+=1
+    while board[furthest_back_black] > -1:
+        furthest_back_black -=1
+        
+    if furthest_back_black < furthest_back_white:
+        return True
+    else:
+        return False
+
 
 def get_home_info(player, board):
     if player == 1:
@@ -195,8 +212,8 @@ def get_legal_move(colour, board, die):
                         
         else: # White player's move
             if all_checkers_home(colour, board):
-                if board[die] > 0:
-                    valid_moves.append((die, 27))
+                if board[die-1] > 0:
+                    valid_moves.append((die-1, 27))
                     
                 elif not game_over(board):
                     furthest_back = 0

@@ -147,14 +147,12 @@ def fix_same_checker(start_points, start_checkers, end_points, end_checkers):
 def parse_move(board, move):
     # Extracts which checker is being moved and to where for animation 
     start_point, end_point = [], []
-    print(move)
     for m in move:
         start_point.append(m[0])
         end_point.append(m[1])
     start_checkers = []
     end_checkers = []
     for point in range(len(start_point)):
-        print("start point",start_point)
         start_checkers.append(abs(board[start_point[point]]))
         end_checkers.append(abs(board[end_point[point]])-1)
     start_checkers, end_checkers = fix_same_checker(start_point, start_checkers, end_point, end_checkers)
