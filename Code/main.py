@@ -90,7 +90,10 @@ def human_play(moves, boards, start_board, roll, colour):
 
             # Create highlight checkers
             for start in starts:
-                start_checkers.append(highlight_checker(abs(current_board[start]) - 1, start, "Images/white_highlight.png", True))
+                if colour == 1:
+                    start_checkers.append(highlight_checker(abs(current_board[start]) - 1, start, "Images/white_highlight.png", True))
+                else:
+                    start_checkers.append(highlight_checker(abs(current_board[start]) - 1, start, "Images/black_highlight.png", True))
 
             pygame.display.update()
             move_made = 0
@@ -111,8 +114,11 @@ def human_play(moves, boards, start_board, roll, colour):
                                     point_num = (SCREEN_WIDTH - 85 - x) // 56
                                 elif x <= 417:
                                     point_num = (SCREEN_WIDTH - 141 - x) // 56
+                                else:
+                                    point_num = int(24.5+ 0.5*colour)
                                 if y <= 346:
                                     point_num = 23 - point_num
+                                print(point_num)
                                 points = highlight[point_num]
                                 highlight_bottom_points(points)
                                 highlight_top_points(points)
@@ -122,35 +128,26 @@ def human_play(moves, boards, start_board, roll, colour):
                         if event.key == pygame.K_LEFT and left_used < left_max:
                             if highlight[selected_point]:
                                 if colour == -1:
-                                    step_move = next((m for m in step_moves if m[0] == selected_point and m[1] - selected_point == roll[0]), None)
+                                    step_move = next((m for m in step_moves if m[0] == selected_point and (m[1] - selected_point == roll[0]) or (selected_point == 24 and roll[0] == m[1]+1)), None)
                                 else:
-                                    step_move = next((m for m in step_moves if m[0] == selected_point and m[1] - selected_point == -roll[0]), None)
+                                    step_move = next((m for m in step_moves if m[0] == selected_point and (m[1] - selected_point == -roll[0]) or (selected_point == 25 and roll[0] == 24-m[1])), None)
+                                print(step_move)
                                 if step_move:
                                     move.append(step_move)
                                     current_board = update_board(current_board, move[-1])
                                     move_made += 1
                                     left_used +=1
-                                # move.append((selected_point, highlight[selected_point][0]))
-                                # current_board = update_board(current_board, (selected_point, highlight[selected_point][0]))
-                                # move_made += 1
                                     
                         elif event.key == pygame.K_RIGHT and right_used < right_max:
                             if colour == -1:
-                                step_move = next((m for m in step_moves if m[0] == selected_point and m[1] - selected_point == roll[1]), None)
+                                step_move = next((m for m in step_moves if m[0] == selected_point and (m[1] - selected_point == roll[1]) or (selected_point == 24 and roll[1] == m[1]+1)), None)
                             else:
-                                step_move = next((m for m in step_moves if m[0] == selected_point and m[1] - selected_point == -roll[1]), None)
+                                step_move = next((m for m in step_moves if m[0] == selected_point and (m[1] - selected_point == -roll[1]) or (selected_point == 25 and roll[1] == 24-m[1])), None)
                             if step_move:
                                 move.append(step_move)
                                 current_board = update_board(current_board, move[-1])
                                 move_made += 1
                                 right_used += 1
-                            # if len(highlight[selected_point]) > 1:
-                            #     move.append((selected_point, highlight[selected_point][-1]))
-                            # else:
-                            #     move.append((selected_point, highlight[selected_point][0]))
-                            # current_board = update_board(current_board, move[-1])
-                            # move_made += 1
-                            
                             
                     if event.type == pygame.MOUSEBUTTONUP and move_made < 2 + (roll[0] == roll[1])*2:
                         # Clear highlights
@@ -161,8 +158,10 @@ def human_play(moves, boards, start_board, roll, colour):
                         # Recreate start checkers without highlights
                         start_checkers = []
                         for start in starts:
-                            start_checkers.append(highlight_checker(abs(current_board[start]) - 1, start, "Images/white_highlight.png", True))
-
+                            if colour == 1:
+                                start_checkers.append(highlight_checker(abs(current_board[start]) - 1, start, "Images/white_highlight.png", True))
+                            else:
+                                start_checkers.append(highlight_checker(abs(current_board[start]) - 1, start, "Images/black_highlight.png", True))
                         pygame.display.update()
 
                 # Recalculate step moves and highlight dictionary after a move is made
@@ -180,11 +179,16 @@ def human_play(moves, boards, start_board, roll, colour):
 
                     for start in highlight:
                         highlight[start] = list(set(highlight[start]))
-
-                    start_checkers = [
-                        highlight_checker(abs(current_board[start]) - 1, start, "Images/white_highlight.png", True)
-                        for start in highlight.keys()
-                    ]
+                    if colour == 1:
+                        start_checkers = [
+                            highlight_checker(abs(current_board[start]) - 1, start, "Images/white_highlight.png", True)
+                            for start in highlight.keys()
+                        ]
+                    else:
+                        start_checkers = [
+                            highlight_checker(abs(current_board[start]) - 1, start, "Images/black_highlight.png", True)
+                            for start in highlight.keys()
+                        ]
                     pygame.display.update()
 
             update_screen(background, white_score, black_score, current_board, w_score, b_score, True)
