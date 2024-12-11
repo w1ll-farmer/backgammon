@@ -111,6 +111,17 @@ def display_board(board):
     pygame.display.update()
     
     
+def display_dice(colour, die1, die2):
+    if colour == 1:
+        mult = 3
+        dice_list = white_dice
+    else:
+        mult = 1
+        dice_list = black_dice 
+    window.blit(dice_list[die1-1], (mult*SCREEN_WIDTH//4-28, SCREEN_HEIGHT//2))
+    window.blit(dice_list[die2-1], (mult*SCREEN_WIDTH//4+28, SCREEN_HEIGHT//2))
+    
+    
 def display_dice_roll(colour):
     # Displays animation for rolling dice
     if colour == 1:
@@ -201,10 +212,9 @@ def highlight_bottom_points(points):
     
 def highlight_top_points(points):
     for point in points:
-        print(point)
         if point > 11 and point < 24:
             offset = 142
-            if point < 18: offset += 56
+            if point < 18: offset -= 56
             window.blit(pygame.image.load("Images/dest_light_upper.png"), (offset + (point-12)*56, 51))
 
     
