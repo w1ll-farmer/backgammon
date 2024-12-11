@@ -113,25 +113,32 @@ def human_play(moves, boards, start_board, roll, colour):
                                 if x >= 458:
                                     point_num = (SCREEN_WIDTH - 85 - x) // 56
                                 elif x <= 417:
-                                    point_num = (SCREEN_WIDTH - 141 - x) // 56
+                                    point_num = (SCREEN_WIDTH - 130 - x) // 56
                                 else:
                                     point_num = int(24.5+ 0.5*colour)
                                 if y <= 346:
                                     point_num = 23 - point_num
-                                print(point_num)
                                 points = highlight[point_num]
                                 highlight_bottom_points(points)
                                 highlight_top_points(points)
+                                if any([True for i in points if i == 26 or i == 27]):
+                                    highlight_home(colour)
                                 selected_point = point_num
 
                     if event.type == pygame.KEYDOWN and selected_point is not None:
                         if event.key == pygame.K_LEFT and left_used < left_max:
                             if highlight[selected_point]:
                                 if colour == -1:
-                                    step_move = next((m for m in step_moves if m[0] == selected_point and (m[1] - selected_point == roll[0]) or (selected_point == 24 and roll[0] == m[1]+1)), None)
+                                    step_move = next((m for m in step_moves if m[0] == selected_point and \
+                                            ((m[1] - selected_point == roll[0]) or \
+                                                (selected_point == 24 and roll[0] == m[1]+1) or \
+                                                    (26 in highlight[selected_point] and m[1] == 26))), None)
                                 else:
-                                    step_move = next((m for m in step_moves if m[0] == selected_point and (m[1] - selected_point == -roll[0]) or (selected_point == 25 and roll[0] == 24-m[1])), None)
-                                print(step_move)
+                                    step_move = next((m for m in step_moves if m[0] == selected_point and \
+                                            ((m[1] - selected_point == -roll[0]) or \
+                                                (selected_point == 24 and roll[0] == m[1]+1) or \
+                                                    (27 in highlight[selected_point] and m[1] == 27))), None)
+                                
                                 if step_move:
                                     move.append(step_move)
                                     current_board = update_board(current_board, move[-1])
@@ -140,9 +147,9 @@ def human_play(moves, boards, start_board, roll, colour):
                                     
                         elif event.key == pygame.K_RIGHT and right_used < right_max:
                             if colour == -1:
-                                step_move = next((m for m in step_moves if m[0] == selected_point and (m[1] - selected_point == roll[1]) or (selected_point == 24 and roll[1] == m[1]+1)), None)
+                                step_move = next((m for m in step_moves if m[0] == selected_point and ((m[1] - selected_point == roll[1]) or ((selected_point == 24 and roll[1] == m[1]+1) or (26 in highlight[selected_point] and m[1] == 26)))), None)
                             else:
-                                step_move = next((m for m in step_moves if m[0] == selected_point and (m[1] - selected_point == -roll[1]) or (selected_point == 25 and roll[1] == 24-m[1])), None)
+                                step_move = next((m for m in step_moves if m[0] == selected_point and ((m[1] - selected_point == -roll[1]) or ((selected_point == 24 and roll[1] == m[1]+1) or (27 in highlight[selected_point] and m[1] == 27)))), None)
                             if step_move:
                                 move.append(step_move)
                                 current_board = update_board(current_board, move[-1])
@@ -168,7 +175,8 @@ def human_play(moves, boards, start_board, roll, colour):
                 if move_made > 0:
                     step_moves = []
                     for i in range(len(roll)):
-                        step_moves += get_legal_move(colour, current_board, roll[i])
+                        if not ((i == 0 and left_max <= left_used) or (i == 1 and right_max <= right_used)):
+                            step_moves += get_legal_move(colour, current_board, roll[i])
 
                     highlight = {}
                     for m in step_moves:
@@ -294,7 +302,6 @@ def backgammon(score_to=1,whitestrat="GREEDY", weights1 = None, blackstrat="RAND
     #### MAIN LOOP ####
     while max([w_score, b_score]) < score_to:
         board = make_board()
-        # board = [2]+[1]*13 + [-2]+ [-1]*13
         time_step = 1
         #### GAME LOOP ####
         while not game_over(board) and not is_error(board):
@@ -671,7 +678,7 @@ if __name__ == "__main__":
     else:
         score_to = 5
         player1strat = "USER"
-        playerminus1strat = "USER"
+        playerminus1strat = "GREEDY"
         weights1, weights2 = None, None
         if player1strat == "GENETIC":
             weights1 = genetic(50,100)

@@ -1,6 +1,6 @@
 import pygame
 from constants import *
-from turn import roll_dice, update_board
+from turn import roll_dice, get_home_info, game_over
 from time import sleep
 class Background: #creates a background
     def __init__(self,backgroundImage):
@@ -217,7 +217,10 @@ def highlight_top_points(points):
             if point < 18: offset -= 56
             window.blit(pygame.image.load("Images/dest_light_upper.png"), (offset + (point-12)*56, 51))
 
-    
+def highlight_home(colour):
+    y_offset = colour*50
+    window.blit(pygame.image.load("Images/house_lights_green.png"), (838, 430+y_offset))
+  
 def update_screen(background, white_score, black_score, board, w_score, b_score, include_bground=False):
     if include_bground:
         background.render()
@@ -226,3 +229,39 @@ def update_screen(background, white_score, black_score, board, w_score, b_score,
     black_score.draw(window)
     black_score.addText(window, f'{b_score}/5',white)
     display_board(board)
+    
+    
+def bear_off(point, board, die, colour):
+    print(point)
+    home_cords, home = get_home_info(colour, board)
+    if colour == 1 and sum(home) == 15:
+        if point == die:
+            return True
+        elif not game_over(board):
+            furthest_back = 5
+            for i in home_cords[::-1]:
+                if i > 0:
+                    furthest_back = i
+                    break
+            if die > furthest_back:
+                return True
+    elif colour == -1 and sum(home) == -15:
+        if 24 - point == die:
+            return True
+        elif not game_over(board):
+            furthest_back = 23
+            found = False
+            i = 18
+            
+            # Check for furthest back piece
+            while i < 24 and not found:
+                if board[i] < 0:
+                    furthest_back = i
+                    found=True
+                i +=1
+                
+            # If the die roll is greater than furthest back occupied point
+            # Then a checker on that point can be beard off
+            if die > 24-furthest_back:
+                return True
+    return False
