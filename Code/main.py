@@ -77,14 +77,19 @@ def human_play(moves, boards, start_board, roll, colour):
                         click = pygame.mouse.get_pos()
                         for start_checker in start_checkers:
                             if start_checker.rect.collidepoint(click):
-                                x = start_checker.rect.center[0]
-                                point_num = (x+141 - SCREEN_WIDTH) // 56
-                                if point_num < 0:
-                                    point_num = (x+197 - SCREEN_WIDTH) // 56
+                                x, y = start_checker.rect.center
+                                if x >= 458:
+                                    point_num = (SCREEN_WIDTH - 85 - x) // 56
+                                elif x <= 417:
+                                    point_num = (SCREEN_WIDTH - 141 - x) // 56
+                                if y <= 346:
+                                    point_num = 23 - point_num
+                                print(point_num)
                                 points = highlight[point_num]
-                                highlight_points(points)
+                                highlight_bottom_points(points)
+                                highlight_top_points(points)
                 pygame.display.update()
-                    
+                    # 346 436
             
     else:
         print("No valid moves available")
@@ -186,6 +191,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", weights1 = None, blackstrat="RAND
     #### MAIN LOOP ####
     while max([w_score, b_score]) < score_to:
         board = make_board()
+        # board = [2]+[1]*13 + [-2]+ [-1]*13
         time_step = 1
         #### GAME LOOP ####
         while not game_over(board) and not is_error(board):

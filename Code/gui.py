@@ -192,10 +192,22 @@ def highlight_checker(checker, point, img_path, user=False):
     if user:
         return obj
 
-def highlight_points(points):
+def highlight_bottom_points(points):
     for point in points:
-        window.blit(pygame.image.load("Images/dest_light_bottom.png"), (88+point*56, SCREEN_HEIGHT-93))
- 
+        if point < 12:
+            offset = 142
+            if point > 5: offset += 56
+            window.blit(pygame.image.load("Images/dest_light_bottom.png"), (SCREEN_WIDTH-(offset+point*56), SCREEN_HEIGHT-324))
+    
+def highlight_top_points(points):
+    for point in points:
+        print(point)
+        if point > 11 and point < 24:
+            offset = 142
+            if point < 18: offset += 56
+            window.blit(pygame.image.load("Images/dest_light_upper.png"), (offset + (point-12)*56, 51))
+
+    
 def update_screen(background, white_score, black_score, board, w_score, b_score, include_bground=False):
     if include_bground:
         background.render()
