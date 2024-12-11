@@ -1,6 +1,6 @@
 import pygame
 from constants import *
-from turn import roll_dice, update_board
+from turn import roll_dice, get_home_info, game_over
 from time import sleep
 class Background: #creates a background
     def __init__(self,backgroundImage):
@@ -49,18 +49,18 @@ class Shape:
         window.blit(text_surface, text_rect)
         
 
-def get_top_row_checker_pos(point, checker):
+def get_top_row_checker_pos(point, checker, x_bias=0, y_bias=0):
     # Returns checker's coordinates for display
-    offset_x = 88
-    offset_y = 51
+    offset_x = 88 + x_bias
+    offset_y = 51 + y_bias
     if point > 5:
         offset_x += 56
     return (offset_x + (point*56), offset_y+(checker*56))
 
-def get_bottom_row_checker_pos(point, checker):
+def get_bottom_row_checker_pos(point, checker, x_bias=0, y_bias=0):
     # Returns checker's coordinates for display
-    offset_x = SCREEN_WIDTH - 141
-    offset_y = 93
+    offset_x = x_bias + SCREEN_WIDTH - 141
+    offset_y = 93 + y_bias
     if point > 5:
         offset_x -= 56
     return (offset_x - (point*56), SCREEN_HEIGHT-(offset_y+(checker*56)))
@@ -109,6 +109,17 @@ def display_board(board):
             window.blit(pygame.image.load("Images/white_pawn_outside.png"), get_white_home_pos(checker))
     
     pygame.display.update()
+    
+    
+def display_dice(colour, die1, die2):
+    if colour == 1:
+        mult = 3
+        dice_list = white_dice
+    else:
+        mult = 1
+        dice_list = black_dice 
+    window.blit(dice_list[die1-1], (mult*SCREEN_WIDTH//4-28, SCREEN_HEIGHT//2))
+    window.blit(dice_list[die2-1], (mult*SCREEN_WIDTH//4+28, SCREEN_HEIGHT//2))
     
     
 def display_dice_roll(colour):
@@ -161,25 +172,55 @@ def parse_move(board, move):
 
 # print(fix_same_checker([23, 21, 23, 23], [3, 3, 3, 3], [19, 20, 21, 18], [3,3,3,3])) 
 
-
-        
-def highlight_checker(checker, point, img_path):
+    
+def highlight_checker(checker, point, img_path, user=False):
     if checker < 0: checker = 0
     # Highlights checker to show move 
     if point < 12:
-        window.blit(pygame.image.load(img_path), get_bottom_row_checker_pos(point, checker))
+        if user:
+            x, y = get_bottom_row_checker_pos(point, checker, 28, -28)
+            obj = Shape(img_path, x, y, 56, 56)
+            obj.draw(window)
+        else:
+            window.blit(pygame.image.load(img_path), get_bottom_row_checker_pos(point, checker))
         
     elif point < 24:
-        window.blit(pygame.image.load(img_path), get_top_row_checker_pos(point-12, checker))
+        if user:
+            x, y = get_top_row_checker_pos(point-12, checker, 28, 28)
+            obj = Shape(img_path, x, y, 56, 56)
+            obj.draw(window)
+        else:
+            window.blit(pygame.image.load(img_path), get_top_row_checker_pos(point-12, checker))
         
     elif point < 26:
         if "white" in img_path:
-            white_bar_checker_highlight = Shape(img_path, SCREEN_WIDTH//2 + 3,SCREEN_HEIGHT//2 + 40, 56, 56)
-            white_bar_checker_highlight.draw(window)
+            obj = Shape(img_path, SCREEN_WIDTH//2 + 3,SCREEN_HEIGHT//2 + 40, 56, 56)
+            obj.draw(window)
         else:
-            black_bar_checker_highlight = Shape(img_path, SCREEN_WIDTH//2 + 3,SCREEN_HEIGHT//2 - 40, 56, 56)
-            black_bar_checker_highlight.draw(window)
-        
+            obj = Shape(img_path, SCREEN_WIDTH//2 + 3,SCREEN_HEIGHT//2 - 40, 56, 56)
+            obj.draw(window)
+    
+    if user:
+        return obj
+
+def highlight_bottom_points(points):
+    for point in points:
+        if point < 12:
+            offset = 142
+            if point > 5: offset += 56
+            window.blit(pygame.image.load("Images/dest_light_bottom.png"), (SCREEN_WIDTH-(offset+point*56), SCREEN_HEIGHT-324))
+    
+def highlight_top_points(points):
+    for point in points:
+        if point > 11 and point < 24:
+            offset = 142
+            if point < 18: offset -= 56
+            window.blit(pygame.image.load("Images/dest_light_upper.png"), (offset + (point-12)*56, 51))
+
+def highlight_home(colour):
+    y_offset = colour*50
+    window.blit(pygame.image.load("Images/house_lights_green.png"), (838, 430+y_offset))
+  
 def update_screen(background, white_score, black_score, board, w_score, b_score, include_bground=False):
     if include_bground:
         background.render()
@@ -188,3 +229,39 @@ def update_screen(background, white_score, black_score, board, w_score, b_score,
     black_score.draw(window)
     black_score.addText(window, f'{b_score}/5',white)
     display_board(board)
+    
+    
+def bear_off(point, board, die, colour):
+    print(point)
+    home_cords, home = get_home_info(colour, board)
+    if colour == 1 and sum(home) == 15:
+        if point == die:
+            return True
+        elif not game_over(board):
+            furthest_back = 5
+            for i in home_cords[::-1]:
+                if i > 0:
+                    furthest_back = i
+                    break
+            if die > furthest_back:
+                return True
+    elif colour == -1 and sum(home) == -15:
+        if 24 - point == die:
+            return True
+        elif not game_over(board):
+            furthest_back = 23
+            found = False
+            i = 18
+            
+            # Check for furthest back piece
+            while i < 24 and not found:
+                if board[i] < 0:
+                    furthest_back = i
+                    found=True
+                i +=1
+                
+            # If the die roll is greater than furthest back occupied point
+            # Then a checker on that point can be beard off
+            if die > 24-furthest_back:
+                return True
+    return False

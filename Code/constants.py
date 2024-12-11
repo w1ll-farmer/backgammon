@@ -17,7 +17,6 @@ if GUI_FLAG:
     pygame.init()
     window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     framesPerSec = pygame.time.Clock()
-    
     pygame.display.set_caption("Backgammon")
     window.fill(black)
     
