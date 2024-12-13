@@ -22,6 +22,7 @@ if GUI_FLAG:
     white_score = Shape('Images/White-score.png', SCREEN_WIDTH-36, SCREEN_HEIGHT//2 + 40)
     black_score = Shape('Images/Black-score.png', SCREEN_WIDTH-35, SCREEN_HEIGHT//2 - 40)
     w_score, b_score = 0,0
+    
 def start_turn(player, board):
     """Rolls the dice and finds all possible moves.
 
@@ -39,6 +40,10 @@ def start_turn(player, board):
         print(f"Player {player} rolled {roll}")
     moves, boards = get_valid_moves(player, board, roll)
     return moves, boards, roll
+
+##########################
+## START OF HUMAN PLAY ##
+#########################
 
 def human_play(moves, boards, start_board, roll, colour):
     """Lets the human player make a move
@@ -136,7 +141,7 @@ def human_play(moves, boards, start_board, roll, colour):
                                 else:
                                     step_move = next((m for m in step_moves if m[0] == selected_point and \
                                             ((m[1] - selected_point == -roll[0]) or \
-                                                (selected_point == 24 and roll[0] == m[1]+1) or \
+                                                (selected_point == 25 and roll[0] == 24 - m[1]) or \
                                                     (27 in highlight[selected_point] and m[1] == 27))), None)
                                 
                                 if step_move:
@@ -149,7 +154,7 @@ def human_play(moves, boards, start_board, roll, colour):
                             if colour == -1:
                                 step_move = next((m for m in step_moves if m[0] == selected_point and ((m[1] - selected_point == roll[1]) or ((selected_point == 24 and roll[1] == m[1]+1) or (26 in highlight[selected_point] and m[1] == 26)))), None)
                             else:
-                                step_move = next((m for m in step_moves if m[0] == selected_point and ((m[1] - selected_point == -roll[1]) or ((selected_point == 24 and roll[1] == m[1]+1) or (27 in highlight[selected_point] and m[1] == 27)))), None)
+                                step_move = next((m for m in step_moves if m[0] == selected_point and ((m[1] - selected_point == -roll[1]) or ((selected_point == 25 and roll[1] == 24-m[1]) or (27 in highlight[selected_point] and m[1] == 27)))), None)
                             if step_move:
                                 move.append(step_move)
                                 current_board = update_board(current_board, move[-1])
@@ -177,7 +182,8 @@ def human_play(moves, boards, start_board, roll, colour):
                     for i in range(len(roll)):
                         if not ((i == 0 and left_max <= left_used) or (i == 1 and right_max <= right_used)):
                             step_moves += get_legal_move(colour, current_board, roll[i])
-
+                    if len(step_moves) == 0:
+                        return move, current_board
                     highlight = {}
                     for m in step_moves:
                         if m[0] in highlight:
@@ -203,10 +209,15 @@ def human_play(moves, boards, start_board, roll, colour):
             pygame.display.update()
             board = current_board          
     else:
-        print("No valid moves available")
+        if GUI_FLAG:
+            update_screen(background, white_score, black_score, board, w_score, b_score, True)
+        if commentary:
+            print("No valid moves available")
         
     return move, board
-
+########################
+## END OF HUMAN PLAY ##
+########################
 
 def randobot_play(roll, moves, boards):
     """Random agent makes a move
