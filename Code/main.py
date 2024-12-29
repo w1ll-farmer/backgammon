@@ -318,8 +318,10 @@ def backgammon(score_to=1,whitestrat="GREEDY", weights1 = None, blackstrat="RAND
     game = 1
     #### MAIN LOOP ####
     while max([w_score, b_score]) < score_to:
-        # board = make_board()
-        board = [0,0,0,5,5,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-5,-5,-5,0,0,0,0]
+        board = make_board()
+        # board = [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-5,-5,-5,0,0,0,13]
+        if GUI_FLAG:
+            update_screen(background, white_score, black_score, board, w_score, b_score, True)
         time_step = 1
         #### GAME LOOP ####
         while not game_over(board) and not is_error(board):
@@ -662,7 +664,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", weights1 = None, blackstrat="RAND
                 player2 = -1
                 player2strat = blackstrat
                 w_score = p1vector[0] + 2*p1vector[1] + 3*p1vector[2]
-                
+            update_screen(background, white_score, black_score, board, w_score, b_score, True)    
         #### CHECKS FOR GAME OVER AND WINNING POINTS ####
         
     return p1vector, w_score, pminus1vector, b_score
