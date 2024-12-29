@@ -202,13 +202,13 @@ def get_legal_move(colour, board, die):
                     if die > 24-furthest_back:
                         valid_moves.append((furthest_back, 26))
                         
-            else:
-                possible_starts = [i for i in range(0,24) if board[i] < 0]
-                # print(possible_starts)
-                for p in possible_starts:
-                    if p+die < 24:
-                        if board[p+die] < 2:
-                            valid_moves.append((p, p+die))
+            # else:
+            possible_starts = [i for i in range(0,24) if board[i] < 0]
+            # print(possible_starts)
+            for p in possible_starts:
+                if p+die < 24:
+                    if board[p+die] < 2:
+                        valid_moves.append((p, p+die))
                         
         else: # White player's move
             if all_checkers_home(colour, board):
@@ -229,13 +229,13 @@ def get_legal_move(colour, board, die):
                     if die > furthest_back:
                         valid_moves.append((furthest_back, 27))
                         
-            else:
-                possible_starts = [i for i in range(0,24) if board[i] > 0]
-                # print(possible_starts)
-                for p in possible_starts:
-                    if p - die >= 0:
-                        if board[p-die] > -2:
-                            valid_moves.append((p, p-die))
+            # else:
+            possible_starts = [i for i in range(0,24) if board[i] > 0]
+            # print(possible_starts)
+            for p in possible_starts:
+                if p - die >= 0:
+                    if board[p-die] > -2:
+                        valid_moves.append((p, p-die))
     return valid_moves
 
 def get_valid_moves(colour, board, roll):
@@ -323,9 +323,3 @@ def is_error(board):
         return False
 
     
-    
-    
-    
-    
-
-
