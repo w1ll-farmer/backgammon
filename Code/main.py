@@ -57,6 +57,7 @@ def human_play(moves, boards, start_board, roll, colour):
     """
     if len(moves) > 0:
         if not GUI_FLAG:
+            #### IF NOT USING GUI ####
             moves_stringified = [str(move1) for move1 in moves]
             move = input("Enter move.")
             # Loop until valid move is selected
@@ -67,6 +68,7 @@ def human_play(moves, boards, start_board, roll, colour):
             board = boards[move_index]
             move = moves[move_index]
         else:
+            #### START OF HUMAN GUI ####
             highlight = {}
             current_board = start_board.copy()
             step_moves = []
@@ -103,13 +105,15 @@ def human_play(moves, boards, start_board, roll, colour):
             pygame.display.update()
             move_made = 0
             selected_point = None
-
+            
+            #### START OF SELECTION LOOP ####
+            
             while move_made < 2 + (roll[0] == roll[1])*2 and len(step_moves) > 0:
                 pygame.display.update()
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         pygame.quit()
-
+                    #### SELECTING STARTING PIECES
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         click = pygame.mouse.get_pos()
                         for start_checker in start_checkers:
@@ -130,6 +134,8 @@ def human_play(moves, boards, start_board, roll, colour):
                                     highlight_home(colour)
                                 selected_point = point_num
 
+                    #### CALCULATING MOVES ####
+                        
                     if event.type == pygame.KEYDOWN and selected_point is not None:
                         if event.key == pygame.K_LEFT and left_used < left_max:
                             if selected_point in highlight:
@@ -151,22 +157,26 @@ def human_play(moves, boards, start_board, roll, colour):
                                     left_used +=1
                                     
                         elif event.key == pygame.K_RIGHT and right_used < right_max:
-                            if colour == -1:
-                                step_move = next((m for m in step_moves if m[0] == selected_point and \
-                                    ((m[1] - selected_point == roll[1]) or \
-                                        (selected_point == 24 and roll[1] == m[1]+1) or \
-                                            (26 in highlight[selected_point] and m[1] == 26))), None)
-                            else:
-                                step_move = next((m for m in step_moves if m[0] == selected_point and \
-                                    ((m[1] - selected_point == -roll[1]) or \
-                                        (selected_point == 25 and roll[1] == 24-m[1]) or \
-                                            (27 in highlight[selected_point] and m[1] == 27))), None)
-                            if step_move:
-                                move.append(step_move)
-                                current_board = update_board(current_board, move[-1])
-                                move_made += 1
-                                right_used += 1
-                            
+                            if selected_point in highlight:
+                                if colour == -1:
+                                    step_move = next((m for m in step_moves if m[0] == selected_point and \
+                                        ((m[1] - selected_point == roll[1]) or \
+                                            (selected_point == 24 and roll[1] == m[1]+1) or \
+                                                (26 in highlight[selected_point] and m[1] == 26))), None)
+                                else:
+                                    step_move = next((m for m in step_moves if m[0] == selected_point and \
+                                        ((m[1] - selected_point == -roll[1] and selected_point != 25) or \
+                                            (selected_point == 25 and roll[1] == 24 - m[1]) or \
+                                                (27 in highlight[selected_point] and m[1] == 27))), None)
+                                if step_move:
+                                    print(selected_point, roll[1], 24-m[1])
+                                    move.append(step_move)
+                                    current_board = update_board(current_board, move[-1])
+                                    move_made += 1
+                                    right_used += 1
+
+                    #### END OF MOVE CALCULATIONS ####
+                    
                     if event.type == pygame.MOUSEBUTTONUP and move_made < 2 + (roll[0] == roll[1])*2:
                         # Clear highlights
                         window.fill(black)
@@ -181,7 +191,8 @@ def human_play(moves, boards, start_board, roll, colour):
                             else:
                                 start_checkers.append(highlight_checker(abs(current_board[start]) - 1, start, "Images/black_highlight.png", True))
                         pygame.display.update()
-
+                        
+                #### END OF MOVE SELECTION ####
                 # Recalculate step moves and highlight dictionary after a move is made
                 if move_made > 0:
                     step_moves = []
@@ -219,7 +230,7 @@ def human_play(moves, boards, start_board, roll, colour):
             update_screen(background, white_score, black_score, board, w_score, b_score, True)
         if commentary:
             print("No valid moves available")
-        
+    print(move, roll[0], roll[1])
     return move, board
 ########################
 ## END OF HUMAN PLAY ##
@@ -319,7 +330,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", weights1 = None, blackstrat="RAND
     #### MAIN LOOP ####
     while max([w_score, b_score]) < score_to:
         board = make_board()
-        # board = [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-5,-5,-5,0,0,0,13]
+        # board = [1,-5,-5,-5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,10]
         if GUI_FLAG:
             update_screen(background, white_score, black_score, board, w_score, b_score, True)
         time_step = 1
@@ -417,6 +428,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", weights1 = None, blackstrat="RAND
                 if len(moves1) > 0:
                     if player1strat == "USER":
                         move, board = human_play(moves1, boards1, board, roll, player1)
+                        print(move, roll)
                     elif player1strat == "RANDOM":
                         board, move = randobot_play(roll, moves1, boards1)
                     elif player1strat == "GREEDY":
@@ -566,6 +578,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", weights1 = None, blackstrat="RAND
                 if len(moves2) > 0:
                     if player2strat == "USER":
                         move, board = human_play(moves2, boards2, board, roll, player2)
+                        print(move, roll)
                     elif player2strat == "RANDOM":
                         board, move = randobot_play(roll, moves2, boards2)
                     elif player2strat == "GREEDY":
