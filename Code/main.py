@@ -141,12 +141,12 @@ def human_play(moves, boards, start_board, roll, colour):
                             if selected_point in highlight:
                                 if colour == -1:
                                     step_move = next((m for m in step_moves if m[0] == selected_point and \
-                                            ((m[1] - selected_point == roll[0]) or \
+                                            ((m[1] - selected_point == roll[0] and selected_point != 24) or \
                                                 (selected_point == 24 and roll[0] == m[1]+1) or \
                                                     (26 in highlight[selected_point] and m[1] == 26))), None)
                                 else:
                                     step_move = next((m for m in step_moves if m[0] == selected_point and \
-                                            ((m[1] - selected_point == -roll[0]) or \
+                                            ((m[1] - selected_point == -roll[0] and selected_point != 25) or \
                                                 (selected_point == 25 and roll[0] == 24 - m[1]) or \
                                                     (27 in highlight[selected_point] and m[1] == 27))), None)
                                 
@@ -160,7 +160,7 @@ def human_play(moves, boards, start_board, roll, colour):
                             if selected_point in highlight:
                                 if colour == -1:
                                     step_move = next((m for m in step_moves if m[0] == selected_point and \
-                                        ((m[1] - selected_point == roll[1]) or \
+                                        ((m[1] - selected_point == roll[1] and selected_point != 24) or \
                                             (selected_point == 24 and roll[1] == m[1]+1) or \
                                                 (26 in highlight[selected_point] and m[1] == 26))), None)
                                 else:
