@@ -169,7 +169,6 @@ def human_play(moves, boards, start_board, roll, colour):
                                             (selected_point == 25 and roll[1] == 24 - m[1]) or \
                                                 (27 in highlight[selected_point] and m[1] == 27))), None)
                                 if step_move:
-                                    print(selected_point, roll[1], 24-m[1])
                                     move.append(step_move)
                                     current_board = update_board(current_board, move[-1])
                                     move_made += 1
@@ -230,7 +229,6 @@ def human_play(moves, boards, start_board, roll, colour):
             update_screen(background, white_score, black_score, board, w_score, b_score, True)
         if commentary:
             print("No valid moves available")
-    print(move, roll[0], roll[1])
     return move, board
 ########################
 ## END OF HUMAN PLAY ##
@@ -428,7 +426,6 @@ def backgammon(score_to=1,whitestrat="GREEDY", weights1 = None, blackstrat="RAND
                 if len(moves1) > 0:
                     if player1strat == "USER":
                         move, board = human_play(moves1, boards1, board, roll, player1)
-                        print(move, roll)
                     elif player1strat == "RANDOM":
                         board, move = randobot_play(roll, moves1, boards1)
                     elif player1strat == "GREEDY":
@@ -578,7 +575,6 @@ def backgammon(score_to=1,whitestrat="GREEDY", weights1 = None, blackstrat="RAND
                 if len(moves2) > 0:
                     if player2strat == "USER":
                         move, board = human_play(moves2, boards2, board, roll, player2)
-                        print(move, roll)
                     elif player2strat == "RANDOM":
                         board, move = randobot_play(roll, moves2, boards2)
                     elif player2strat == "GREEDY":
