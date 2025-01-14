@@ -1,0 +1,7 @@
+BUGS
+1.1 stacks can cover dice
+1.2 stacks can get too big and make game think on opposite side
+2.1 'Ghost highlighted pieces' that are still there after move
+
+SOLUTIONS
+1 - shift stacks, replace top piece with number 

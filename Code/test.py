@@ -3,8 +3,11 @@ from turn import *
 from random_agent import *
 from time import sleep
 from greedy_agent import *
-from main import start_turn
+from main import *
+from constants import *
 import time
+import pygame
+from pygame.locals import *
 def test_double_random():
     moves2, boards2 = get_valid_moves(-1, board, [1,1])
     move = []
@@ -28,14 +31,17 @@ def test_double_random():
 """
 def greedy_play(moves, boards, current_board, player):
     scores = [evaluate(moves[i], current_board, boards[i], player) for i in range(len(moves))]
-    sorted_pairs = sorted(zip(scores, boards), key=lambda x: x[0], reverse=True)
-    sorted_scores, sorted_boards = zip(*sorted_pairs)
-    return list(sorted_boards)[0]   
+    sorted_triplets = sorted(zip(scores, boards, moves), key=lambda x: x[0], reverse=True)
+    sorted_scores, sorted_boards, sorted_moves = zip(*sorted_triplets)
+    if commentary:
+        print(f"Player {player} played {sorted_moves[0][0]}, {sorted_moves[0][1]}")
+    return [sorted_moves[0]],list(sorted_boards)[0]
 
 board = make_board()
 print_board(board)
 moves, boards, roll = start_turn(1, board)
-print_board(greedy_play(moves, boards, board, 1))
+# print(get_valid_moves(1, board, [3,4]))
+print(greedy_play(moves, boards, board, 1)[0])
 # import pygame
 # import sys
 

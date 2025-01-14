@@ -63,7 +63,24 @@ def update_board(board, move):
             board_copy[25] += 1
         else:
             board_copy[end] -= 1
+    
     return board_copy
+
+def all_past(board):
+    if board[24] < 0 or board[25] > 0:
+        return False
+    furthest_back_white = 0
+    furthest_back_black = 23
+    while board[furthest_back_white] < 1:
+        furthest_back_white+=1
+    while board[furthest_back_black] > -1:
+        furthest_back_black -=1
+        
+    if furthest_back_black < furthest_back_white:
+        return True
+    else:
+        return False
+
 
 def get_home_info(player, board):
     if player == 1:
@@ -185,18 +202,18 @@ def get_legal_move(colour, board, die):
                     if die > 24-furthest_back:
                         valid_moves.append((furthest_back, 26))
                         
-            else:
-                possible_starts = [i for i in range(0,24) if board[i] < 0]
-                # print(possible_starts)
-                for p in possible_starts:
-                    if p+die < 24:
-                        if board[p+die] < 2:
-                            valid_moves.append((p, p+die))
+            # else:
+            possible_starts = [i for i in range(0,24) if board[i] < 0]
+            # print(possible_starts)
+            for p in possible_starts:
+                if p+die < 24:
+                    if board[p+die] < 2:
+                        valid_moves.append((p, p+die))
                         
         else: # White player's move
             if all_checkers_home(colour, board):
-                if board[die] > 0:
-                    valid_moves.append((die, 27))
+                if board[die-1] > 0:
+                    valid_moves.append((die-1, 27))
                     
                 elif not game_over(board):
                     furthest_back = 0
@@ -212,13 +229,13 @@ def get_legal_move(colour, board, die):
                     if die > furthest_back:
                         valid_moves.append((furthest_back, 27))
                         
-            else:
-                possible_starts = [i for i in range(0,24) if board[i] > 0]
-                # print(possible_starts)
-                for p in possible_starts:
-                    if p - die >= 0:
-                        if board[p-die] > -2:
-                            valid_moves.append((p, p-die))
+            # else:
+            possible_starts = [i for i in range(0,24) if board[i] > 0]
+            # print(possible_starts)
+            for p in possible_starts:
+                if p - die >= 0:
+                    if board[p-die] > -2:
+                        valid_moves.append((p, p-die))
     return valid_moves
 
 def get_valid_moves(colour, board, roll):
@@ -306,9 +323,3 @@ def is_error(board):
         return False
 
     
-    
-    
-    
-    
-
-
