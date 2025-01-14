@@ -219,6 +219,7 @@ def human_play(moves, boards, start_board, roll, colour):
                             highlight_checker(abs(current_board[start]) - 1, start, "Images/black_highlight.png", True)
                             for start in highlight.keys()
                         ]
+                    
                     pygame.display.update()
 
             update_screen(background, white_score, black_score, current_board, w_score, b_score, True)
