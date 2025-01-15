@@ -62,7 +62,13 @@ def eevaluate(move, board_before, board_after, player):
             score -= 1
     return score
 
-def evaluate(board_before, board_after, player):
+def evaluate(board_before, board_after, player,
+             walled_off=17, walled_off_hit=5, borne_off_add=1,
+             bear_off_points=13, hit_off_points=11, hit_off_mult=0.5,
+             exposed_hit=7, wall_blot_home_points=9, wall_mult=0.2,
+             blot_mult=0.3, home_mult=0.1, blot_points=9,
+             wall_points=8, home_points=7, blot_diff_mult=1,
+             wall_diff_mult=0.8, wall_maintain=0.09, blot_maintain=0.08):
     """Gives a score to a move
 
     Args:
@@ -72,7 +78,7 @@ def evaluate(board_before, board_after, player):
         player (int): Whether player is controlling white or black
 
     Returns:
-        int: The score associated to teh move
+        int: The score associated to the move
     """
     # Home information
     home_after = get_home_info(-player, board_after)[1]
@@ -91,11 +97,11 @@ def evaluate(board_before, board_after, player):
     
     # If home board is completely walled off
     if len([point for point in home_after if point*player > 1]) == 6:
-        points += 17
+        points += walled_off
         # Count how many opponent blots were hit in home
         num_home_opp_blots = len([i for i in home_before if player*i<0])
         if num_home_opp_blots > 0:
-            points += num_home_opp_blots + 5
+            points += num_home_opp_blots + walled_off_hit
             
         # Check if piece(s) borne off
         if board_before[26] - board_after[26] > 0 or board_after[27] - board_before[27] > 0:
@@ -103,16 +109,16 @@ def evaluate(board_before, board_after, player):
         
         # Count num piece borne off and add to points
             if player == 1 and board_after[24] < 0:
-                borne_off += 1
+                borne_off += borne_off_add
             elif player == -1 and board_after[25] > 0:
-                borne_off += 1
+                borne_off += borne_off_add
         points += borne_off
     
     else:
         # Bearing off pieces
         if board_after[26] < board_before[26] or board_after[27] > board_before[27]:
             
-            points += 13
+            points += bear_off_points
             if not all_past(board_after):
                 points -= sum([i for i in home_after if i == player])
                 
@@ -125,10 +131,10 @@ def evaluate(board_before, board_after, player):
             # If piece(s) hit off
             if board_after[24] < board_before[24] or board_after[25] > board_before[25]:
                 if player_blots_before >= player_blots_after:
-                    points += 11 + 0.5*(player_blots_before - player_blots_after)
+                    points += hit_off_points + hit_off_mult*(player_blots_before - player_blots_after)
                 else:
                     # Left a piece exposed
-                    points += 7
+                    points += exposed_hit
 
             elif not all_past(board_after):
                 # Check if number of home walls have changed
@@ -137,16 +143,16 @@ def evaluate(board_before, board_after, player):
                 home_wall_diff = home_walls_after - home_walls_before
                 
                 if wall_diff > 0 and blot_diff > 0 and home_wall_diff > 0:
-                    points += 9 + 0.2*wall_diff + 0.3*blot_diff + 0.1*home_wall_diff
-                # Increase in number of walls
-                elif wall_diff > 0:
-                    points += 8 + 0.2*wall_diff
+                    points += wall_blot_home_points + wall_mult*wall_diff + blot_mult*blot_diff + home_mult*home_wall_diff
                 # Decrease in number of blots
                 elif blot_diff > 0:
-                    points += 9 + 0.3*blot_diff
+                    points += blot_points + blot_mult*blot_diff
+                # Increase in number of walls
+                elif wall_diff > 0:
+                    points += wall_points + wall_mult*wall_diff
                 # Increase in number of walls in home
                 elif home_wall_diff > 0:
-                    points += 7 + 0.1*home_wall_diff
+                    points += home_points + home_mult*home_wall_diff
                     
                 # Made more blots
                 if blot_diff < 0:
@@ -161,17 +167,17 @@ def evaluate(board_before, board_after, player):
                 
             else:
                 if blot_diff < 0:
-                    points += blot_diff
+                    points += blot_diff_mult*blot_diff
                 if wall_diff < 0:
-                    points += 0.8*wall_diff
+                    points += wall_diff_mult*wall_diff
         
         if not all_past(board_after):
             # Maintain walls
             if wall_diff == 0:
-                points += 0.09
+                points += wall_maintain
             # No increase or decrease in blots
             if blot_diff == 0:
-                points += 0.08
+                points += blot_maintain
     return points
 
 
