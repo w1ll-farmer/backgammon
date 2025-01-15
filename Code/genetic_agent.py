@@ -50,15 +50,32 @@ def generate_initial_pop(pop_size):
     """
     P = []
     for _ in pop_size:
-        # weights for: bearing off, hitting, anchoring, exposing
-        bear = uniform(0,1)
-        hit = uniform(0, 1-bear)
-        anchor = uniform(0,1-(bear+hit))
-        expose = uniform(0, 1- (bear+hit+anchor))
-        other = 0
-        if bear + hit + anchor + expose < 1:
-            other = 1 -(bear + hit + anchor + expose)
-        P.append([bear, hit, anchor, expose, other])
+        # Evaluation scores for each contingency
+        walled_off = randint(0,27)
+        walled_off_hit = randint(0,27)
+        borne_off_add = randint(0,27)
+        bear_off_points = randint(0,27)
+        hit_off_points = randint(0,27)
+        hit_off_mult = uniform(0,1)
+        exposed_hit = randint(0,27)
+        wall_blot_home_points = randint(0,27)
+        wall_points = randint(0,27)
+        blot_points = randint(0,27)
+        home_points = randint(0,27)
+        wall_mult = uniform(0,1)
+        blot_mult = uniform(0,1)
+        home_mult = uniform(0,1)
+        blot_diff_mult = uniform(0,1)
+        wall_diff_mult = uniform(0,1)
+        wall_maintain = uniform(0,1)
+        blot_maintain = uniform(0,1)
+        P.append([walled_off, walled_off_hit, borne_off_add,
+             bear_off_points, hit_off_points, hit_off_mult,
+             exposed_hit, wall_blot_home_points, wall_points,
+             blot_points, home_points, wall_mult, blot_mult,
+             home_mult, blot_diff_mult, wall_diff_mult,
+             wall_maintain, blot_maintain])
+        
     return P
     
     
