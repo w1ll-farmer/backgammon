@@ -1,10 +1,32 @@
 from random import randint, uniform
-def get_parent(P):
-    # Get fitness values of population
-    # get threshold value between 0 and sum of total fitness
-    # when cumulative fitness is >= threshold, select individual
-    # return
-    pass
+from main import *
+from time import sleep
+
+def write(individual):
+    file = open("./Data/genetic-fit","a")
+    file.write(f"{individual}\n")
+    file.close()
+    
+    
+def get_parent(P, population_fitness):
+    """Using the wheel to find parent for breeding
+
+    Args:
+        P (list(tuple(float))): The population of different weights and scores
+        population_fitness (list(float)): The fitness of each i in population
+    Returns:
+        tuple(float): The selected parent
+    """
+    total_fitness = sum(population_fitness)
+    threshold = uniform(0,1)*total_fitness
+    cumulative_fitness = 0
+    i = 0
+    while cumulative_fitness < threshold:
+        cumulative_fitness += population_fitness[i]
+        i += 1
+    if i >= len(P):
+        return P[-1]
+    return P[i]
 
 def reproduce(mother, father):
     crossover_point = randint(0,len(mother)-1)
@@ -15,16 +37,19 @@ def reproduce(mother, father):
 
 
 def calc_fitness(individual):
-    
-    # fitness = backgammon(1, "GENETIC",individual, "GREEDY")[1]
-    pass
-    # return fitness
+    _, g_score, _, opp_score = backgammon(5, "GENETIC",individual, "GREEDY")
+    try:
+        fitness = g_score / opp_score
+    except ZeroDivisionError:
+        fitness = g_score + 1
+    return fitness
 
 
 def calc_overall_fitness(P):
-    # call calc_fitness for each individual in P
-    # return 
-    pass
+    population_fitness = []
+    for individual in P:
+        population_fitness.append(calc_fitness(individual))
+    return population_fitness
 
 
 def mutate(child):
@@ -46,10 +71,10 @@ def generate_initial_pop(pop_size):
         pop_size (int): The number of individuals in the population
 
     Returns:
-        list(list(float)): Individuals in population
+        list(tuple(float)): Individuals in population
     """
     P = []
-    for _ in pop_size:
+    for i in range(pop_size):
         # Evaluation scores for each contingency
         walled_off = randint(0,27)
         walled_off_hit = randint(0,27)
@@ -90,22 +115,33 @@ def genetic(max_iters, pop_size):
         list(int): Fittest individual's weights
     """
     P = generate_initial_pop(pop_size)
+    fittest_pop = []
     fittest = P[0]
     fittest_fitness = calc_fitness(fittest)
+    population_fitness = calc_overall_fitness(P)
     # iterate through max_it times
     for _ in range(max_iters):
         newP = []
         for i in range(pop_size):
-            X = get_parent(P)
-            Y = get_parent(P)
+            X = get_parent(P, population_fitness)
+            Y = get_parent(P, population_fitness)
             Z = reproduce(X, Y)
             if randint(1, 100) > 95:
                 Z = mutate(Z)
             Z_fitness = calc_fitness(Z)
+            print('z_fitness',Z_fitness)
+            if Z_fitness >= 5:
+                fittest_pop.append(Z)
+                write(str(Z))
             if Z_fitness > fittest_fitness:
                 fittest_fitness = Z_fitness
                 fittest = Z
+                print(fittest)
             newP.append(Z)
         P = newP
+        print('Fittest',fittest)
+    print(fittest_pop)
     return fittest
-    
+
+print(genetic(50, 100))
+

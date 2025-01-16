@@ -63,12 +63,31 @@ def eevaluate(move, board_before, board_after, player):
     return score
 
 def evaluate(board_before, board_after, player,
-             walled_off=17, walled_off_hit=5, borne_off_add=1,
-             bear_off_points=13, hit_off_points=11, hit_off_mult=0.5,
-             exposed_hit=7, wall_blot_home_points=9, wall_mult=0.2,
-             blot_mult=0.3, home_mult=0.1, blot_points=9,
-             wall_points=8, home_points=7, blot_diff_mult=1,
-             wall_diff_mult=0.8, wall_maintain=0.09, blot_maintain=0.08):
+             weights=None):
+    if weights is None:
+        walled_off=17
+        walled_off_hit=5
+        borne_off_add=1
+        bear_off_points=13
+        hit_off_points=11
+        hit_off_mult=0.5
+        exposed_hit=7
+        wall_blot_home_points=9
+        wall_mult=0.2
+        blot_mult=0.3
+        home_mult=0.1
+        blot_points=9
+        wall_points=8
+        home_points=7
+        blot_diff_mult=1
+        wall_diff_mult=0.8
+        wall_maintain=0.09
+        blot_maintain=0.08
+    else:
+        walled_off, walled_off_hit, borne_off_add, bear_off_points, hit_off_points, hit_off_mult, \
+        exposed_hit, wall_blot_home_points, wall_mult, blot_mult, home_mult, blot_points, wall_points, \
+        home_points, blot_diff_mult, wall_diff_mult, wall_maintain, blot_maintain = weights
+        # print("walled off points",walled_off, walled_off_hit)
     """Gives a score to a move
 
     Args:

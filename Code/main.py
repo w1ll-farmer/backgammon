@@ -8,7 +8,7 @@ from time import sleep
 from greedy_agent import *
 from constants import *
 from gui import *
-from genetic_agent import genetic
+# from genetic_agent import genetic
 from data import *
 
 global background
@@ -268,7 +268,7 @@ def randobot_play(roll, moves, boards):
     board = boards[moves.index(move)]
     return board, move
 
-def greedy_play(moves, boards, current_board, player, roll):
+def greedy_play(moves, boards, current_board, player, roll, weights=None):
     """Greedy agent makes a move
 
     Args:
@@ -281,29 +281,19 @@ def greedy_play(moves, boards, current_board, player, roll):
         [(int, int)]: The move made
         [int]: The board resulting from move made
     """
-    scores = [evaluate(current_board, boards[i], player) for i in range(len(moves))]
+    
+    scores = [evaluate(current_board, boards[i], player, weights) for i in range(len(moves))]
     sorted_triplets = sorted(zip(scores, boards, moves), key=lambda x: x[0], reverse=True)
     sorted_scores, sorted_boards, sorted_moves = zip(*sorted_triplets)
-    log(current_board, roll, sorted_moves[0], list(sorted_boards)[0])
+    
+    ## #log(current_board, roll, sorted_moves[0], list(sorted_boards)[0])
     return [sorted_moves[0]], list(sorted_boards)[0]
     
-    
-    
-def genetic_play(moves, boards, weights):
-    pass
-    # Weights are assigned to different types of moves
-    # Examine boards and compare which boards should be in which categories
-    # Use weights to determine which category is being used, roulette wheel
-    # For tiebreakers, check if moves fall into multiple categories. 
-    # Evaluate weights assigned to the other categories, perform roulette wheel again
-    # If absolute tiebreak, choose first move in remaining list
-
-
 
 ###############
 ## MAIN BODY ##
 ###############
-def backgammon(score_to=1,whitestrat="GREEDY", weights1 = None, blackstrat="RANDOM", weights2 = None):
+def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="RANDOM", blackweights = None):
     """Play the backgammon game
 
     Args:
@@ -378,8 +368,12 @@ def backgammon(score_to=1,whitestrat="GREEDY", weights1 = None, blackstrat="RAND
                 if black_roll > white_roll:
                     player1 = -1
                     player1strat = blackstrat
+                    # if player1strat == "GENETIC":
+                    weights1 = blackweights
                     player2 = 1
                     player2strat = whitestrat
+                    # if player1strat == "GENETIC":
+                    weights2 = whiteweights
                     if GUI_FLAG:
                         background.render()
                         window.blit(black_dice[black_roll-1], (SCREEN_WIDTH//4-28, SCREEN_HEIGHT//2))
@@ -388,8 +382,10 @@ def backgammon(score_to=1,whitestrat="GREEDY", weights1 = None, blackstrat="RAND
                     # White starts first
                     player1 = 1
                     player1strat = whitestrat
+                    weights1 = whiteweights
                     player2 = -1
                     player2strat = blackstrat
+                    weights2 = blackweights
                     if GUI_FLAG:
                         background.render()
                         window.blit(white_dice[black_roll-1], (3*SCREEN_WIDTH//4-28, SCREEN_HEIGHT//2))
@@ -433,7 +429,9 @@ def backgammon(score_to=1,whitestrat="GREEDY", weights1 = None, blackstrat="RAND
                         move = move.pop()
                         
                     elif player1strat == "GENETIC":
-                        pass
+                        # print('weights',weights1)
+                        move, board = greedy_play(moves1, boards1, board, player1, roll, weights1)
+                        move = move.pop()
                     if commentary:
                         print(f"Move Taken: {move}")
                     if GUI_FLAG:
@@ -484,7 +482,9 @@ def backgammon(score_to=1,whitestrat="GREEDY", weights1 = None, blackstrat="RAND
                         move, board = greedy_play(moves2, boards2, board, player2, roll)
                         move = move.pop()
                     elif player2strat == "GENETIC":
-                        pass
+                        # print('weights',weights2)
+                        move, board = greedy_play(moves2, boards2, board, player2, roll, weights2)
+                        move = move.pop()
                     if commentary:
                         print(f"Move Taken: {move}")
                 else:
@@ -527,7 +527,9 @@ def backgammon(score_to=1,whitestrat="GREEDY", weights1 = None, blackstrat="RAND
                         move, board = greedy_play(moves1, boards1, board, player1, roll)
                         move = move.pop()
                     elif player1strat == "GENETIC":
-                        pass
+                        # print('weights',weights1)
+                        move, board = greedy_play(moves1, boards1, board, player1, roll, weights1)
+                        move = move.pop()
                     if commentary:    
                         print(f"Move Taken: {move}")
                 else:
@@ -581,7 +583,9 @@ def backgammon(score_to=1,whitestrat="GREEDY", weights1 = None, blackstrat="RAND
                         move, board = greedy_play(moves2, boards2, board, player2, roll)
                         move = move.pop()
                     elif player2strat == "GENETIC":
-                        pass
+                        # print('weights',weights2)
+                        move, board = greedy_play(moves2, boards2, board, player2, roll, weights2)
+                        move = move.pop()
                         if commentary:
                             print(f"Move Taken: {move}")
                 else:
@@ -664,16 +668,21 @@ def backgammon(score_to=1,whitestrat="GREEDY", weights1 = None, blackstrat="RAND
             if board[26] == -15:
                 player1 = -1
                 player1strat = blackstrat
+                weights1 = blackweights
                 player2 = 1
                 player2strat = whitestrat
+                weights2 = whiteweights
                 b_score = pminus1vector[0] + 2*pminus1vector[1] + 3*pminus1vector[2]
             else:
                 player1 = 1
                 player1strat = whitestrat
+                weights1 = whiteweights
                 player2 = -1
                 player2strat = blackstrat
+                weights2 = blackweights
                 w_score = p1vector[0] + 2*p1vector[1] + 3*p1vector[2]
-            update_screen(background, white_score, black_score, board, w_score, b_score, True)    
+            if GUI_FLAG:
+                update_screen(background, white_score, black_score, board, w_score, b_score, True)    
         #### CHECKS FOR GAME OVER AND WINNING POINTS ####
         
     return p1vector, w_score, pminus1vector, b_score
@@ -706,10 +715,10 @@ if __name__ == "__main__":
         player1strat = "USER"
         playerminus1strat = "GREEDY"
         weights1, weights2 = None, None
-        if player1strat == "GENETIC":
-            weights1 = genetic(50,100)
-        if playerminus1strat == "GENETIC":
-            weights2 = genetic(50,100)
+        # if player1strat == "GENETIC":
+        #     weights1 = genetic(50,100)
+        # if playerminus1strat == "GENETIC":
+        #     weights2 = genetic(50,100)
         p1vector, w_score, pminus1vector, b_score = backgammon(score_to,player1strat,weights1,playerminus1strat,weights2)
         print(p1vector,pminus1vector)
             
