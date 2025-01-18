@@ -373,7 +373,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     player2 = 1
                     player2strat = whitestrat
                     # if player1strat == "GENETIC":
-                    weights2 = whiteweights
+                    weights2 = blackweights
                     if GUI_FLAG:
                         background.render()
                         window.blit(black_dice[black_roll-1], (SCREEN_WIDTH//4-28, SCREEN_HEIGHT//2))
@@ -711,14 +711,15 @@ if __name__ == "__main__":
         #     collect_times("GREEDY", "GREEDY", 5)
         
     else:
-        score_to = 5
-        player1strat = "USER"
-        playerminus1strat = "GREEDY"
+        score_to = 25
+        player1strat = "GENETIC"
+        playerminus1strat = "GENETIC"
         weights1, weights2 = None, None
-        # if player1strat == "GENETIC":
-        #     weights1 = genetic(50,100)
-        # if playerminus1strat == "GENETIC":
-        #     weights2 = genetic(50,100)
+        if player1strat == "GENETIC":
+            weights1 = [13.0, 7.0, 0.0, 24.0, 27.0, 0.25644035092934636, 12.0, 20.0, 0.0, 6.0, 18.0, 0.7032861735580836, 0.41456911378303163, 0.7709586565094387, 0.733940623690, 0.07041797566162267, 0.30177650964267355, 0.4938728271587123]
+        if playerminus1strat == "GENETIC":
+            
+            weights2 = [13.0, 7.0, 0.0, 24.0, 27.0, 0.25644035092934636, 12.0, 20.0, 0.0, 6.0, 18.0, 0.7032861735580836, 0.41456911378303163, 0.7709586565094387, 0.733940623690, 0.07041797566162267, 0.30177650964267355, 0.4938728271587123]
         p1vector, w_score, pminus1vector, b_score = backgammon(score_to,player1strat,weights1,playerminus1strat,weights2)
         print(p1vector,pminus1vector)
             

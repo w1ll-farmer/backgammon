@@ -129,7 +129,6 @@ def genetic(max_iters, pop_size):
             if randint(1, 100) > 95:
                 Z = mutate(Z)
             Z_fitness = calc_fitness(Z)
-            print('z_fitness',Z_fitness)
             if Z_fitness >= 5:
                 fittest_pop.append(Z)
                 write(str(Z))
@@ -138,10 +137,41 @@ def genetic(max_iters, pop_size):
                 fittest = Z
                 print(fittest)
             newP.append(Z)
-        P = newP
+        P = sorted(newP, reverse=True)
         print('Fittest',fittest)
-    print(fittest_pop)
+    fittest = co_evolve()
     return fittest
 
-print(genetic(50, 100))
+def co_evolve():
+    file = open("./Data/genetic-fit","r")
+    P = []
+    for line in file:
+        individual = line.strip()
+        individual = individual.strip("[")
+        individual = individual.strip("]")
+        individual = [float(i) for i in individual.split(",")]
+        P.append(individual)
+    while len(P) > 1:
+        newP = []
+        i = 0
+        while i < len(P) - 1:
+            print(f"Round {i//2}")
+            _, p1score, _, p2score = backgammon(25, "GENETIC", P[i], "GENETIC",P[i+1])
+            print(p1score, p2score)
+            if p1score > p2score:
+                print("winner",P[i-1])
+                newP.append(P[i-1])
+            else:
+                newP.append(P[i])
+                print("winner",P[i])
+            if i+2 == len(P):
+                newP.append(P[i+1])
+            i += 2
+        P = newP
+    return P[0]
 
+
+print(genetic(50, 100))
+# [0.05574364059282633, 7.0, 0.0, 10.0, 25.0, 15.0, 9.0, 0.8489567804546788, 1.0, 21.0, 13.0, 0.05574364059282633, 0.9241229526062836, 0.7319663189689661, 0.6078305590726676, 0.4989619525836282, 0.05420801597119018, 0.689125038295994]
+# [12.0, 1.0, 24.0, 0.5074018981931335, 26.0, 0.5074018981931335, 1.0, 0.3959427019298083, 0.2525167962024688, 4.0, 12.0, 0.3959427019298083, 0.49552490123236437, 0.646808260145097, 0.2680969214986445, 0.5827895413040567, 0.6235369790046915, 0.2525167962024688]
+# [4.0, 24.0, 16.0, 4.0, 5.0, 0.37055557981964604, 0.37055557981964604, 21.0, 5.0, 4.0, 25.0, 0.570412964890068, 0.9669697671618662, 0.05674525218346704, 4.0, 0.716577307530303, 0.936915377016144, 0.174253876928524]
