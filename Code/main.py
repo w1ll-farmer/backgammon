@@ -285,8 +285,15 @@ def greedy_play(moves, boards, current_board, player, roll, weights=None):
     scores = [evaluate(current_board, boards[i], player, weights) for i in range(len(moves))]
     sorted_triplets = sorted(zip(scores, boards, moves), key=lambda x: x[0], reverse=True)
     sorted_scores, sorted_boards, sorted_moves = zip(*sorted_triplets)
-    
-    ## #log(current_board, roll, sorted_moves[0], list(sorted_boards)[0])
+    write_eval(sorted_scores[0], player)
+    log(current_board, roll, sorted_moves[0], list(sorted_boards)[0], player)
+    if test:
+        inv_board, inv_board_afters, inv_player = check_inverted(current_board, boards, player)
+        inv_scores = [evaluate(inv_board, inv_board_afters[i], inv_player, weights) for i in range(len(moves))]
+        if sorted(inv_scores, reverse=True)[0] != sorted_scores[0]:
+            print("Invalid mirror matchup. View log")
+            print(sorted_scores[0], sorted(inv_scores, reverse=True)[0], player)
+            exit()
     return [sorted_moves[0]], list(sorted_boards)[0]
     
 
@@ -390,7 +397,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                         background.render()
                         window.blit(white_dice[black_roll-1], (3*SCREEN_WIDTH//4-28, SCREEN_HEIGHT//2))
                         window.blit(white_dice[white_roll-1], (3*SCREEN_WIDTH//4+28, SCREEN_HEIGHT//2))
-                
+                # first_turn(player1)
                 if GUI_FLAG:
                     for event in pygame.event.get():
                         if event.type == QUIT:
@@ -407,7 +414,8 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
             else:
                 # All other rolls are generated on spot
                 moves1, boards1, roll = start_turn(player1, board)
-                
+            if test:
+                save_roll(roll, player1)
             #### END OF FIRST TURN ####
             
             if USER_PLAY or GUI_FLAG:
@@ -473,6 +481,8 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 #### BLACK PLAYER 2'S TURN ####
                 
                 moves2, boards2, roll = start_turn(player2, board)
+                if test:
+                    save_roll(roll, player2)
                 if len(moves2) > 0:
                     if player2strat == "USER":
                         move, board = human_play(moves2, boards2, board, roll, player2)
@@ -574,6 +584,8 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 #### WHITE PLAYER 2'S TURN ####
                 
                 moves2, boards2, roll = start_turn(player2, board)
+                if test:
+                    save_roll(roll, player2)
                 if len(moves2) > 0:
                     if player2strat == "USER":
                         move, board = human_play(moves2, boards2, board, roll, player2)
@@ -690,13 +702,20 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
 
 def collect_data(p1strat, pminus1strat, first_to):
     myFile = "./Data/greedydata.txt"
+    white_tot, black_tot = 0,0
+    for i in range(300):
+        # dataFile = open(myFile, 'a')
+        
+        p1vector,w_score,pminus1vector,b_score= backgammon(5, "GREEDY",None, "GREEDY",None)
+        # dataFile.write(f"{w_score}, {b_score}\n")
+        # print(p1vector,w_score,pminus1vector,b_score)
+        # dataFile.close()
+        white_tot+=w_score
+        black_tot+=b_score
+        if i % 50 == 0:
+            print(white_tot, black_tot)
+    print(white_tot, black_tot)
     
-    for _ in range(100):
-        dataFile = open(myFile, 'a')
-        p1vector,w_score,pminus1vector,b_score= backgammon(5, "RANDOM",None, "RANDOM",None)
-        dataFile.write(f"{w_score}, {b_score}\n")
-        print(p1vector,w_score,pminus1vector,b_score)
-        dataFile.close()
     
 
            
@@ -707,18 +726,21 @@ if __name__ == "__main__":
                 collect_data(sys.argv[2], sys.argv[3], 5)
             else:
                 collect_data("RANDOM",'RANDOM',5)
+            # print(calc_first())
         # elif sys.argv[1] == 'time':
         #     collect_times("GREEDY", "GREEDY", 5)
-        
+        # print(calc_av_eval())
+        # summarise_rolls()
     else:
+        # print(calc_av_eval())
+        # summarise_rolls()
         score_to = 25
-        player1strat = "GENETIC"
-        playerminus1strat = "GENETIC"
+        player1strat = "GREEDY"
+        playerminus1strat = "GREEDY"
         weights1, weights2 = None, None
         if player1strat == "GENETIC":
             weights1 = [13.0, 7.0, 0.0, 24.0, 27.0, 0.25644035092934636, 12.0, 20.0, 0.0, 6.0, 18.0, 0.7032861735580836, 0.41456911378303163, 0.7709586565094387, 0.733940623690, 0.07041797566162267, 0.30177650964267355, 0.4938728271587123]
         if playerminus1strat == "GENETIC":
-            
             weights2 = [13.0, 7.0, 0.0, 24.0, 27.0, 0.25644035092934636, 12.0, 20.0, 0.0, 6.0, 18.0, 0.7032861735580836, 0.41456911378303163, 0.7709586565094387, 0.733940623690, 0.07041797566162267, 0.30177650964267355, 0.4938728271587123]
         p1vector, w_score, pminus1vector, b_score = backgammon(score_to,player1strat,weights1,playerminus1strat,weights2)
         print(p1vector,pminus1vector)

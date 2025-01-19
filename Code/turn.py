@@ -69,18 +69,17 @@ def update_board(board, move):
 def all_past(board):
     if board[24] < 0 or board[25] > 0:
         return False
-    furthest_back_white = 0
-    furthest_back_black = 23
+    furthest_back_white = 23
+    furthest_back_black = 0
     while board[furthest_back_white] < 1:
-        furthest_back_white+=1
+        furthest_back_white-=1
     while board[furthest_back_black] > -1:
-        furthest_back_black -=1
+        furthest_back_black +=1
         
-    if furthest_back_black < furthest_back_white:
+    if furthest_back_black > furthest_back_white:
         return True
     else:
         return False
-
 
 def get_home_info(player, board):
     if player == 1:

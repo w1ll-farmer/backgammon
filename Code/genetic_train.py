@@ -137,7 +137,7 @@ def genetic(max_iters, pop_size):
                 fittest = Z
                 print(fittest)
             newP.append(Z)
-        P = sorted(newP, reverse=True)
+        P = newP
         print('Fittest',fittest)
     fittest = co_evolve()
     return fittest
@@ -164,7 +164,7 @@ def co_evolve():
             else:
                 newP.append(P[i])
                 print("winner",P[i])
-            if i+2 == len(P):
+            if i+2 >= len(P):
                 newP.append(P[i+1])
             i += 2
         P = newP

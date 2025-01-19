@@ -11,6 +11,7 @@ FPS = 30
 if USER_PLAY == True: commentary = True
 if GUI_FLAG == True: commentary = False
 
+test=True
 # GRAPHICS INITIALISATION
 if GUI_FLAG:
     import pygame
