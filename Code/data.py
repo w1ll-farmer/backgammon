@@ -1,3 +1,4 @@
+from turn import get_valid_moves, print_board, make_board
 def log(board_before, roll,  move, board_after, player):
     myFile = open("./Data/log.txt",'a')
     myFile.write(f"{board_before}\t{roll}\t{move}\t{board_after}\t{player}\n")
@@ -51,6 +52,8 @@ def calc_av_eval():
     whiteturns = 0
     blackturns = 0
     white_pos, black_pos = 0,0
+    black_moves = dict()
+    white_moves = dict()
     myFile = open("./Data/evaluations.txt","r")
     for line in myFile:
         val, player = line.split(",")
@@ -59,10 +62,48 @@ def calc_av_eval():
             if val > 0: white_pos +=1
             whiteeval += val
             whiteturns += 1
+            if val not in white_moves:
+                white_moves[val] = 1
+            else:
+                white_moves[val] += 1
         else:
             if val > 0: black_pos +=1
             blackeval += val
             blackturns += 1
+            if val not in black_moves:
+                black_moves[val] = 1
+            else:
+                black_moves[val] += 1
+    print(black_moves,"\n")
+    print(white_moves)
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+
+    # Convert the dictionaries to lists of evaluation scores and frequencies
+    black_eval_scores = list(black_moves.keys())
+    black_frequencies = list(black_moves.values())
+    white_eval_scores = list(white_moves.keys())
+    white_frequencies = list(white_moves.values())
+
+    # Create a dataframe for seaborn
+    import pandas as pd
+    data = pd.DataFrame({
+        "Evaluation Score": black_eval_scores + white_eval_scores,
+        "Frequency": black_frequencies + white_frequencies,
+        "Player": ["Black"] * len(black_eval_scores) + ["White"] * len(white_eval_scores)
+    })
+
+    # Plot the data using seaborn
+    plt.figure(figsize=(10, 6))
+    sns.barplot(data=data, x="Evaluation Score", y="Frequency", hue="Player", palette="muted")
+    plt.title("Frequency of Moves by Evaluation Score (Black vs White Players)")
+    plt.xlabel("Evaluation Score")
+    plt.ylabel("Frequency")
+    plt.legend(title="Player")
+    plt.show()
+
+
+
     print(white_pos, whiteturns-white_pos, black_pos, blackturns-black_pos)
     return whiteeval/whiteturns, blackeval/ blackturns
     
@@ -126,3 +167,37 @@ def summarise_rolls():
     print(black_doubles/ black_rolls)
     print(black_dist/black_rolls)
     
+    
+def transform_moves(moves):
+    transformed_moves = []
+    
+    for sublist in moves:
+        transformed_sublist = []
+        for start, end in sublist:
+            # Apply the swapping rules for 24/25 and 26/27
+            start = 25 if start == 24 else 24 if start == 25 else 27 if start == 26 else 26 if start == 27 else 23 - start
+            end = 25 if end == 24 else 24 if end == 25 else 27 if end == 26 else 26 if end == 27 else 23 - end
+            # Append the transformed tuple
+            transformed_sublist.append((start, end))
+        # Append the transformed sublist
+        transformed_moves.append(transformed_sublist)
+    
+    return transformed_moves
+
+def check_moves(board, moves, player, roll):
+    inv_board = invert_board(board)
+    inv_moves, inv_boards = get_valid_moves(-player, inv_board, roll)
+    t_inv_moves = transform_moves(inv_moves)
+    missing = [t_inv_moves[i] for i in range(len(moves)) if t_inv_moves[i] not in moves]
+    if len(missing) > 0:
+        print("ERROR DETECTED")
+        print(f"Player {player} has {moves}")
+        print(f"Player {-player} would have {t_inv_moves}")
+        print(missing)
+        exit()
+        
+
+# board = make_board()
+# board[0] = -1
+# board[1] = -1
+# print(invert_board(board))

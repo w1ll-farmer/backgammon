@@ -281,7 +281,6 @@ def greedy_play(moves, boards, current_board, player, roll, weights=None):
         [(int, int)]: The move made
         [int]: The board resulting from move made
     """
-    
     scores = [evaluate(current_board, boards[i], player, weights) for i in range(len(moves))]
     sorted_triplets = sorted(zip(scores, boards, moves), key=lambda x: x[0], reverse=True)
     sorted_scores, sorted_boards, sorted_moves = zip(*sorted_triplets)
@@ -338,7 +337,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
             #### FIRST TURN ####            
             if time_step == 1 and game == 1:
                 # Each player rolls a die to determine who moves first
-                black_roll, white_roll = roll_dice()
+                white_roll, black_roll = roll_dice()
                 #### DISPLAY FIRST DICE ROLL FOR WHO GOES FIRST ####
                 if GUI_FLAG:
                     
@@ -348,13 +347,13 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     pygame.display.update()
                     sleep(1)
                     for i in range(60):
-                        black_roll, white_roll = roll_dice()
+                        white_roll, black_roll = roll_dice()
                         window.blit(black_dice[black_roll-1], (SCREEN_WIDTH//4-28, SCREEN_HEIGHT//2))
                         window.blit(white_dice[white_roll-1], (3*SCREEN_WIDTH//4+28, SCREEN_HEIGHT//2))
                         pygame.display.update()
                     
                 while black_roll == white_roll:
-                    black_roll, white_roll = roll_dice()
+                    white_roll, black_roll = roll_dice()
                     if GUI_FLAG:
                         window.blit(black_dice[black_roll-1], (SCREEN_WIDTH//4-28, SCREEN_HEIGHT//2))
                         window.blit(white_dice[white_roll-1], (3*SCREEN_WIDTH//4+28, SCREEN_HEIGHT//2))
@@ -408,6 +407,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 # Initial roll made up of both starting dice
                 roll = [black_roll, white_roll]
                 moves1, boards1 = get_valid_moves(player1, board, roll)
+                check_moves(board, moves1, player1, roll)
                 print_board(board)
                 if commentary:
                     print(f"Player {player1} rolled {roll}")
@@ -481,6 +481,8 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 #### BLACK PLAYER 2'S TURN ####
                 
                 moves2, boards2, roll = start_turn(player2, board)
+                check_moves(board, moves2, player2, roll)
+                
                 if test:
                     save_roll(roll, player2)
                 if len(moves2) > 0:
@@ -584,6 +586,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 #### WHITE PLAYER 2'S TURN ####
                 
                 moves2, boards2, roll = start_turn(player2, board)
+                check_moves(board, moves2, player2, roll)
                 if test:
                     save_roll(roll, player2)
                 if len(moves2) > 0:
