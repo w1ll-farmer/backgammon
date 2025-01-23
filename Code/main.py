@@ -317,12 +317,12 @@ def greedy_play(moves, boards, current_board, player, roll, weights=None):
 ###############
 ## MAIN BODY ##
 ###############
-def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="RANDOM", blackweights = None):
+def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="GREEDY", blackweights = None):
     """Play the backgammon game
 
     Args:
         score_to (int, optional): What score reached before terminate. Defaults to 1.
-        writestrat (str, optional): Player 1 alg. Defaults to "GREEDY".
+        whitestrat (str, optional): Player 1 alg. Defaults to "GREEDY".
         weights1 (list(float), optional): Weights for genetic player 1. Defaults to None.
         blackstrat (str, optional): Player 2 alg. Defaults to "GREEDY".
         weights2 (list(float), optional): Weights for genetic player 2. Defaults to None.
