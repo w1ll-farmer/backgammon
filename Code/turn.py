@@ -44,26 +44,37 @@ def update_board(board, move):
     # Copies by value
     board_copy = board.copy()
     
-    if board_copy[start] > 0:
-        # Move piece away from point
-        board_copy[start] -=1
-        if board_copy[end] == -1:
-            # Hit a piece off the board
-            board_copy[end] = 1
-            board_copy[24] -= 1
-        else:
-            board_copy[end] += 1
+    # if board_copy[start] > 0:
+    #     # Move piece away from point
+    #     board_copy[start] -=1
+    #     if board_copy[end] == -1:
+    #         # Hit a piece off the board
+    #         board_copy[end] = 1
+    #         board_copy[24] -= 1
+    #     else:
+    #         board_copy[end] += 1
             
+    # else:
+    #     # Move piece away from point
+    #     board_copy[start] += 1
+    #     if board_copy[end] == 1:
+    #         # Hit a piece off the board
+    #         board_copy[end] = -1
+    #         board_copy[25] += 1
+    #     else:
+    #         board_copy[end] -= 1
+    if board_copy[start] > 0:
+        player = 1
     else:
-        # Move piece away from point
-        board_copy[start] += 1
-        if board_copy[end] == 1:
-            # Hit a piece off the board
-            board_copy[end] = -1
-            board_copy[25] += 1
-        else:
-            board_copy[end] -= 1
+        player = -1
     
+    board_copy[start] -= player
+    if board_copy[end] == -player:
+        board_copy[end] = player
+        board_copy[int(24.5-(player/2))] -= player
+    else:
+        board_copy[end] += player
+        
     return board_copy
 
 def all_past(board):
@@ -82,6 +93,15 @@ def all_past(board):
         return False
 
 def get_home_info(player, board):
+    """Returns the cords and state of player's home board
+
+    Args:
+        player (int): -1 for black, 1 for white
+        board (list(int)): Board representation
+
+    Returns:
+        list(int), list(int): cords and state of player's home
+    """
     if player == 1:
         cords = [i for i in range(0,6)]
         home = board[0:6]
@@ -124,7 +144,7 @@ def can_enter(colour, board, die):
     opp_cords, opp_home = get_home_info(-colour, board)
     enter = 0
     if colour == 1 and opp_home[die-1] > -2:
-        enter = (opp_cords[(die)-1])
+        enter = opp_cords[(die)-1]
         return (int(24.5+(colour/2)),enter)
     elif colour == -1 and opp_home[die-1] < 2:
         enter = opp_cords[die-1]
@@ -132,7 +152,7 @@ def can_enter(colour, board, die):
     return False
 
 def all_checkers_home(colour, board):
-    """Checks all checker are home so they can be beard off
+    """Checks all checker are home so they can be borne off
 
     Args:
         colour (int): Checker's colour. -1 for black 1 for white
@@ -142,10 +162,10 @@ def all_checkers_home(colour, board):
         bool: Whether or not all checkers are home
     """
     if colour == -1:
-        if len([i for i in board[0:18] if i < 0]) == 0:
+        if len([i for i in board[0:18] if i < 0]) == 0 and board[24] == 0:
             return True
     else:
-        if len([i for i in board[6:24] if i > 0]) == 0:
+        if len([i for i in board[6:24] if i > 0]) == 0 and board[25] == 0:
             return True
     return False
 
@@ -183,7 +203,7 @@ def get_legal_move(colour, board, die):
                         print(f"Bearing off {24-die, die}")
                     valid_moves.append((24-die, 26))
                     
-                # Can a piece be beard off due to all checkers being closer than die
+                # Can a piece be borne off due to all checkers being closer than die
                 elif not game_over(board):
                     furthest_back = 23
                     found = False

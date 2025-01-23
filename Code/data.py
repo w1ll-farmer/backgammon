@@ -84,6 +84,17 @@ def calc_av_eval():
     black_frequencies = list(black_moves.values())
     white_eval_scores = list(white_moves.keys())
     white_frequencies = list(white_moves.values())
+    ratio_dict = dict()
+    for key in black_eval_scores:
+        if key in white_eval_scores:
+            ratio_dict[key] = black_moves[key] / white_moves[key]
+    # Example dictionary
+    # Sorting by values in ascending order
+    sorted_dict = dict(sorted(ratio_dict.items(), key=lambda item: item[1]))
+    print(sorted_dict)
+    sorted_dict = dict(sorted(ratio_dict.items(), key=lambda item: item[1], reverse=True))
+    print(sorted_dict)
+    # Output: {'b': 1, 'c': 2, 'a': 3}
 
     # Create a dataframe for seaborn
     import pandas as pd
@@ -142,12 +153,13 @@ def summarise_rolls():
     white_doubles = 0
     black_dist = 0
     white_dist = 0
+    lastplayer = 0
     for line in myFile:
         line = line.strip("\n")
-        print(line)
         roll1 = int(line[1])
         roll2 = int(line[4])
         player = int(line[-2:])
+        count = 1
         if player > 0:
             if roll1 == roll2:
                 white_doubles +=1
@@ -160,6 +172,13 @@ def summarise_rolls():
                 black_dist += roll1 + roll2
             black_dist += roll1 + roll2
             black_rolls +=1
+        if lastplayer == player:
+            count += 1
+            if count >= 3:
+                print(f"Player {player} too many in a row")
+        else:
+            count == 1
+        lastplayer = player
     print(white_rolls, white_doubles, white_dist)
     print(white_doubles/white_rolls)
     print(white_dist/white_rolls)
@@ -189,7 +208,7 @@ def check_moves(board, moves, player, roll):
     inv_moves, inv_boards = get_valid_moves(-player, inv_board, roll)
     t_inv_moves = transform_moves(inv_moves)
     missing = [t_inv_moves[i] for i in range(len(moves)) if t_inv_moves[i] not in moves]
-    if len(missing) > 0:
+    if len(missing) > 0 or len(t_inv_moves) != len(moves):
         print("ERROR DETECTED")
         print(f"Player {player} has {moves}")
         print(f"Player {-player} would have {t_inv_moves}")
@@ -201,3 +220,4 @@ def check_moves(board, moves, player, roll):
 # board[0] = -1
 # board[1] = -1
 # print(invert_board(board))
+# summarise_rolls()

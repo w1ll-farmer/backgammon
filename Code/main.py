@@ -283,7 +283,9 @@ def greedy_play(moves, boards, current_board, player, roll, weights=None):
     """
     scores = [evaluate(current_board, boards[i], player, weights) for i in range(len(moves))]
     sorted_triplets = sorted(zip(scores, boards, moves), key=lambda x: x[0], reverse=True)
+    
     sorted_scores, sorted_boards, sorted_moves = zip(*sorted_triplets)
+    
     write_eval(sorted_scores[0], player)
     log(current_board, roll, sorted_moves[0], list(sorted_boards)[0], player)
     if test:
@@ -293,7 +295,23 @@ def greedy_play(moves, boards, current_board, player, roll, weights=None):
             print("Invalid mirror matchup. View log")
             print(sorted_scores[0], sorted(inv_scores, reverse=True)[0], player)
             exit()
-    return [sorted_moves[0]], list(sorted_boards)[0]
+        inv_sorted_triplets = sorted(zip(inv_scores, inv_board_afters, moves), key=lambda x: x[0], reverse=True)
+    
+        inv_sorted_scores, inv_sorted_boards, inv_sorted_moves = zip(*sorted_triplets)
+        if inv_sorted_boards[0] != sorted_boards[0]:
+            print("inverse sorted board not matching")
+            print(inv_sorted_boards[0])
+            print(sorted_boards[0])
+    if list(sorted_boards)[0] != sorted_boards[0]:
+        print("Board mismatch")
+        exit()
+    if sorted_scores[0] != evaluate(current_board, sorted_boards[0], player, weights):
+        print("Score mismatch")
+        exit()
+    if sorted_scores[0] != sorted(scores, reverse=True)[0]:
+        print("Selecting wrong move")
+        exit()
+    return [sorted_moves[0]], sorted_boards[0]
     
 
 ###############
@@ -379,7 +397,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     player2 = 1
                     player2strat = whitestrat
                     # if player1strat == "GENETIC":
-                    weights2 = blackweights
+                    weights2 = whiteweights
                     if GUI_FLAG:
                         background.render()
                         window.blit(black_dice[black_roll-1], (SCREEN_WIDTH//4-28, SCREEN_HEIGHT//2))
@@ -396,7 +414,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                         background.render()
                         window.blit(white_dice[black_roll-1], (3*SCREEN_WIDTH//4-28, SCREEN_HEIGHT//2))
                         window.blit(white_dice[white_roll-1], (3*SCREEN_WIDTH//4+28, SCREEN_HEIGHT//2))
-                # first_turn(player1)
+                if test: first_turn(player1)
                 if GUI_FLAG:
                     for event in pygame.event.get():
                         if event.type == QUIT:
@@ -414,6 +432,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
             else:
                 # All other rolls are generated on spot
                 moves1, boards1, roll = start_turn(player1, board)
+                check_moves(board, moves1, player1, roll)
             if test:
                 save_roll(roll, player1)
             #### END OF FIRST TURN ####
@@ -706,10 +725,10 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
 def collect_data(p1strat, pminus1strat, first_to):
     myFile = "./Data/greedydata.txt"
     white_tot, black_tot = 0,0
-    for i in range(300):
+    for i in range(10000):
         # dataFile = open(myFile, 'a')
         
-        p1vector,w_score,pminus1vector,b_score= backgammon(5, "GREEDY",None, "GREEDY",None)
+        p1vector,w_score,pminus1vector,b_score= backgammon(1, "GREEDY",None, "GREEDY",None)
         # dataFile.write(f"{w_score}, {b_score}\n")
         # print(p1vector,w_score,pminus1vector,b_score)
         # dataFile.close()
@@ -733,10 +752,12 @@ if __name__ == "__main__":
         # elif sys.argv[1] == 'time':
         #     collect_times("GREEDY", "GREEDY", 5)
         # print(calc_av_eval())
-        # summarise_rolls()
+        # calc_first()
+        summarise_rolls()
     else:
         # print(calc_av_eval())
-        # summarise_rolls()
+        
+        # print(calc_first())
         score_to = 25
         player1strat = "GREEDY"
         playerminus1strat = "GREEDY"
