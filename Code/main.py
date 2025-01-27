@@ -8,8 +8,9 @@ from time import sleep
 from greedy_agent import *
 from constants import *
 from gui import *
-# from genetic_agent import genetic
+from test import *
 from data import *
+
 
 global background
 global white_score

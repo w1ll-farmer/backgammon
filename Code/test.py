@@ -1,92 +1,44 @@
-# from main import *
 from turn import *
-from random_agent import *
-from time import sleep
-from greedy_agent import *
-from main import *
-from constants import *
-import time
-import pygame
-from pygame.locals import *
-def test_double_random():
-    moves2, boards2 = get_valid_moves(-1, board, [1,1])
-    move = []
-    attempts = 0
-    
-    while move not in moves2 and attempts < 200000:
-        move = []
-        for i in range(1+is_double([1,1])):
-            move.append(generate_random_move())
-            move.append(generate_random_move())
-        attempts += 1
+
+def check_inverted(current_board, boards, player):
+    player *= -1
+    inv_board = invert_board(current_board)
+    inv_board_afters = []
+    for board in boards:
+        inv_board_afters.append(invert_board(board))
         
-    if move not in moves2:
-        move = moves2[randint(0, len(moves2))]
-    print(move)
+    return inv_board, inv_board_afters, player
+
+def invert_board(current_board):    
+    inv_board = current_board.copy()
+    for i in range(len(current_board)):
+        inv_board[i] = current_board[i] * -1
+    temp_bar = inv_board[24]
+    inv_board[24] = inv_board[25]
+    inv_board[25] = temp_bar
     
-# test_double_random()    
-""" 
-377,801,998,336 possible start-end pairs when rolling a double
-614,656 possible start-end pairs when dice are not equal
-"""
-def greedy_play(moves, boards, current_board, player):
-    scores = [evaluate(moves[i], current_board, boards[i], player) for i in range(len(moves))]
-    sorted_triplets = sorted(zip(scores, boards, moves), key=lambda x: x[0], reverse=True)
-    sorted_scores, sorted_boards, sorted_moves = zip(*sorted_triplets)
-    if commentary:
-        print(f"Player {player} played {sorted_moves[0][0]}, {sorted_moves[0][1]}")
-    return [sorted_moves[0]],list(sorted_boards)[0]
+    temp_home = inv_board[26]
+    inv_board[26] = inv_board[27]
+    inv_board[27] = temp_home
+    return inv_board[0:24][::-1] + inv_board[24:]
 
-board = make_board()
-print_board(board)
-moves, boards, roll = start_turn(1, board)
-# print(get_valid_moves(1, board, [3,4]))
-print(greedy_play(moves, boards, board, 1)[0])
-# import pygame
-# import sys
-
-# # Initialize Pygame
-# pygame.init()
-
-# # Screen settings
-# screen = pygame.display.set_mode((200, 100))
-# pygame.display.set_caption("Rounded Rectangle")
-
-# # Colors
-# BLUE = (52, 152, 219)  # Color for the box
-
-# # Rounded rectangle function
-# def draw_rounded_rect(surface, color, rect, corner_radius):
-#     # Unpack rectangle dimensions
-#     x, y, width, height = rect
-    
-#     # Draw rectangle without corners
-#     pygame.draw.rect(surface, color, (x + corner_radius, y, width - 2 * corner_radius, height))
-#     pygame.draw.rect(surface, color, (x, y + corner_radius, width, height - 2 * corner_radius))
-    
-#     # Draw circles in each corner
-#     pygame.draw.circle(surface, color, (x + corner_radius, y + corner_radius), corner_radius)
-#     pygame.draw.circle(surface, color, (x + width - corner_radius, y + corner_radius), corner_radius)
-#     pygame.draw.circle(surface, color, (x + corner_radius, y + height - corner_radius), corner_radius)
-#     pygame.draw.circle(surface, color, (x + width - corner_radius, y + height - corner_radius), corner_radius)
-
-# # Main loop
-# running = True
-# while running:
-#     for event in pygame.event.get():
-#         if event.type == pygame.QUIT:
-#             running = False
-
-#     # Fill screen with white background
-#     screen.fill((255, 255, 255))
-    
-#     # Draw rounded rectangle
-#     rect = pygame.Rect(70, 38, 60, 24)  # Position and size of the box
-#     draw_rounded_rect(screen, BLUE, rect, 4)  # Call the function with radius 16px
-    
-#     # Update the display
-#     pygame.display.flip()
-
-# # Quit Pygame
-# pygame.quit()
-# sys.exit()
+def check_moves(board, boards, player, roll):
+    inv_moves, inv_boards = get_valid_moves(-player, invert_board(board), roll)
+    inv_boards = [invert_board(i) for i in inv_boards]
+    if len(boards) == len(inv_boards):
+        for i in boards:
+            if i not in inv_boards:
+                print(i)
+                print("Not in inverse")
+                exit()
+        for j in inv_boards:
+            if j not in boards:
+                print(j)
+                print("Not in forward board")
+                exit()
+    else:
+        print("Different number of moves being shown")
+        missing = [i for i in boards if i not in inv_boards] + [j for j in inv_boards if j not in boards]
+        print(missing)
+        print(len(boards), len(inv_boards))
+        exit()
