@@ -3,12 +3,12 @@ import sys
 import numpy as np
 from pygame.locals import *
 from random_agent import *
-from turn import *
 from time import sleep 
+
+from turn import *
 from greedy_agent import *
 from constants import *
 from gui import *
-
 from testfile import *
 from data import *
 
@@ -237,40 +237,6 @@ def human_play(moves, boards, start_board, roll, colour):
 ########################
 ## END OF HUMAN PLAY ##
 ########################
-
-def randobot_play(roll, moves, boards):
-    """Random agent makes a move
-
-    Args:
-        roll ([int]): The dice roll.
-        moves ([[(int, int)]]): List of all possible start-end pairs
-        boards ([[int]]): The boards associated to each move
-
-    Returns:
-        [int], [(int, int)]: The resulting board and move chosen
-    """
-    move = []
-    attempts = 0
-    # Repeats until 200,000 random moves have been chosen
-    # Or until a valid move has been selected
-    while move not in moves and attempts < 200000:
-        move = []
-        for _ in range(1+is_double(roll)):
-            move.append(generate_random_move())
-            move.append(generate_random_move())
-        attempts += 1
-    # In case no random move was valid
-    if attempts == 200000:
-        if commentary:
-            print('Randobot cannot find moves')
-    if move not in moves:
-        if len(moves) > 1:
-            move = moves[randint(0, len(moves)-1)]
-        elif len(moves) == 1:
-            move = moves[0]
-    
-    board = boards[moves.index(move)]
-    return board, move
 
 def greedy_play(moves, boards, current_board, player, roll, weights=None):
     """Greedy agent makes a move
@@ -771,7 +737,7 @@ if __name__ == "__main__":
         # print(calc_first())
         score_to = 25
         player1strat = "GREEDY"
-        playerminus1strat = "GREEDY"
+        playerminus1strat = "RANDOM"
         weights1, weights2 = None, None
         if player1strat == "GENETIC":
             weights1 = [13.0, 7.0, 0.0, 24.0, 27.0, 0.25644035092934636, 12.0, 20.0, 0.0, 6.0, 18.0, 0.7032861735580836, 0.41456911378303163, 0.7709586565094387, 0.733940623690, 0.07041797566162267, 0.30177650964267355, 0.4938728271587123]

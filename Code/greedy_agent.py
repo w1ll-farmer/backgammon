@@ -155,6 +155,8 @@ def evaluate(board_before, board_after, player,
                 else:
                     # Left a piece exposed
                     points += exposed_hit
+                if wall_diff > 0:
+                    points += wall_mult*wall_diff_mult
 
             elif not all_past(board_after):
                 # Check if number of home walls have changed
