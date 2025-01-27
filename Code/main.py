@@ -8,7 +8,8 @@ from time import sleep
 from greedy_agent import *
 from constants import *
 from gui import *
-from test import *
+
+from testfile import *
 from data import *
 
 
