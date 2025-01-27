@@ -203,16 +203,25 @@ def transform_moves(moves):
     
     return transformed_moves
 
-def check_moves(board, moves, player, roll):
-    inv_board = invert_board(board)
-    inv_moves, inv_boards = get_valid_moves(-player, inv_board, roll)
-    t_inv_moves = transform_moves(inv_moves)
-    missing = [t_inv_moves[i] for i in range(len(moves)) if t_inv_moves[i] not in moves]
-    if len(missing) > 0 or len(t_inv_moves) != len(moves):
-        print("ERROR DETECTED")
-        print(f"Player {player} has {moves}")
-        print(f"Player {-player} would have {t_inv_moves}")
+def check_moves(board, boards, player, roll):
+    inv_moves, inv_boards = get_valid_moves(-player, invert_board(board), roll)
+    inv_boards = [invert_board(i) for i in inv_boards]
+    if len(boards) == len(inv_boards):
+        for i in boards:
+            if i not in inv_boards:
+                print(i)
+                print("Not in inverse")
+                exit()
+        for j in inv_boards:
+            if j not in boards:
+                print(j)
+                print("Not in forward board")
+                exit()
+    else:
+        print("Different number of moves being shown")
+        missing = [i for i in boards if i not in inv_boards] + [j for j in inv_boards if j not in boards]
         print(missing)
+        print(len(boards), len(inv_boards))
         exit()
         
 

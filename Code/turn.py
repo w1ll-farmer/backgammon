@@ -162,10 +162,10 @@ def all_checkers_home(colour, board):
         bool: Whether or not all checkers are home
     """
     if colour == -1:
-        if len([i for i in board[0:18] if i < 0]) == 0 and board[24] == 0:
+        if len([i for i in board[0:18] if i < 0]) == 0 and board[24] >= 0:
             return True
     else:
-        if len([i for i in board[6:24] if i > 0]) == 0 and board[25] == 0:
+        if len([i for i in board[6:24] if i > 0]) == 0 and board[25] <= 0:
             return True
     return False
 

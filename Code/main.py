@@ -39,6 +39,8 @@ def start_turn(player, board):
     if commentary:
         print(f"Player {player} rolled {roll}")
     moves, boards = get_valid_moves(player, board, roll)
+    if test:
+        check_moves(board, boards, player, roll)
     return moves, boards, roll
 
 ##########################
@@ -295,13 +297,21 @@ def greedy_play(moves, boards, current_board, player, roll, weights=None):
             print("Invalid mirror matchup. View log")
             print(sorted_scores[0], sorted(inv_scores, reverse=True)[0], player)
             exit()
+        inv_board_afters = [invert_board(i) for i in inv_board_afters]
         inv_sorted_triplets = sorted(zip(inv_scores, inv_board_afters, moves), key=lambda x: x[0], reverse=True)
     
-        inv_sorted_scores, inv_sorted_boards, inv_sorted_moves = zip(*sorted_triplets)
+        inv_sorted_scores, inv_sorted_boards, inv_sorted_moves = zip(*inv_sorted_triplets)
         if inv_sorted_boards[0] != sorted_boards[0]:
             print("inverse sorted board not matching")
             print(inv_sorted_boards[0])
             print(sorted_boards[0])
+            exit()
+        if sorted_scores[0] != inv_sorted_scores[0]:
+            print("inverse scores don't match")
+            exit()
+        if sorted_scores[0] != max(scores) or inv_sorted_scores[0] != max(inv_scores):
+            print("Score is not maximum")
+            exit()
     if list(sorted_boards)[0] != sorted_boards[0]:
         print("Board mismatch")
         exit()
@@ -311,6 +321,7 @@ def greedy_play(moves, boards, current_board, player, roll, weights=None):
     if sorted_scores[0] != sorted(scores, reverse=True)[0]:
         print("Selecting wrong move")
         exit()
+    
     return [sorted_moves[0]], sorted_boards[0]
     
 
@@ -425,14 +436,14 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 # Initial roll made up of both starting dice
                 roll = [black_roll, white_roll]
                 moves1, boards1 = get_valid_moves(player1, board, roll)
-                check_moves(board, moves1, player1, roll)
+                if test:
+                    check_moves(board, boards1, player1, roll)
                 print_board(board)
                 if commentary:
                     print(f"Player {player1} rolled {roll}")
             else:
                 # All other rolls are generated on spot
                 moves1, boards1, roll = start_turn(player1, board)
-                check_moves(board, moves1, player1, roll)
             if test:
                 save_roll(roll, player1)
             #### END OF FIRST TURN ####
@@ -500,7 +511,6 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 #### BLACK PLAYER 2'S TURN ####
                 
                 moves2, boards2, roll = start_turn(player2, board)
-                check_moves(board, moves2, player2, roll)
                 
                 if test:
                     save_roll(roll, player2)
@@ -605,7 +615,6 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 #### WHITE PLAYER 2'S TURN ####
                 
                 moves2, boards2, roll = start_turn(player2, board)
-                check_moves(board, moves2, player2, roll)
                 if test:
                     save_roll(roll, player2)
                 if len(moves2) > 0:
