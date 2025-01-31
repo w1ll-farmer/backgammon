@@ -43,26 +43,6 @@ def update_board(board, move):
     start, end = move
     # Copies by value
     board_copy = board.copy()
-    
-    # if board_copy[start] > 0:
-    #     # Move piece away from point
-    #     board_copy[start] -=1
-    #     if board_copy[end] == -1:
-    #         # Hit a piece off the board
-    #         board_copy[end] = 1
-    #         board_copy[24] -= 1
-    #     else:
-    #         board_copy[end] += 1
-            
-    # else:
-    #     # Move piece away from point
-    #     board_copy[start] += 1
-    #     if board_copy[end] == 1:
-    #         # Hit a piece off the board
-    #         board_copy[end] = -1
-    #         board_copy[25] += 1
-    #     else:
-    #         board_copy[end] -= 1
     if board_copy[start] > 0:
         player = 1
     else:
