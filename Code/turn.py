@@ -25,6 +25,10 @@ def roll_dice():
     # Returns the value of the two dice rolled
     return randint(1, 6), randint(1, 6)
     
+    """return 5, 1 !!! Unsymmetrical AI decisions !!!
+    note if its 5, 1 that white wins 25-0, and if other way round causes a loop due to 
+    constant hitting, entering and hitting cycle"""
+    
 def is_double(roll):
     # Checks if two identical dice are rolled
     return roll[0] == roll[1]

@@ -206,6 +206,7 @@ def evaluate(board_before, board_after, player,
 #### CHECK THIS ALL
 
 if test:
+    print("Running black and white tests on evaluations")
     # Make complete home wall
     print(evaluate([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,-5,2,-2,0,-2,-2,-2,-2,0,0,0,0],
                    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,-3,2,-2,-2,-2,-2,-2,-2,0,0,0,0], -1))
@@ -268,4 +269,6 @@ if test:
     
     print(evaluate([0,0,0,0,0,0,0,0,2,2,2,2,3,1,3,-3,-1,-11,2,0,0,0,0,0,0,0,0,0],
                    [0,0,0,0,0,0,0,0,2,2,2,2,4,0,3,-3,-1,-11,2,0,0,0,0,0,0,0,0,0], 1))
+    
+    print("End of tests\n")
     

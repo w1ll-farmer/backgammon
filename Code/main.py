@@ -493,8 +493,8 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 
                 # Game ends?
                 if is_error(board):
-                    sleep(10)
-                    break
+                    print("Error detected")
+                    exit()
                 if game_over(board):
                     break
                 if USER_PLAY or GUI_FLAG:
@@ -599,8 +599,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 if USER_PLAY or GUI_FLAG:
                     sleep(1)
                 if is_error(board):
-                    sleep(10)
-                    break
+                    exit()
                 if game_over(board):
                     break
                 
@@ -655,8 +654,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
             
             print_board(board)
             if is_error(board):
-                sleep(10)
-                break
+                exit()
             time_step +=1
             if USER_PLAY:
                 sleep(1)
@@ -700,7 +698,10 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     p1vector[0] +=1
                     if commentary:
                         print("Player 1 win")
+            
+            # print(w_score, b_score)
             if board[26] == -15:
+                # Black won, so it moves first next round
                 player1 = -1
                 player1strat = blackstrat
                 weights1 = blackweights
@@ -709,6 +710,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 weights2 = whiteweights
                 b_score = pminus1vector[0] + 2*pminus1vector[1] + 3*pminus1vector[2]
             else:
+                # White won, so it moves first next round
                 player1 = 1
                 player1strat = whitestrat
                 weights1 = whiteweights
@@ -726,10 +728,10 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
 def collect_data(p1strat, pminus1strat, first_to):
     myFile = "./Data/greedydata.txt"
     white_tot, black_tot = 0,0
-    for i in range(10000):
+    for i in range(100):
         # dataFile = open(myFile, 'a')
         
-        p1vector,w_score,pminus1vector,b_score= backgammon(1, "GREEDY",None, "GREEDY",None)
+        p1vector,w_score,pminus1vector,b_score= backgammon(25, "GREEDY",None, "GREEDY",None)
         # dataFile.write(f"{w_score}, {b_score}\n")
         # print(p1vector,w_score,pminus1vector,b_score)
         # dataFile.close()
@@ -761,7 +763,7 @@ if __name__ == "__main__":
         # print(calc_first())
         score_to = 25
         player1strat = "GREEDY"
-        playerminus1strat = "RANDOM"
+        playerminus1strat = "GREEDY"
         weights1, weights2 = None, None
         if player1strat == "GENETIC":
             weights1 = [13.0, 7.0, 0.0, 24.0, 27.0, 0.25644035092934636, 12.0, 20.0, 0.0, 6.0, 18.0, 0.7032861735580836, 0.41456911378303163, 0.7709586565094387, 0.733940623690, 0.07041797566162267, 0.30177650964267355, 0.4938728271587123]

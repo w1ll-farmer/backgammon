@@ -160,10 +160,10 @@ def summarise_rolls():
             count == 1
         lastplayer = player
     print(white_rolls, white_doubles, white_dist)
-    print(white_doubles/white_rolls)
+    print(white_doubles)
     print(white_dist/white_rolls)
     print(black_rolls, black_doubles, black_dist)
-    print(black_doubles/ black_rolls)
+    print(black_doubles)
     print(black_dist/black_rolls)
     
     
