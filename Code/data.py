@@ -74,48 +74,48 @@ def calc_av_eval():
                 black_moves[val] = 1
             else:
                 black_moves[val] += 1
-    print(black_moves,"\n")
-    print(white_moves)
-    import matplotlib.pyplot as plt
-    import seaborn as sns
+    # print(black_moves,"\n")
+    # print(white_moves)
+    # import matplotlib.pyplot as plt
+    # import seaborn as sns
 
     # Convert the dictionaries to lists of evaluation scores and frequencies
-    black_eval_scores = list(black_moves.keys())
-    black_frequencies = list(black_moves.values())
-    white_eval_scores = list(white_moves.keys())
-    white_frequencies = list(white_moves.values())
-    ratio_dict = dict()
-    for key in black_eval_scores:
-        if key in white_eval_scores:
-            ratio_dict[key] = black_moves[key] / white_moves[key]
-    # Example dictionary
-    # Sorting by values in ascending order
-    sorted_dict = dict(sorted(ratio_dict.items(), key=lambda item: item[1]))
-    print(sorted_dict)
-    sorted_dict = dict(sorted(ratio_dict.items(), key=lambda item: item[1], reverse=True))
-    print(sorted_dict)
-    # Output: {'b': 1, 'c': 2, 'a': 3}
+    # black_eval_scores = list(black_moves.keys())
+    # black_frequencies = list(black_moves.values())
+    # white_eval_scores = list(white_moves.keys())
+    # white_frequencies = list(white_moves.values())
+    # ratio_dict = dict()
+    # for key in black_eval_scores:
+    #     if key in white_eval_scores:
+    #         ratio_dict[key] = black_moves[key] / white_moves[key]
+    # # Example dictionary
+    # # Sorting by values in ascending order
+    # sorted_dict = dict(sorted(ratio_dict.items(), key=lambda item: item[1]))
+    # print(sorted_dict)
+    # sorted_dict = dict(sorted(ratio_dict.items(), key=lambda item: item[1], reverse=True))
+    # print(sorted_dict)
+    # # Output: {'b': 1, 'c': 2, 'a': 3}
 
-    # Create a dataframe for seaborn
-    import pandas as pd
-    data = pd.DataFrame({
-        "Evaluation Score": black_eval_scores + white_eval_scores,
-        "Frequency": black_frequencies + white_frequencies,
-        "Player": ["Black"] * len(black_eval_scores) + ["White"] * len(white_eval_scores)
-    })
+    # # Create a dataframe for seaborn
+    # import pandas as pd
+    # data = pd.DataFrame({
+    #     "Evaluation Score": black_eval_scores + white_eval_scores,
+    #     "Frequency": black_frequencies + white_frequencies,
+    #     "Player": ["Black"] * len(black_eval_scores) + ["White"] * len(white_eval_scores)
+    # })
 
-    # Plot the data using seaborn
-    plt.figure(figsize=(10, 6))
-    sns.barplot(data=data, x="Evaluation Score", y="Frequency", hue="Player", palette="muted")
-    plt.title("Frequency of Moves by Evaluation Score (Black vs White Players)")
-    plt.xlabel("Evaluation Score")
-    plt.ylabel("Frequency")
-    plt.legend(title="Player")
-    plt.show()
+    # # Plot the data using seaborn
+    # plt.figure(figsize=(10, 6))
+    # sns.barplot(data=data, x="Evaluation Score", y="Frequency", hue="Player", palette="muted")
+    # plt.title("Frequency of Moves by Evaluation Score (Black vs White Players)")
+    # plt.xlabel("Evaluation Score")
+    # plt.ylabel("Frequency")
+    # plt.legend(title="Player")
+    # plt.show()
 
 
 
-    print(white_pos, whiteturns-white_pos, black_pos, blackturns-black_pos)
+    # print(white_pos, whiteturns-white_pos, black_pos, blackturns-black_pos)
     return whiteeval/whiteturns, blackeval/ blackturns
     
 

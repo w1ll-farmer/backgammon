@@ -273,7 +273,45 @@ def greedy_play(moves, boards, current_board, player, roll, weights=None):
     # Match scores, boards and moves together and sort in descending order of scores
     sorted_triplets = sorted(zip(scores, boards, moves), key=lambda x: x[0], reverse=True)
     sorted_scores, sorted_boards, sorted_moves = zip(*sorted_triplets)
+    # sorted_boards = [invert_board(i) for i in sorted_boards]
+    
+    max_score = [i for i in sorted_scores if i==max(scores)]
+    if len(max_score) > 1:
+        if test:
+            print("equal boards")
+            for i in range(len(max_score)): print(sorted_boards[i])
+        chosen_boards = tiebreak(sorted_boards[0:len(max_score)], current_board, player)
+        
+        chosen_inv_boards = invert_greedy(boards, current_board, player, weights, moves)
+        if len(chosen_inv_boards) != len(chosen_boards):
+            print("board num mismatch", roll, player)
+            print(len(chosen_boards), len(chosen_inv_boards))
+            print(current_board,"\n")
+            for i in chosen_boards: print(i)
+            for j in chosen_inv_boards: print(j)
+            exit()
+        elif len(chosen_boards) > 1:
+            chosen_board = chosen_boards[randint(0, len(chosen_boards)-1)]
+            chosen_inv_board = chosen_inv_boards[randint(0, len(chosen_inv_boards)-1)]
+        else:
+            chosen_board = chosen_boards.pop()
+            chosen_inv_board = chosen_inv_boards.pop()
+        
+        while chosen_inv_board != chosen_board and (len(chosen_boards) > 1 and len(chosen_inv_boards) > 1):
+            chosen_inv_board = chosen_inv_boards[randint(0, len(chosen_inv_boards)-1)]
+            chosen_board = chosen_boards[randint(0, len(chosen_boards)-1)]
+        if chosen_inv_board != chosen_board:
+            print(current_board)
+            print(chosen_inv_board)
+            print(chosen_board)
+            print("Only 1 and not identical")
+            exit()
+        chosen_move = [sorted_moves[sorted_boards.index(chosen_board)]]
+    else:
+        chosen_move = [sorted_moves[0]]
+        chosen_board = sorted_boards[0]
     if test:
+        
         write_eval(sorted_scores[0], player)
         log(current_board, roll, sorted_moves[0], list(sorted_boards)[0], player)
         
@@ -288,10 +326,20 @@ def greedy_play(moves, boards, current_board, player, roll, weights=None):
         inv_sorted_triplets = sorted(zip(inv_scores, inv_board_afters, moves), key=lambda x: x[0], reverse=True)
     
         inv_sorted_scores, inv_sorted_boards, inv_sorted_moves = zip(*inv_sorted_triplets)
-        if inv_sorted_boards[0] != sorted_boards[0]:
-            print("inverse sorted board not matching")
-            print(inv_sorted_boards[0])
-            print(sorted_boards[0])
+        chosen_inv_board = inv_sorted_boards[0]
+        max_inv_score = [i for i in sorted_scores if i==max(inv_sorted_scores)]
+        if len(max_inv_score) > 1:
+            if test:
+                print("Equal inv boards")
+                for i in range(len(max_inv_score)): print(inv_sorted_boards[i])
+            inv_sorted_boards = [invert_board(i) for i in inv_sorted_boards]
+            chosen_inv_board = tiebreak(inv_sorted_boards[0:len(max_inv_score)], inv_board, inv_player)
+            chosen_inv_board = invert_board(chosen_inv_board)
+        if chosen_inv_board != chosen_board:
+            print("inverse sorted board not matching", roll)
+            print(current_board)
+            print(chosen_inv_board)
+            print(chosen_board)
             exit()
             
         if sorted_scores[0] != inv_sorted_scores[0]:
@@ -302,11 +350,7 @@ def greedy_play(moves, boards, current_board, player, roll, weights=None):
             print("Score is not maximum")
             exit()
             
-        if list(sorted_boards)[0] != sorted_boards[0]:
-            print("Board mismatch")
-            exit()
-            
-        if sorted_scores[0] != evaluate(current_board, sorted_boards[0], player, weights):
+        if sorted_scores[0] != evaluate(current_board, chosen_board, player, weights):
             print("Score mismatch")
             exit()
             
@@ -314,7 +358,7 @@ def greedy_play(moves, boards, current_board, player, roll, weights=None):
             print("Selecting wrong move")
             exit()
     
-    return [sorted_moves[0]], sorted_boards[0]
+    return chosen_move, chosen_board
     
 
 ###############
@@ -728,18 +772,29 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
 def collect_data(p1strat, pminus1strat, first_to):
     myFile = "./Data/greedydata.txt"
     white_tot, black_tot = 0,0
-    for i in range(100):
-        # dataFile = open(myFile, 'a')
+    white_wins, black_wins = 0,0
+    for i in range(10000):
+        dataFile = open(myFile, 'a')
         
-        p1vector,w_score,pminus1vector,b_score= backgammon(25, "GREEDY",None, "GREEDY",None)
-        # dataFile.write(f"{w_score}, {b_score}\n")
+        p1vector,w_score,pminus1vector,b_score= backgammon(1, "GREEDY",None, "GREEDY",None)
+        dataFile.write(f"{w_score}, {b_score}\n")
         # print(p1vector,w_score,pminus1vector,b_score)
-        # dataFile.close()
+        dataFile.close()
         white_tot+=w_score
         black_tot+=b_score
+        if b_score >= 1:
+            black_wins += 1
+        if w_score >= 1:
+            white_wins +=1
         if i % 50 == 0:
+            print("score")
             print(white_tot, black_tot)
+            print("Wins")
+            print(white_wins, black_wins)
+
+    # print(calc_av_eval())
     print(white_tot, black_tot)
+    print(white_wins, black_wins)
     
     
 

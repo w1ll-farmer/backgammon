@@ -36,6 +36,7 @@ def check_moves(board, boards, player, roll):
                 print(j)
                 print("Not in forward board")
                 exit()
+    
     else:
         print("Different number of moves being shown")
         missing = [i for i in boards if i not in inv_boards] + [j for j in inv_boards if j not in boards]

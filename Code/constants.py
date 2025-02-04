@@ -2,7 +2,7 @@
 SCREEN_WIDTH, SCREEN_HEIGHT = 900, 790
 commentary = False
 USER_PLAY = False
-GUI_FLAG = True
+GUI_FLAG = False
 black = [0,0,0]
 white = [255,255,255]
 FPS = 30
@@ -10,7 +10,7 @@ FPS = 30
 if USER_PLAY == True: commentary = True
 if GUI_FLAG == True: commentary = False
 
-test=True
+test=False
 # GRAPHICS INITIALISATION
 if GUI_FLAG:
     import pygame

@@ -1,7 +1,7 @@
-from turn import get_home_info
-from turn import all_past
+from turn import *
 from constants import *
-
+from testfile import *
+from time import sleep
 def count_blots(board, player):
     """Counts the number of a player's blots in a region
 
@@ -28,6 +28,31 @@ def count_walls(board, player):
         return len([i for i in board if i > player])
     else:
         return len([i for i in board if i < player])
+
+def is_wall(point, player):
+    if player == 1:
+        return point > player
+    else:
+        return point < player
+    
+def get_furthest_back(board, player):
+    if player == 1:
+        furthest_back = 23
+        while board[furthest_back] < player:
+            furthest_back -=1
+    else:
+        furthest_back = 0
+        while board[furthest_back] > player:
+            furthest_back += 1
+    return furthest_back
+
+def did_move_piece(point_before, point_after, player):
+    if player == 1 and point_before > point_after:
+        return True
+    elif player == -1 and point_before < point_after:
+        return True
+    else:
+        return False
 
 def eevaluate(move, board_before, board_after, player):
     score = 0
@@ -203,9 +228,130 @@ def evaluate(board_before, board_after, player,
     return points
 
 
+
+def tiebreak(boards, current_board, player):
+    # print(len(boards))
+    tiebreak_scores = [0]*len(boards)
+    for board in range(len(boards)):
+        # How many contiguous walls are present
+        contiguous = 0
+        max_contiguous = 0
+        for point in boards[board]:
+            if is_wall(point, player):
+                contiguous +=1
+            else:
+                if contiguous > max_contiguous: max_contiguous = contiguous
+                contiguous = 0
+        
+        if contiguous > max_contiguous: max_contiguous = contiguous
+        tiebreak_scores[board] = max_contiguous
+    boards_copy = [boards[board] for board in range(len(boards)) if tiebreak_scores[board] == max(tiebreak_scores)]
+    # if len(boards_copy) < len(boards): print("Narrow 1")
+    boards = boards_copy.copy()
+    if test: print(tiebreak_scores)
+    if len(boards) > 1:
+        tiebreak_scores = [0]*len(boards)
+        for board in range(len(boards)):
+            # How many walls are in home
+            tiebreak_scores[board] = len([point for point in get_home_info(player, boards[board])[1] if is_wall(point, player)])
+        boards_copy = [boards[board] for board in range(len(boards)) if tiebreak_scores[board] == max(tiebreak_scores)]
+        # if len(boards_copy) < len(boards): print("Narrow 2")
+        boards = boards_copy.copy()
+        if test: print(tiebreak_scores)
+    if len(boards) > 1:
+        tiebreak_scores = [0]*len(boards)
+        for board in range(len(boards)):
+            # Are there any blots?
+            tiebreak_scores[board] = -len([point for point in boards[board] if point == player])
+        boards_copy = [boards[board] for board in range(len(boards)) if tiebreak_scores[board] == max(tiebreak_scores)]
+        # if len(boards_copy) < len(boards): print("Narrow 3")
+        boards = boards_copy.copy()
+        if test: print(tiebreak_scores)
+    if len(boards) > 1:
+        # Choose boards that have most advanced furthest-back piece
+        tiebreak_scores = [0]*len(boards)
+        for board in range(len(boards)):
+            furthest_back = get_furthest_back(boards[board], player)
+            if player == 1:
+                furthest_back = 23-furthest_back
+            tiebreak_scores[board] = furthest_back
+        boards_copy = [boards[board] for board in range(len(boards)) if tiebreak_scores[board] == max(tiebreak_scores)]
+        # if len(boards_copy) < len(boards): print("Narrow 4")
+        boards = boards_copy.copy()
+        if test: print(tiebreak_scores)
+    if len(boards) > 1:
+        # Choose boards that have minimum pips
+        tiebreak_scores = [0]*len(boards)
+        for board in range(len(boards)):
+            tiebreak_scores[board] = -calc_pips(boards[board], player)
+        boards_copy = [boards[board] for board in range(len(boards)) if tiebreak_scores[board] == max(tiebreak_scores)]
+        # if len(boards_copy) < len(boards): print("Narrow 5")
+        boards = boards_copy.copy()
+        if test: print(tiebreak_scores)
+    if len(boards) > 1:
+        # Choose boards that maximum opponents pips
+        tiebreak_scores = [0]*len(boards)
+        for board in range(len(boards)):
+            tiebreak_scores[board] = calc_pips(boards[board], -player)
+        boards_copy = [boards[board] for board in range(len(boards)) if tiebreak_scores[board] == max(tiebreak_scores)]
+        # if len(boards_copy) < len(boards): print("Narrow 6")
+        boards = boards_copy.copy()
+        if test: print(tiebreak_scores)
+    if len(boards) > 1:
+        tiebreak_scores = [0]*len(boards)
+        for board in range(len(boards)):
+            # Encourage moving far-back pieces to prevent blockages later on
+            if player == 1:
+                for i in range(24):
+                    if did_move_piece(current_board[i], boards[board][i], player):
+                        tiebreak_scores[board] += (current_board[i] - boards[board][i]) * i
+                        
+            else:
+                for i in range(24):
+                    if did_move_piece(current_board[i], boards[board][i], player):
+                        j = 23- i
+                        tiebreak_scores[board] += j * (boards[board][i] - current_board[i])
+        if test: print(tiebreak_scores)            
+                
+        boards_copy = [boards[board] for board in range(len(boards)) if tiebreak_scores[board] == max(tiebreak_scores)]
+        if len(boards_copy) < len(boards) and test:
+            print("Narrow 7")
+        boards = boards_copy.copy()
+    # print(boards[0])
+    # print(len(boards))
+    # for board in boards:
+    #     print(board, player)
+    # sleep(10)
+    # print(boards)
+    boards = list(map(list, set(map(tuple, boards))))
+    # print(boards)
+    return boards
+    # if player == -1: return boards[0]
+    # else: return boards[-1]
+
+def invert_greedy(boards, current_board, player, weights, moves):
+    inv_board, inv_board_afters, inv_player = check_inverted(current_board, boards, player)
+    inv_scores = [evaluate(inv_board, inv_board_afters[i], inv_player, weights) for i in range(len(moves))]
+    inv_board_afters = [invert_board(i) for i in inv_board_afters]
+    inv_sorted_triplets = sorted(zip(inv_scores, inv_board_afters, moves), key=lambda x: x[0], reverse=True)
+
+    inv_sorted_scores, inv_sorted_boards, inv_sorted_moves = zip(*inv_sorted_triplets)
+    max_inv_score = [i for i in inv_sorted_scores if i==max(inv_scores)]
+    if len(max_inv_score) > 1:
+        if test:
+            print("Equal inv boards")
+            for i in range(len(max_inv_score)): print(inv_sorted_boards[i])
+        inv_sorted_boards = [invert_board(i) for i in inv_sorted_boards]
+        chosen_inv_boards = tiebreak(inv_sorted_boards[0:len(max_inv_score)], inv_board, inv_player)
+        chosen_inv_boards = [invert_board(i) for i in chosen_inv_boards]
+    # print(f"chosen: {chosen_inv_boards}")
+    return chosen_inv_boards
 #### CHECK THIS ALL
 
 if test:
+    
+    tiebreak([[0, 2, 0, 3, 2, 4, 0, 0, 0, 1, 0, -4, 3, 0, 0, 0, -2, 0, 0, -2, 0, -4, 0, -3, 0, 0, 0, 0], [0, 2, 1, 3, 2, 3, 0, 0, 0, 0, 0, -4, 4, 0, 0, 0, -2, 0, 0, -2, 0, -4, 0, -3, 0, 0, 0, 0]], [0, 1, 0, 3, 2, 5, 0, 0, 0, 0, 0, -4, 4, 0, 0, 0, -2, 0, 0, -2, 0, -4, 0, -3, 0, 0, 0, 0], 1)
+    invert_greedy([[0, 2, 0, 3, 2, 4, 0, 0, 0, 1, 0, -4, 3, 0, 0, 0, -2, 0, 0, -2, 0, -4, 0, -3, 0, 0, 0, 0], [0, 2, 1, 3, 2, 3, 0, 0, 0, 0, 0, -4, 4, 0, 0, 0, -2, 0, 0, -2, 0, -4, 0, -3, 0, 0, 0, 0]], [0, 1, 0, 3, 2, 5, 0, 0, 0, 0, 0, -4, 4, 0, 0, 0, -2, 0, 0, -2, 0, -4, 0, -3, 0, 0, 0, 0], 1, None, [(1, 2), (2, 3)])
     print("Running black and white tests on evaluations")
     # Make complete home wall
     print(evaluate([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,-5,2,-2,0,-2,-2,-2,-2,0,0,0,0],

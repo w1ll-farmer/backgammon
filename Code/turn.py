@@ -24,7 +24,7 @@ def print_board(board):
 def roll_dice():
     # Returns the value of the two dice rolled
     return randint(1, 6), randint(1, 6)
-    
+    # return 1, 5
     """return 5, 1 !!! Unsymmetrical AI decisions !!!
     note if its 5, 1 that white wins 25-0, and if other way round causes a loop due to 
     constant hitting, entering and hitting cycle"""
@@ -342,4 +342,27 @@ def is_error(board):
     else:
         return False
 
+
+def calc_pips(board, player):
+    if player == 1:
+        start_positions = [point for point in range(len(board)) if board[point] > player]
+    else:
+        start_positions = [point for point in range(len(board)) if board[point] < player]
+    total = 0
+    for point in start_positions:
+        if player == 1:
+            if point == 27:
+                continue
+            elif point == 25:
+                total += 25
+            else:
+                total += (point + 1)
+        else:
+            if point == 26:
+                continue
+            elif point == 24:
+                total += 25
+            else:
+                total += (24 - point)
+    return total
 
