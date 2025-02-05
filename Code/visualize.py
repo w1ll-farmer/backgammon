@@ -2,6 +2,12 @@ import pandas as pd
 import seaborn as sns  
 import matplotlib.pyplot as plt
 # from data import *
+lst = [[1, 2, 3], [4, 5, 6], [1, 2, 3], [7, 8, 9]]
+
+# Convert lists to tuples, use set for uniqueness, then convert back to lists
+unique_lists = list(map(list, set(map(tuple, lst))))
+
+print(unique_lists)
 
 
 # total_white_score, total_black_score, games_played, times_won = greedy_summarise()

@@ -24,6 +24,10 @@ def print_board(board):
 def roll_dice():
     # Returns the value of the two dice rolled
     return randint(1, 6), randint(1, 6)
+    # return 1, 5
+    """return 5, 1 !!! Unsymmetrical AI decisions !!!
+    note if its 5, 1 that white wins 25-0, and if other way round causes a loop due to 
+    constant hitting, entering and hitting cycle"""
     
 def is_double(roll):
     # Checks if two identical dice are rolled
@@ -43,26 +47,6 @@ def update_board(board, move):
     start, end = move
     # Copies by value
     board_copy = board.copy()
-    
-    # if board_copy[start] > 0:
-    #     # Move piece away from point
-    #     board_copy[start] -=1
-    #     if board_copy[end] == -1:
-    #         # Hit a piece off the board
-    #         board_copy[end] = 1
-    #         board_copy[24] -= 1
-    #     else:
-    #         board_copy[end] += 1
-            
-    # else:
-    #     # Move piece away from point
-    #     board_copy[start] += 1
-    #     if board_copy[end] == 1:
-    #         # Hit a piece off the board
-    #         board_copy[end] = -1
-    #         board_copy[25] += 1
-    #     else:
-    #         board_copy[end] -= 1
     if board_copy[start] > 0:
         player = 1
     else:
@@ -78,10 +62,20 @@ def update_board(board, move):
     return board_copy
 
 def all_past(board):
+    """Checks that all pieces have passed each other
+
+    Args:
+        board (list(int)): Board representation
+
+    Returns:
+        bool: Whether the pieces are all passed each other
+    """
     if board[24] < 0 or board[25] > 0:
         return False
+    
     furthest_back_white = 23
     furthest_back_black = 0
+    
     while board[furthest_back_white] < 1:
         furthest_back_white-=1
     while board[furthest_back_black] > -1:
@@ -145,10 +139,10 @@ def can_enter(colour, board, die):
     enter = 0
     if colour == 1 and opp_home[die-1] > -2:
         enter = opp_cords[(die)-1]
-        return (int(24.5+(colour/2)),enter)
+        return (25, enter)
     elif colour == -1 and opp_home[die-1] < 2:
         enter = opp_cords[die-1]
-        return (int(24.5+(colour/2)),enter)
+        return (24, enter)
     return False
 
 def all_checkers_home(colour, board):
@@ -162,13 +156,13 @@ def all_checkers_home(colour, board):
         bool: Whether or not all checkers are home
     """
     if colour == -1:
-        if len([i for i in board[0:18] if i < 0]) == 0 and board[24] == 0:
+        if len([i for i in board[0:18] if i < 0]) == 0 and board[24] >= 0:
             return True
     else:
-        if len([i for i in board[6:24] if i > 0]) == 0 and board[25] == 0:
+        if len([i for i in board[6:24] if i > 0]) == 0 and board[25] <= 0:
             return True
     return False
-
+            
 def get_legal_move(colour, board, die):
     """Identifies all valid moves for a single die roll
 
@@ -197,7 +191,7 @@ def get_legal_move(colour, board, die):
             if all_checkers_home(colour, board):
                 if commentary:
                     print(f"All home")
-                # Can a piece be beard off directly?
+                # Can a piece be borne off directly?
                 if board[24-die] < 0:
                     if commentary:
                         print(f"Bearing off {24-die, die}")
@@ -217,24 +211,27 @@ def get_legal_move(colour, board, die):
                         i +=1
                         
                     # If the die roll is greater than furthest back occupied point
-                    # Then a checker on that point can be beard off
+                    # Then a checker on that point can be borne off
                     if die > 24-furthest_back:
                         valid_moves.append((furthest_back, 26))
-                        
-            # else:
+            
+            # All points occupied by the -1 player
             possible_starts = [i for i in range(0,24) if board[i] < 0]
-            # print(possible_starts)
             for p in possible_starts:
+                # If ending location is on the board
                 if p+die < 24:
+                    # If ending location is occupied by black or a white blot
                     if board[p+die] < 2:
                         valid_moves.append((p, p+die))
                         
         else: # White player's move
             if all_checkers_home(colour, board):
+                # Bear off directly
                 if board[die-1] > 0:
                     valid_moves.append((die-1, 27))
                     
                 elif not game_over(board):
+                    # Furthest piece back is less than dice roll so can be borne off too
                     furthest_back = 0
                     found = False
                     i = 5
@@ -248,11 +245,12 @@ def get_legal_move(colour, board, die):
                     if die > furthest_back:
                         valid_moves.append((furthest_back, 27))
                         
-            # else:
+            # Identify all points occupied by 1 player
             possible_starts = [i for i in range(0,24) if board[i] > 0]
-            # print(possible_starts)
+            # If start + roll is on the board
             for p in possible_starts:
                 if p - die >= 0:
+                    # If the piece is occupied by white or is a black blot
                     if board[p-die] > -2:
                         valid_moves.append((p, p-die))
     return valid_moves
@@ -285,6 +283,7 @@ def get_valid_moves(colour, board, roll):
                     # For doubles, attempt up to four moves
                     possible_moves[2] = get_legal_move(colour, temp_board2, roll[0])
                     
+                    # If no more moves can be made
                     if len(possible_moves[2]) == 0:
                         moves.append([move1, move2])
                         boards.append(temp_board2)
@@ -293,6 +292,7 @@ def get_valid_moves(colour, board, roll):
                             temp_board3 = update_board(temp_board2, move3)  # Apply third move
                             possible_moves[3] = get_legal_move(colour, temp_board3, roll[1])
                             
+                            # If no more moves can be made
                             if len(possible_moves[3]) == 0:
                                 moves.append([move1, move2, move3])
                                 boards.append(temp_board3)
@@ -333,6 +333,7 @@ def is_gammon(board):
     return board[26] == 0 or board[27] == 0
 
 def is_error(board):
+    # Checks the right number of pieces are on the board
     if sum([i for i in board if i < 0]) != -15 or sum([i for i in board if i > 0]) != 15:
         print(sum([i for i in board if i < 0]),sum([i for i in board if i > 0]))
         errorFile = open('Error.txt','a')
@@ -341,4 +342,27 @@ def is_error(board):
     else:
         return False
 
+
+def calc_pips(board, player):
+    if player == 1:
+        start_positions = [point for point in range(len(board)) if board[point] > player]
+    else:
+        start_positions = [point for point in range(len(board)) if board[point] < player]
+    total = 0
+    for point in start_positions:
+        if player == 1:
+            if point == 27:
+                continue
+            elif point == 25:
+                total += 25
+            else:
+                total += (point + 1)
+        else:
+            if point == 26:
+                continue
+            elif point == 24:
+                total += 25
+            else:
+                total += (24 - point)
+    return total
 

@@ -74,71 +74,51 @@ def calc_av_eval():
                 black_moves[val] = 1
             else:
                 black_moves[val] += 1
-    print(black_moves,"\n")
-    print(white_moves)
-    import matplotlib.pyplot as plt
-    import seaborn as sns
+    # print(black_moves,"\n")
+    # print(white_moves)
+    # import matplotlib.pyplot as plt
+    # import seaborn as sns
 
     # Convert the dictionaries to lists of evaluation scores and frequencies
-    black_eval_scores = list(black_moves.keys())
-    black_frequencies = list(black_moves.values())
-    white_eval_scores = list(white_moves.keys())
-    white_frequencies = list(white_moves.values())
-    ratio_dict = dict()
-    for key in black_eval_scores:
-        if key in white_eval_scores:
-            ratio_dict[key] = black_moves[key] / white_moves[key]
-    # Example dictionary
-    # Sorting by values in ascending order
-    sorted_dict = dict(sorted(ratio_dict.items(), key=lambda item: item[1]))
-    print(sorted_dict)
-    sorted_dict = dict(sorted(ratio_dict.items(), key=lambda item: item[1], reverse=True))
-    print(sorted_dict)
-    # Output: {'b': 1, 'c': 2, 'a': 3}
+    # black_eval_scores = list(black_moves.keys())
+    # black_frequencies = list(black_moves.values())
+    # white_eval_scores = list(white_moves.keys())
+    # white_frequencies = list(white_moves.values())
+    # ratio_dict = dict()
+    # for key in black_eval_scores:
+    #     if key in white_eval_scores:
+    #         ratio_dict[key] = black_moves[key] / white_moves[key]
+    # # Example dictionary
+    # # Sorting by values in ascending order
+    # sorted_dict = dict(sorted(ratio_dict.items(), key=lambda item: item[1]))
+    # print(sorted_dict)
+    # sorted_dict = dict(sorted(ratio_dict.items(), key=lambda item: item[1], reverse=True))
+    # print(sorted_dict)
+    # # Output: {'b': 1, 'c': 2, 'a': 3}
 
-    # Create a dataframe for seaborn
-    import pandas as pd
-    data = pd.DataFrame({
-        "Evaluation Score": black_eval_scores + white_eval_scores,
-        "Frequency": black_frequencies + white_frequencies,
-        "Player": ["Black"] * len(black_eval_scores) + ["White"] * len(white_eval_scores)
-    })
+    # # Create a dataframe for seaborn
+    # import pandas as pd
+    # data = pd.DataFrame({
+    #     "Evaluation Score": black_eval_scores + white_eval_scores,
+    #     "Frequency": black_frequencies + white_frequencies,
+    #     "Player": ["Black"] * len(black_eval_scores) + ["White"] * len(white_eval_scores)
+    # })
 
-    # Plot the data using seaborn
-    plt.figure(figsize=(10, 6))
-    sns.barplot(data=data, x="Evaluation Score", y="Frequency", hue="Player", palette="muted")
-    plt.title("Frequency of Moves by Evaluation Score (Black vs White Players)")
-    plt.xlabel("Evaluation Score")
-    plt.ylabel("Frequency")
-    plt.legend(title="Player")
-    plt.show()
+    # # Plot the data using seaborn
+    # plt.figure(figsize=(10, 6))
+    # sns.barplot(data=data, x="Evaluation Score", y="Frequency", hue="Player", palette="muted")
+    # plt.title("Frequency of Moves by Evaluation Score (Black vs White Players)")
+    # plt.xlabel("Evaluation Score")
+    # plt.ylabel("Frequency")
+    # plt.legend(title="Player")
+    # plt.show()
 
 
 
-    print(white_pos, whiteturns-white_pos, black_pos, blackturns-black_pos)
+    # print(white_pos, whiteturns-white_pos, black_pos, blackturns-black_pos)
     return whiteeval/whiteturns, blackeval/ blackturns
     
-def check_inverted(current_board, boards, player):
-    player *= -1
-    inv_board = invert_board(current_board)
-    inv_board_afters = []
-    for board in boards:
-        inv_board_afters.append(invert_board(board))
-        
-    return inv_board, inv_board_afters, player
 
-def invert_board(current_board):    
-    inv_board = current_board.copy()
-    for i in range(len(current_board)):
-        inv_board[i] = current_board[i] * -1
-    temp_bar = inv_board[24]
-    inv_board[24] = inv_board[25]
-    inv_board[25] = temp_bar
-    
-    temp_home = inv_board[26]
-    inv_board[26] = inv_board[27]
-    inv_board[27] = temp_home
-    return inv_board[0:24][::-1] + inv_board[24:]
 
 def save_roll(roll, player):
     myFile = open("./Data/roll.txt","a")
@@ -180,10 +160,10 @@ def summarise_rolls():
             count == 1
         lastplayer = player
     print(white_rolls, white_doubles, white_dist)
-    print(white_doubles/white_rolls)
+    print(white_doubles)
     print(white_dist/white_rolls)
     print(black_rolls, black_doubles, black_dist)
-    print(black_doubles/ black_rolls)
+    print(black_doubles)
     print(black_dist/black_rolls)
     
     
@@ -203,17 +183,7 @@ def transform_moves(moves):
     
     return transformed_moves
 
-def check_moves(board, moves, player, roll):
-    inv_board = invert_board(board)
-    inv_moves, inv_boards = get_valid_moves(-player, inv_board, roll)
-    t_inv_moves = transform_moves(inv_moves)
-    missing = [t_inv_moves[i] for i in range(len(moves)) if t_inv_moves[i] not in moves]
-    if len(missing) > 0 or len(t_inv_moves) != len(moves):
-        print("ERROR DETECTED")
-        print(f"Player {player} has {moves}")
-        print(f"Player {-player} would have {t_inv_moves}")
-        print(missing)
-        exit()
+
         
 
 # board = make_board()
