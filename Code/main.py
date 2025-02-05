@@ -284,12 +284,13 @@ def greedy_play(moves, boards, current_board, player, roll, weights=None):
         
         chosen_inv_boards = invert_greedy(boards, current_board, player, weights, moves)
         if len(chosen_inv_boards) != len(chosen_boards):
-            print("board num mismatch", roll, player)
-            print(len(chosen_boards), len(chosen_inv_boards))
-            print(current_board,"\n")
-            for i in chosen_boards: print(i)
-            for j in chosen_inv_boards: print(j)
-            exit()
+            if test:
+                print("board num mismatch", roll, player)
+                print(len(chosen_boards), len(chosen_inv_boards))
+                print(current_board,"\n")
+                for i in chosen_boards: print(i)
+                for j in chosen_inv_boards: print(j)
+            raise Exception("The inverse and forward player have different boards available")
         elif len(chosen_boards) > 1:
             chosen_board = chosen_boards[randint(0, len(chosen_boards)-1)]
             chosen_inv_board = chosen_inv_boards[randint(0, len(chosen_inv_boards)-1)]
@@ -301,62 +302,15 @@ def greedy_play(moves, boards, current_board, player, roll, weights=None):
             chosen_inv_board = chosen_inv_boards[randint(0, len(chosen_inv_boards)-1)]
             chosen_board = chosen_boards[randint(0, len(chosen_boards)-1)]
         if chosen_inv_board != chosen_board:
-            print(current_board)
-            print(chosen_inv_board)
-            print(chosen_board)
-            print("Only 1 and not identical")
-            exit()
+            if test:
+                print(current_board)
+                print(chosen_inv_board)
+                print(chosen_board)
+            raise Exception("There exists only one board per player and they're different")
         chosen_move = [sorted_moves[sorted_boards.index(chosen_board)]]
     else:
         chosen_move = [sorted_moves[0]]
         chosen_board = sorted_boards[0]
-    if test:
-        
-        write_eval(sorted_scores[0], player)
-        log(current_board, roll, sorted_moves[0], list(sorted_boards)[0], player)
-        
-        # Testing evaluation and resulting board state for opposite player in same start state
-        inv_board, inv_board_afters, inv_player = check_inverted(current_board, boards, player)
-        inv_scores = [evaluate(inv_board, inv_board_afters[i], inv_player, weights) for i in range(len(moves))]
-        if sorted(inv_scores, reverse=True)[0] != sorted_scores[0]:
-            print("Invalid mirror matchup. View log")
-            print(sorted_scores[0], sorted(inv_scores, reverse=True)[0], player)
-            exit()
-        inv_board_afters = [invert_board(i) for i in inv_board_afters]
-        inv_sorted_triplets = sorted(zip(inv_scores, inv_board_afters, moves), key=lambda x: x[0], reverse=True)
-    
-        inv_sorted_scores, inv_sorted_boards, inv_sorted_moves = zip(*inv_sorted_triplets)
-        chosen_inv_board = inv_sorted_boards[0]
-        max_inv_score = [i for i in sorted_scores if i==max(inv_sorted_scores)]
-        if len(max_inv_score) > 1:
-            if test:
-                print("Equal inv boards")
-                for i in range(len(max_inv_score)): print(inv_sorted_boards[i])
-            inv_sorted_boards = [invert_board(i) for i in inv_sorted_boards]
-            chosen_inv_board = tiebreak(inv_sorted_boards[0:len(max_inv_score)], inv_board, inv_player)
-            chosen_inv_board = invert_board(chosen_inv_board)
-        if chosen_inv_board != chosen_board:
-            print("inverse sorted board not matching", roll)
-            print(current_board)
-            print(chosen_inv_board)
-            print(chosen_board)
-            exit()
-            
-        if sorted_scores[0] != inv_sorted_scores[0]:
-            print("inverse scores don't match")
-            exit()
-            
-        if sorted_scores[0] != max(scores) or inv_sorted_scores[0] != max(inv_scores):
-            print("Score is not maximum")
-            exit()
-            
-        if sorted_scores[0] != evaluate(current_board, chosen_board, player, weights):
-            print("Score mismatch")
-            exit()
-            
-        if sorted_scores[0] != sorted(scores, reverse=True)[0]:
-            print("Selecting wrong move")
-            exit()
     
     return chosen_move, chosen_board
     
@@ -816,14 +770,14 @@ if __name__ == "__main__":
         # print(calc_av_eval())
         
         # print(calc_first())
-        score_to = 25
-        player1strat = "GREEDY"
+        score_to = 5
+        player1strat = "GENETIC"
         playerminus1strat = "GREEDY"
         weights1, weights2 = None, None
         if player1strat == "GENETIC":
-            weights1 = [13.0, 7.0, 0.0, 24.0, 27.0, 0.25644035092934636, 12.0, 20.0, 0.0, 6.0, 18.0, 0.7032861735580836, 0.41456911378303163, 0.7709586565094387, 0.733940623690, 0.07041797566162267, 0.30177650964267355, 0.4938728271587123]
+            weights1 = [0.6219952084521901, 27.0, 4.0, 26.0, 0.46015349243263104, 0.713687637052133, 7.0, 2.0, 26.0, 4.0, 0.0, 0.6337036278226582, 0.15012449622656665, 0.5226624630505539, 0.7313044431665402, 0.6662731224336713, 0.667683543270852, 0.906174549240715]
         if playerminus1strat == "GENETIC":
-            weights2 = [13.0, 7.0, 0.0, 24.0, 27.0, 0.25644035092934636, 12.0, 20.0, 0.0, 6.0, 18.0, 0.7032861735580836, 0.41456911378303163, 0.7709586565094387, 0.733940623690, 0.07041797566162267, 0.30177650964267355, 0.4938728271587123]
+            weights2 = [0.6219952084521901, 27.0, 4.0, 26.0, 0.46015349243263104, 0.713687637052133, 7.0, 2.0, 26.0, 4.0, 0.0, 0.6337036278226582, 0.15012449622656665, 0.5226624630505539, 0.7313044431665402, 0.6662731224336713, 0.667683543270852, 0.906174549240715]
         p1vector, w_score, pminus1vector, b_score = backgammon(score_to,player1strat,weights1,playerminus1strat,weights2)
         print(p1vector,pminus1vector)
             
