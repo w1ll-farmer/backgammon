@@ -3,7 +3,7 @@ from main import *
 from time import sleep
 
 def write(individual):
-    file = open("./Data/genetic-fit","a")
+    file = open("./Data/genetic-fit.txt","a")
     file.write(f"{individual}\n")
     file.close()
     
@@ -37,7 +37,7 @@ def reproduce(mother, father):
 
 
 def calc_fitness(individual):
-    _, g_score, _, opp_score = backgammon(5, "GENETIC",individual, "GREEDY")
+    _, g_score, _, opp_score = backgammon(13, "GENETIC",individual, "GREEDY")
     try:
         fitness = g_score / opp_score
     except ZeroDivisionError:
@@ -137,7 +137,7 @@ def genetic(max_iters, pop_size):
             if Z_fitness > fittest_fitness:
                 fittest_fitness = Z_fitness
                 fittest = Z
-                print(fittest)
+                print(fittest, fittest_fitness)
             newP.append(Z)
         P = newP
         print('Fittest',fittest)
@@ -145,7 +145,7 @@ def genetic(max_iters, pop_size):
     return fittest
 
 def co_evolve():
-    file = open("./Data/genetic-fit","r")
+    file = open("./Data/genetic-fit.txt","r")
     P = []
     for line in file:
         individual = line.strip()
@@ -158,21 +158,26 @@ def co_evolve():
         i = 0
         while i < len(P) - 1:
             print(f"Round {i//2}")
-            _, p1score, _, p2score = backgammon(25, "GENETIC", P[i], "GENETIC",P[i+1])
-            print(p1score, p2score)
-            if p1score > p2score:
-                print("winner",P[i-1])
-                newP.append(P[i-1])
-            else:
-                newP.append(P[i])
+            p1wins, p2wins = 0,0
+            while p1wins < 1 and p2wins < 1:
+                _, p1score, _, p2score = backgammon(25, "GENETIC", P[i], "GENETIC",P[i+1])
+                if p1score > p2score:
+                    p1wins += 1
+                else: 
+                    p2wins += 1
+            if p1wins > p2wins:
                 print("winner",P[i])
-            if i+2 >= len(P):
+                newP.append(P[i])
+            else:
                 newP.append(P[i+1])
+                print("winner",P[i+1])
+            if i+3 >= len(P) and i+2 < len(P):
+                newP.append(P[i+2])
             i += 2
         P = newP
     return P[0]
 
 
-print(genetic(50, 100))
-
+# print(genetic(50, 100))
+print(co_evolve())
 # [0.6219952084521901, 27.0, 4.0, 26.0, 0.46015349243263104, 0.713687637052133, 7.0, 2.0, 26.0, 4.0, 0.0, 0.6337036278226582, 0.15012449622656665, 0.5226624630505539, 0.7313044431665402, 0.6662731224336713, 0.667683543270852, 0.906174549240715]
