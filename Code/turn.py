@@ -366,3 +366,82 @@ def calc_pips(board, player):
                 total += (24 - point)
     return total
 
+def count_blots(board, player):
+    """Counts the number of a player's blots in a region
+
+    Args:
+        board (list(int)): Specified board region
+        player (int): Whether player is controlling black or white
+
+    Returns:
+        int: Number of blots in specified region
+    """
+    return len([i for i in board if i == player])
+
+def count_walls(board, player):
+    """Counts the number of walls in a specified region
+
+    Args:
+        board (list(int)): Specified region checking in
+        player (int): Whether player is controlling black or white
+
+    Returns:
+        int: Numbers of player's walls in region
+    """
+    if player == 1:
+        return len([i for i in board if i > player])
+    else:
+        return len([i for i in board if i < player])
+
+def is_wall(point, player):
+    """Checks if a point is a wall occupied by current player
+
+    Args:
+        point (int): The pieces occupying a point on the board
+        player (int): -1 for black, 1 for white
+
+    Returns:
+        Bool: True if wall, False if not
+    """
+    if player == 1:
+        return point > player
+    else:
+        return point < player
+    
+def get_furthest_back(board, player):
+    """Identifies the player's furthest back piece
+
+    Args:
+        board (list(int)): The representation of the board
+        player (int): -1 for black, 1 for white
+
+    Returns:
+        int: The point that the furthest back piece occupies
+    """
+    if player == 1:
+        furthest_back = 23
+        while board[furthest_back] < player:
+            furthest_back -=1
+    else:
+        furthest_back = 0
+        while board[furthest_back] > player:
+            furthest_back += 1
+    return furthest_back
+
+def did_move_piece(point_before, point_after, player):
+    """Checks if a piece was moved in the turn
+
+    Args:
+        point_before (int): The number of pieces occupied the point before the move was made
+        point_after (int): The number of pieces occupying the point after the move has been made
+        player (int): -1 for black, 1 for white
+
+    Returns:
+        Bool: True if a piece on the point was moved, else False
+    """
+    if player == 1 and point_before > point_after:
+        return True
+    elif player == -1 and point_before < point_after:
+        return True
+    else:
+        return False

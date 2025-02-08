@@ -11,7 +11,7 @@ from constants import *
 from gui import *
 from testfile import *
 from data import *
-
+from Code.genetic_agent import *
 
 global background
 global white_score
@@ -240,7 +240,6 @@ def human_play(moves, boards, start_board, roll, colour):
                             highlight_checker(abs(current_board[start]) - 1, start, "Images/black_highlight.png", True)
                             for start in highlight.keys()
                         ]
-                    
                     pygame.display.update()
 
             update_screen(background, white_score, black_score, current_board, w_score, b_score, True)
@@ -256,6 +255,8 @@ def human_play(moves, boards, start_board, roll, colour):
 ## END OF HUMAN PLAY ##
 ########################
 
+
+
 def greedy_play(moves, boards, current_board, player, roll, weights=None):
     """Greedy agent makes a move
 
@@ -270,11 +271,13 @@ def greedy_play(moves, boards, current_board, player, roll, weights=None):
         [int]: The board resulting from move made
     """
     # Identify scores for each move's resulting board state and make sure scores[i] = boards[i]
-    scores = [evaluate(current_board, boards[i], player, weights) for i in range(len(moves))]
+    if weights is None:
+        scores = [evaluate(current_board, boards[i], player, weights) for i in range(len(moves))]
+    else:
+        scores = [genetic_evaluate(current_board, boards[i], player, weights) for i in range(len(moves))]
     # Match scores, boards and moves together and sort in descending order of scores
     sorted_triplets = sorted(zip(scores, boards, moves), key=lambda x: x[0], reverse=True)
     sorted_scores, sorted_boards, sorted_moves = zip(*sorted_triplets)
-    # sorted_boards = [invert_board(i) for i in sorted_boards]
     
     max_score = [i for i in sorted_scores if i==max(scores)]
     if len(max_score) > 1:
@@ -725,22 +728,21 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
 
 
 def collect_data(p1strat, pminus1strat, first_to):
-    first_to = int(first_to)
-    myFile = f"./Data/{p1strat}data.txt"
+    myFile = "./Data/greedydata.txt"
     white_tot, black_tot = 0,0
     white_wins, black_wins = 0,0
-    for i in range(100000):
+    for i in range(10000):
         dataFile = open(myFile, 'a')
         
-        p1vector,w_score,pminus1vector,b_score= backgammon(first_to, "GREEDY", None, "GENETIC", [26.0, 16.0, 12.0, 25.0, 26.0, 0.8263149638422629, 15.0, 16.0, 0.0, 3.0, 0.0, 0.6337036278226582, 0.46015349243263104, 0.6219952084521901, 0.15441958338428996, 0.963558507392415, 0.35808736683996545, 0.8994194567423711])
+        p1vector,w_score,pminus1vector,b_score= backgammon(1, "GREEDY",None, "GREEDY",None)
         dataFile.write(f"{w_score}, {b_score}\n")
         # print(p1vector,w_score,pminus1vector,b_score)
         dataFile.close()
         white_tot+=w_score
         black_tot+=b_score
-        if b_score >= first_to:
+        if b_score >= 1:
             black_wins += 1
-        if w_score >= first_to:
+        if w_score >= 1:
             white_wins +=1
         if i % 50 == 0:
             print("score")
@@ -759,24 +761,28 @@ if __name__ == "__main__":
     if len(sys.argv[:]) > 1:
         if sys.argv[1] == "data":
             if len(sys.argv[:]) >= 3:
-                collect_data(sys.argv[2], sys.argv[3], sys.argv[4])
+                collect_data(sys.argv[2], sys.argv[3], 5)
             else:
                 collect_data("RANDOM",'RANDOM',5)
+            # print(calc_first())
         # elif sys.argv[1] == 'time':
         #     collect_times("GREEDY", "GREEDY", 5)
+        # print(calc_av_eval())
+        # calc_first()
+        summarise_rolls()
     else:
         # print(calc_av_eval())
         
         # print(calc_first())
-        score_to = 25
-        player1strat = "GREEDY"
-        playerminus1strat = "GENETIC"
+        score_to = 5
+        player1strat = "GENETIC"
+        playerminus1strat = "GREEDY"
         weights1, weights2 = None, None
         if player1strat == "GENETIC":
             # Optimal Weights for first-to-25 victory
-            weights1 = [26.0, 16.0, 12.0, 25.0, 26.0, 0.8263149638422629, 15.0, 16.0, 0.0, 3.0, 0.0, 0.6337036278226582, 0.46015349243263104, 0.6219952084521901, 0.15441958338428996, 0.963558507392415, 0.35808736683996545, 0.8994194567423711]
+            weights1 = [0.6219952084521901, 27.0, 4.0, 26.0, 0.46015349243263104, 0.713687637052133, 7.0, 2.0, 26.0, 4.0, 0.0, 0.6337036278226582, 0.15012449622656665, 0.5226624630505539, 0.7313044431665402, 0.6662731224336713, 0.667683543270852, 0.906174549240715]
         if playerminus1strat == "GENETIC":
-            weights2 = [26.0, 16.0, 12.0, 25.0, 26.0, 0.8263149638422629, 15.0, 16.0, 0.0, 3.0, 0.0, 0.6337036278226582, 0.46015349243263104, 0.6219952084521901, 0.15441958338428996, 0.963558507392415, 0.35808736683996545, 0.8994194567423711]
+            weights2 = [0.6219952084521901, 27.0, 4.0, 26.0, 0.46015349243263104, 0.713687637052133, 7.0, 2.0, 26.0, 4.0, 0.0, 0.6337036278226582, 0.15012449622656665, 0.5226624630505539, 0.7313044431665402, 0.6662731224336713, 0.667683543270852, 0.906174549240715]
         p1vector, w_score, pminus1vector, b_score = backgammon(score_to,player1strat,weights1,playerminus1strat,weights2)
         print(p1vector,pminus1vector)
             
