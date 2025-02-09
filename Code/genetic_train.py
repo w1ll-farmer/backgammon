@@ -37,7 +37,7 @@ def reproduce(mother, father):
 
 
 def calc_fitness(individual):
-    _, g_score, _, opp_score = backgammon(13, "GENETIC",individual, "GREEDY")
+    _, g_score, _, opp_score = backgammon(5, "GENETIC",individual, "GREEDY")
     try:
         fitness = g_score / opp_score
     except ZeroDivisionError:
@@ -178,6 +178,6 @@ def co_evolve():
     return P[0]
 
 
-# print(genetic(50, 100))
-print(co_evolve())
+print(genetic(50, 100))
+# print(co_evolve())
 # [0.6219952084521901, 27.0, 4.0, 26.0, 0.46015349243263104, 0.713687637052133, 7.0, 2.0, 26.0, 4.0, 0.0, 0.6337036278226582, 0.15012449622656665, 0.5226624630505539, 0.7313044431665402, 0.6662731224336713, 0.667683543270852, 0.906174549240715]
