@@ -13,6 +13,7 @@ from testfile import *
 from data import *
 from genetic_agent import *
 from expectimax_agent import *
+from adaptive_agent import *
 
 global background
 global white_score
@@ -466,6 +467,8 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     elif player1strat == "EXPECTIMAX":
                         move, board = expectimax_play(moves1, boards1, player1)
                         move = move.pop()
+                    elif player1strat == "ADAPTIVE":
+                        move, board = adaptive_play(moves1, boards1, player1, roll, board)
                     if commentary:
                         print(f"Move Taken: {move}")
                     if GUI_FLAG:
@@ -525,6 +528,8 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     elif player2strat == "EXPECTIMAX":
                         move, board = expectimax_play(moves2, boards2, player2)
                         move = move.pop()
+                    elif player2strat == "ADAPTIVE":
+                        move, board = adaptive_play(moves2, boards2, player2, roll, board)
                     if commentary:
                         print(f"Move Taken: {move}")
                 else:
@@ -573,6 +578,8 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     elif player1strat == "EXPECTIMAX":
                         move, board = expectimax_play(moves1, boards1, player1)
                         move = move.pop()
+                    elif player1strat == "ADAPTIVE":
+                        move, board = adaptive_play(moves1, boards1, player1, roll, board)
                     if commentary:    
                         print(f"Move Taken: {move}")
                 else:
@@ -633,6 +640,8 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     elif player2strat == "EXPECTIMAX":
                         move, board = expectimax_play(moves2, boards2, player2)
                         move = move.pop()
+                    elif player2strat == "ADAPTIVE":
+                        move, board = adaptive_play(moves2, boards2, player2, roll, board)
                         if commentary:
                             print(f"Move Taken: {move}")
                 else:
