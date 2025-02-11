@@ -38,3 +38,7 @@ def randobot_play(roll, moves, boards):
     
     board = boards[moves.index(move)]
     return board, move
+
+def randobot_accept_double():
+    return bool(randint(0,1))
+

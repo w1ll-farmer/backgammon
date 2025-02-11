@@ -354,16 +354,16 @@ def calc_pips(board, player):
             if point == 27:
                 continue
             elif point == 25:
-                total += 25
+                total += 25*board[point]
             else:
-                total += (point + 1)
+                total += (point + 1)*board[point]
         else:
             if point == 26:
                 continue
             elif point == 24:
-                total += 25
+                total += 25*board[point]
             else:
-                total += (24 - point)
+                total += (24 - point)*board[point]
     return total
 
 def count_blots(board, player):
@@ -445,3 +445,17 @@ def did_move_piece(point_before, point_after, player):
         return True
     else:
         return False
+
+def calc_prime(board, player):
+    prime = 0
+    max_prime = 0
+    for point in board:
+        if is_wall(point, player):
+            prime +=1
+        else:
+            if prime > max_prime: max_prime = prime
+            prime = 0
+        
+    if prime > max_prime: max_prime = prime
+    return max_prime
+    
