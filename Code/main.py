@@ -12,6 +12,7 @@ from gui import *
 from testfile import *
 from data import *
 from genetic_agent import *
+from expectimax_agent import *
 
 global background
 global white_score
@@ -255,8 +256,6 @@ def human_play(moves, boards, start_board, roll, colour):
 ## END OF HUMAN PLAY ##
 ########################
 
-
-
 def greedy_play(moves, boards, current_board, player, roll, weights=None):
     """Greedy agent makes a move
 
@@ -464,6 +463,9 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                         # print('weights',weights1)
                         move, board = greedy_play(moves1, boards1, board, player1, roll, weights1)
                         move = move.pop()
+                    elif player1strat == "EXPECTIMAX":
+                        move, board = expectimax_play(moves1, boards1, player1)
+                        move = move.pop()
                     if commentary:
                         print(f"Move Taken: {move}")
                     if GUI_FLAG:
@@ -520,6 +522,9 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                         # print('weights',weights2)
                         move, board = greedy_play(moves2, boards2, board, player2, roll, weights2)
                         move = move.pop()
+                    elif player2strat == "EXPECTIMAX":
+                        move, board = expectimax_play(moves2, boards2, player2)
+                        move = move.pop()
                     if commentary:
                         print(f"Move Taken: {move}")
                 else:
@@ -564,6 +569,9 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     elif player1strat == "GENETIC":
                         # print('weights',weights1)
                         move, board = greedy_play(moves1, boards1, board, player1, roll, weights1)
+                        move = move.pop()
+                    elif player1strat == "EXPECTIMAX":
+                        move, board = expectimax_play(moves1, boards1, player1)
                         move = move.pop()
                     if commentary:    
                         print(f"Move Taken: {move}")
@@ -621,6 +629,9 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     elif player2strat == "GENETIC":
                         # print('weights',weights2)
                         move, board = greedy_play(moves2, boards2, board, player2, roll, weights2)
+                        move = move.pop()
+                    elif player2strat == "EXPECTIMAX":
+                        move, board = expectimax_play(moves2, boards2, player2)
                         move = move.pop()
                         if commentary:
                             print(f"Move Taken: {move}")
@@ -728,13 +739,13 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
 
 
 def collect_data(p1strat, pminus1strat, first_to):
-    myFile = "./Data/geneticvsgreedy.txt"
+    myFile = "./Data/expectimaxvsgenetic.txt"
     white_tot, black_tot = 0,0
     white_wins, black_wins = 0,0
     for i in range(10000):
         dataFile = open(myFile, 'a')
         
-        p1vector,w_score,pminus1vector,b_score= backgammon(1, "GENETIC",[10.0, 21.0, 12.0, 11.0, 15.0, 0.5664383320165035, 10.0, 4.0, 25.0, 6.0, 0.6461166029382669, 0.5378085318259279, 0.5831066576570856, 0.9552318750278183, 0.07412843879077036, 0.17550708535892934, 0.49191128795644823, 0.556755495835094], "GREEDY",None)
+        p1vector,w_score,pminus1vector,b_score= backgammon(1, "EXPECTIMAX",None, "GENETIC",[10.0, 21.0, 12.0, 11.0, 15.0, 0.5664383320165035, 10.0, 4.0, 25.0, 6.0, 0.6461166029382669, 0.5378085318259279, 0.5831066576570856, 0.9552318750278183, 0.07412843879077036, 0.17550708535892934, 0.49191128795644823, 0.556755495835094])
         dataFile.write(f"{w_score}, {b_score}\n")
         # print(p1vector,w_score,pminus1vector,b_score)
         dataFile.close()
@@ -774,8 +785,8 @@ if __name__ == "__main__":
         # print(calc_av_eval())
         
         # print(calc_first())
-        score_to = 25
-        player1strat = "GENETIC"
+        score_to = 5
+        player1strat = "EXPECTIMAX"
         playerminus1strat = "GREEDY"
         weights1, weights2 = None, None
         if player1strat == "GENETIC":
