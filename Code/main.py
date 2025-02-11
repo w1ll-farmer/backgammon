@@ -14,6 +14,7 @@ from data import *
 from genetic_agent import *
 from expectimax_agent import *
 from adaptive_agent import *
+from double import *
 
 global background
 global white_score
@@ -795,7 +796,7 @@ if __name__ == "__main__":
         
         # print(calc_first())
         score_to = 5
-        player1strat = "EXPECTIMAX"
+        player1strat = "GENETIC"
         playerminus1strat = "GREEDY"
         weights1, weights2 = None, None
         if player1strat == "GENETIC":

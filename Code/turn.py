@@ -354,16 +354,16 @@ def calc_pips(board, player):
             if point == 27:
                 continue
             elif point == 25:
-                total += 25*board[point]
+                total += abs(25*board[point])
             else:
-                total += (point + 1)*board[point]
+                total += abs((point + 1)*board[point])
         else:
             if point == 26:
                 continue
             elif point == 24:
-                total += 25*board[point]
+                total += abs(25*board[point])
             else:
-                total += (24 - point)*board[point]
+                total += abs((24 - point)*board[point])
     return total
 
 def count_blots(board, player):
