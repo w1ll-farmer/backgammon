@@ -318,7 +318,15 @@ def greedy_play(moves, boards, current_board, player, roll, weights=None):
         chosen_board = sorted_boards[0]
     
     return chosen_move, chosen_board
-    
+
+def adaptive_play(moves, boards, player, turn, current_board, roll):
+    if turn == 1:
+        return greedy_play(moves, boards, current_board, player, roll)
+    elif all_checkers_home(player, current_board) and all_past(current_board):
+        pass
+        # Bear off table lookup
+    else:
+        adaptive_midgame(moves, boards, player, turn)
 
 ###############
 ## MAIN BODY ##
@@ -469,7 +477,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                         move, board = expectimax_play(moves1, boards1, player1)
                         move = move.pop()
                     elif player1strat == "ADAPTIVE":
-                        move, board = adaptive_play(moves1, boards1, player1, roll, board)
+                        move, board = adaptive_play(moves1, boards1, player1, time_step, board, roll)
                     if commentary:
                         print(f"Move Taken: {move}")
                     if GUI_FLAG:
@@ -530,7 +538,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                         move, board = expectimax_play(moves2, boards2, player2)
                         move = move.pop()
                     elif player2strat == "ADAPTIVE":
-                        move, board = adaptive_play(moves2, boards2, player2, roll, board)
+                        move, board = adaptive_play(moves2, boards2, player2, time_step, board, roll)
                     if commentary:
                         print(f"Move Taken: {move}")
                 else:
@@ -580,7 +588,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                         move, board = expectimax_play(moves1, boards1, player1)
                         move = move.pop()
                     elif player1strat == "ADAPTIVE":
-                        move, board = adaptive_play(moves1, boards1, player1, roll, board)
+                        move, board = adaptive_play(moves1, boards1, player1, time_step, board, roll)
                     if commentary:    
                         print(f"Move Taken: {move}")
                 else:
@@ -642,9 +650,9 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                         move, board = expectimax_play(moves2, boards2, player2)
                         move = move.pop()
                     elif player2strat == "ADAPTIVE":
-                        move, board = adaptive_play(moves2, boards2, player2, roll, board)
-                        if commentary:
-                            print(f"Move Taken: {move}")
+                        move, board = adaptive_play(moves2, boards2, player2, time_step, board, roll)
+                    if commentary:
+                        print(f"Move Taken: {move}")
                 else:
                     if commentary:
                         print("No move can be played")
@@ -786,11 +794,15 @@ if __name__ == "__main__":
             else:
                 collect_data("RANDOM",'RANDOM',5)
             # print(calc_first())
-        # elif sys.argv[1] == 'time':
-        #     collect_times("GREEDY", "GREEDY", 5)
-        # print(calc_av_eval())
-        # calc_first()
-        summarise_rolls()
+        else:
+            score_to = 25
+            player1strat = "USER"
+            playerminus1strat = sys.argv[2]
+            if playerminus1strat == "GENETIC":
+                weights2 = [10.0, 21.0, 12.0, 11.0, 15.0, 0.5664383320165035, 10.0, 4.0, 25.0, 6.0, 0.6461166029382669, 0.5378085318259279, 0.5831066576570856, 0.9552318750278183, 0.07412843879077036, 0.17550708535892934, 0.49191128795644823, 0.556755495835094]
+            else:
+                weights2 = None
+            p1vector, w_score, pminus1vector, b_score = backgammon(score_to, player1strat, None, playerminus1strat, weights2)
     else:
         # print(calc_av_eval())
         
