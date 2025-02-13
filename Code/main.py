@@ -324,7 +324,7 @@ def adaptive_play(moves, boards, player, turn, current_board, roll):
         return greedy_play(moves, boards, current_board, player, roll)
     elif all_checkers_home(player, current_board) and all_past(current_board):
         pass
-        # Bear off table lookup
+        # Race regression
     else:
         adaptive_midgame(moves, boards, player, turn)
 
@@ -349,17 +349,18 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
     """
     #### SCORE INITIALISATION ####
     w_score, b_score = 0,0
+    prev_score = [0,0]
     p1vector = [0,0,0] 
     pminus1vector = [0,0,0] 
-    
     game = 1
     #### MAIN LOOP ####
     while max([w_score, b_score]) < score_to:
         board = make_board()
-        # board = [1,-5,-5,-5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,10]
         if GUI_FLAG:
             update_screen(background, white_score, black_score, board, w_score, b_score, True)
         time_step = 1
+        cube_val = 1
+        double_player = 0
         #### GAME LOOP ####
         while not game_over(board) and not is_error(board):
             if GUI_FLAG:
@@ -446,6 +447,14 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     print(f"Player {player1} rolled {roll}")
             else:
                 # All other rolls are generated on spot
+                has_double_rejected = False   
+                if can_double(double_player, player1strat):
+                    cube_val, double_player, has_double_rejected= double_process(player1strat, player1, board, player2strat, cube_val)
+                if has_double_rejected:
+                    if commentary: print("Double Rejected")
+                    board = get_double_rejected_board(player1)
+                    break
+                elif commentary: print("Double accepted")
                 moves1, boards1, roll = start_turn(player1, board)
             if test:
                 save_roll(roll, player1)
@@ -517,7 +526,14 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     sleep(1)
                 
                 #### BLACK PLAYER 2'S TURN ####
-                
+                has_double_rejected = False   
+                if can_double(double_player, player2strat):
+                    cube_val, double_player, has_double_rejected= double_process(player2strat, player2, board, player1strat, cube_val)
+                if has_double_rejected:
+                    if commentary: print("Double Rejected")
+                    board = get_double_rejected_board(player2)
+                    break
+                elif commentary: print("Double accepted")
                 moves2, boards2, roll = start_turn(player2, board)
                 
                 if test:
@@ -630,7 +646,14 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     break
                 
                 #### WHITE PLAYER 2'S TURN ####
-                
+                has_double_rejected = False   
+                if can_double(double_player, player2strat):
+                    cube_val, double_player, has_double_rejected= double_process(player2strat, player2, board, player1strat, cube_val)
+                if has_double_rejected:
+                    if commentary: print("Double Rejected")
+                    board = get_double_rejected_board(player2)
+                    break
+                elif commentary: print("Double accepted")
                 moves2, boards2, roll = start_turn(player2, board)
                 if test:
                     save_roll(roll, player2)
@@ -691,6 +714,8 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 sleep(1)
         #### CHECKS FOR GAME OVER AND WINNING POINTS ####
         if game_over(board):
+            crawford_game = is_crawford_game(w_score, b_score, score_to, prev_score)
+            prev_score = [w_score, b_score]
             game += 1
             timestep(time_step)
             if commentary:
@@ -698,11 +723,11 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 
             if is_backgammon(board):
                 if board[26] == -15:
-                    pminus1vector[2] +=1
+                    pminus1vector[2] +=cube_val
                     if commentary:
                         print("Player -1 win")
                 else:
-                    p1vector[2] +=1
+                    p1vector[2] +=cube_val
                     if commentary:
                         print("Player 1 win")
                 if commentary:
@@ -710,11 +735,11 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     
             elif is_gammon(board):
                 if board[26] == -15:
-                    pminus1vector[1] +=1
+                    pminus1vector[1] +=cube_val
                     if commentary:
                         print("Player -1 win")
                 else:
-                    p1vector[1] +=1
+                    p1vector[1] +=cube_val
                     if commentary:
                         print("Player 1 win")
                 if commentary:
@@ -722,11 +747,11 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     
             else:
                 if board[26] == -15:
-                    pminus1vector[0] +=1
+                    pminus1vector[0] +=cube_val
                     if commentary:
                         print("Player -1 win")
                 else:
-                    p1vector[0] +=1
+                    p1vector[0] +=cube_val
                     if commentary:
                         print("Player 1 win")
             
@@ -749,6 +774,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 player2strat = blackstrat
                 weights2 = blackweights
                 w_score = p1vector[0] + 2*p1vector[1] + 3*p1vector[2]
+            cube_val = 1
             if GUI_FLAG:
                 update_screen(background, white_score, black_score, board, w_score, b_score, True)    
         #### CHECKS FOR GAME OVER AND WINNING POINTS ####
