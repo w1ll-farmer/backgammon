@@ -20,7 +20,7 @@ def basic_should_double(equity):
 def basic_accept_double(equity):
     return True if equity > -0.5 else False
 
-def user_accept_double(player, cube_val):
+def user_accept_double(player, cube_val, double_player):
     user_accept = input("Opponent offer x2. y/n").lower()
     if user_accept == 'y':
         cube_val, double_player = double(cube_val, player)
@@ -41,7 +41,7 @@ def is_crawford_game(w_score, b_score, score_to, prev_score):
 def get_double_rejected_board(player):
     return [int(0.5-(player/2)),0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,int(-0.5-(player/2)),0,0,int(-14.5+(player/2)),int(14.5+(player/2))]
 
-def double_process(playerstrat, player, board, oppstrat, cube_val):
+def double_process(playerstrat, player, board, oppstrat, cube_val, double_player):
     has_double_rejected = False
     if player in strategies:
         if basic_should_double(calc_equity(board, player)):
@@ -55,7 +55,7 @@ def double_process(playerstrat, player, board, oppstrat, cube_val):
                     has_double_rejected = True
             elif oppstrat == "USER":
                 if not GUI_FLAG:
-                    cube_val, double_player, has_double_rejected = user_accept_double(-player, cube_val)
+                    cube_val, double_player, has_double_rejected = user_accept_double(-player, cube_val, double_player)
                 else:
                     print("Feature is work in progress")
     else:
@@ -65,7 +65,7 @@ def double_process(playerstrat, player, board, oppstrat, cube_val):
                 user_double = input("y/n ").lower()
                 if user_double == "y":
                     if oppstrat == "USER":
-                        cube_val, double_player, has_double_rejected = user_accept_double(-player, cube_val)
+                        cube_val, double_player, has_double_rejected = user_accept_double(-player, cube_val, double_player)
                     elif oppstrat in strategies:
                         if basic_accept_double(calc_equity(board, -player)):
                             # Opponent accepts double

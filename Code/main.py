@@ -356,6 +356,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
     #### MAIN LOOP ####
     while max([w_score, b_score]) < score_to:
         board = make_board()
+        print_board(board)
         if GUI_FLAG:
             update_screen(background, white_score, black_score, board, w_score, b_score, True)
         time_step = 1
@@ -447,14 +448,15 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     print(f"Player {player1} rolled {roll}")
             else:
                 # All other rolls are generated on spot
-                has_double_rejected = False   
-                if can_double(double_player, player1strat):
-                    cube_val, double_player, has_double_rejected= double_process(player1strat, player1, board, player2strat, cube_val)
-                if has_double_rejected:
-                    if commentary: print("Double Rejected")
-                    board = get_double_rejected_board(player1)
-                    break
-                elif commentary: print("Double accepted")
+                if time_step > 1:
+                    has_double_rejected = False   
+                    if can_double(double_player, player1strat):
+                        cube_val, double_player, has_double_rejected= double_process(player1strat, player1, board, player2strat, cube_val, double_player)
+                    if has_double_rejected:
+                        if commentary: print("Double Rejected")
+                        board = get_double_rejected_board(player1)
+                        break
+                    elif commentary: print("Double accepted")
                 moves1, boards1, roll = start_turn(player1, board)
             if test:
                 save_roll(roll, player1)
@@ -479,7 +481,6 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                         move = move.pop()
                         
                     elif player1strat == "GENETIC":
-                        # print('weights',weights1)
                         move, board = greedy_play(moves1, boards1, board, player1, roll, weights1)
                         move = move.pop()
                     elif player1strat == "EXPECTIMAX":
@@ -528,7 +529,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 #### BLACK PLAYER 2'S TURN ####
                 has_double_rejected = False   
                 if can_double(double_player, player2strat):
-                    cube_val, double_player, has_double_rejected= double_process(player2strat, player2, board, player1strat, cube_val)
+                    cube_val, double_player, has_double_rejected= double_process(player2strat, player2, board, player1strat, cube_val, double_player)
                 if has_double_rejected:
                     if commentary: print("Double Rejected")
                     board = get_double_rejected_board(player2)
@@ -648,7 +649,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 #### WHITE PLAYER 2'S TURN ####
                 has_double_rejected = False   
                 if can_double(double_player, player2strat):
-                    cube_val, double_player, has_double_rejected= double_process(player2strat, player2, board, player1strat, cube_val)
+                    cube_val, double_player, has_double_rejected= double_process(player2strat, player2, board, player1strat, cube_val, double_player)
                 if has_double_rejected:
                     if commentary: print("Double Rejected")
                     board = get_double_rejected_board(player2)
@@ -666,7 +667,6 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                         move, board = greedy_play(moves2, boards2, board, player2, roll)
                         move = move.pop()
                     elif player2strat == "GENETIC":
-                        # print('weights',weights2)
                         move, board = greedy_play(moves2, boards2, board, player2, roll, weights2)
                         move = move.pop()
                     elif player2strat == "EXPECTIMAX":
@@ -686,8 +686,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     if len(moves2) > 0 and player2strat != "USER":
                         start_point, start_checkers, end_point, end_checkers = parse_move(board, move)
                         
-                        # if len(set(start_checkers)) < len(start_checkers) or len(set(end_checkers)) < len(end_checkers):
-                            # fix_same_checker(start_checkers, end_checkers)
+                    
                         for i in range(len(start_point)):
                             highlight_checker(start_checkers[i], start_point[i], "Images/white_highlight.png")
                             pygame.display.update()
@@ -697,7 +696,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                             pygame.display.update()
                             sleep(1)
                             
-                            # update_screen(background, white_score, black_score, board, w_score, b_score, True)
+                            
                             highlight_checker(end_checkers[i], end_point[i], "Images/white_pawn.png")
                             pygame.display.update()
                     update_screen(background, white_score, black_score, board, w_score, b_score, True)
@@ -775,6 +774,8 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 weights2 = blackweights
                 w_score = p1vector[0] + 2*p1vector[1] + 3*p1vector[2]
             cube_val = 1
+            time_step = 1
+            if commentary: print(f"White: {w_score} Black: {b_score}")
             if GUI_FLAG:
                 update_screen(background, white_score, black_score, board, w_score, b_score, True)    
         #### CHECKS FOR GAME OVER AND WINNING POINTS ####
@@ -834,8 +835,8 @@ if __name__ == "__main__":
         
         # print(calc_first())
         score_to = 5
-        player1strat = "GENETIC"
-        playerminus1strat = "GREEDY"
+        player1strat = "USER"
+        playerminus1strat = "USER"
         weights1, weights2 = None, None
         if player1strat == "GENETIC":
             # Optimal Weights for first-to-25 victory

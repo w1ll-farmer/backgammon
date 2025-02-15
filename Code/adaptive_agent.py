@@ -28,10 +28,10 @@ def calc_equity(board, player):
     pip_adv = calc_pips(board, -player) - calc_pips(board, player)
     blots = count_blots(board, player) + count_blots(board, -player)
     prime = calc_prime(board, player)
-    home_strength = count_walls(player_home) - 0.5 * count_blots(player_home)
-    opp_home_strength = count_walls(opp_home) - 0.5 * count_blots(opp_home)
+    home_strength = count_walls(player_home, player) - 0.5 * count_blots(player_home, player)
+    opp_home_strength = count_walls(opp_home, player) - 0.5 * count_blots(opp_home, player)
     gammon_potential = calc_gammon_potential(board, player, player_home, opp_home)
-    bear_off_progress = abs(board[int(26.5+(player/2))]) / 15
+    bear_off_progress = abs(board[int(26.5+(player/2))]) / 3
     
     equity = (
         pip_weight * pip_adv +
@@ -45,10 +45,11 @@ def calc_equity(board, player):
     # Clamp equity to [-1, 1] range
     return max(-1, min(1, equity))
 
+
 def calc_gammon_potential(board, player, player_home, opp_home):
     opp_pieces_home = count_walls(opp_home, -player) + count_blots(opp_home, -player)
     opp_pieces_player_home = count_walls(player_home, -player) + count_blots(player_home, -player)
-    bearing_off_progress = abs(board[int(26.5+(player/2))]) / 15
+    bearing_off_progress = abs(board[int(26.5+(player/2))])
     gammon_potential = (
         0.2 * opp_pieces_home +
         0.3 * opp_pieces_player_home +
@@ -117,3 +118,4 @@ def classify_bearoff_position(dist_on_roll, dist_off_roll):
         return 0.5
     else:
         return 1
+
