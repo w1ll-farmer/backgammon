@@ -183,11 +183,105 @@ def transform_moves(moves):
     
     return transformed_moves
 
+def compare_eval_equity(evaluation, equity):
+    myFile = open("./Data/evalequitycompare.txt","a")
+    myFile.write(f"{evaluation}, {equity}\n")
+    myFile.close()
+    
+def get_eval_equity():
+    myFile = open("./Data/evalequitycompare.txt","r")
+    evaluation = []
+    equity = []
+    for line in myFile:
+        ev, eq = line.split(",")
+        evaluation.append(float(ev))
+        equity.append(float(eq))
+    return evaluation, equity
 
+
+def linear_regression(evaluation, equity):
+    """
+    Computes the linear regression coefficients (slope and intercept) 
+    between evaluation and equity using the least squares method.
+
+    Parameters:
+      - evaluation: List of evaluation values (independent variable, X)
+      - equity: List of equity values (dependent variable, Y)
+
+    Returns:
+      - slope (m)
+      - intercept (b)
+    """
         
+    if len(evaluation) != len(equity) or len(evaluation) == 0:
+        raise ValueError("Input lists must be of the same non-zero length.")
 
-# board = make_board()
-# board[0] = -1
-# board[1] = -1
-# print(invert_board(board))
-# summarise_rolls()
+    n = len(evaluation)
+    sum_x = sum(evaluation)
+    sum_y = sum(equity)
+    sum_xy = sum(x * y for x, y in zip(evaluation, equity))
+    sum_x2 = sum(x ** 2 for x in evaluation)
+
+    # Compute slope (m) and intercept (b)
+    denominator = (n * sum_x2 - sum_x ** 2)
+    if denominator == 0:
+        raise ValueError("Denominator is zero, cannot compute regression.")
+
+    slope = (n * sum_xy - sum_x * sum_y) / denominator
+    intercept = (sum_y - slope * sum_x) / n
+
+    return slope, intercept
+        
+def r_squared(evaluation, equity, slope, intercept):
+    """
+    Computes the R² (coefficient of determination) for a linear regression model.
+    
+    Parameters:
+      - evaluation: List of independent variable values (X)
+      - equity: List of dependent variable values (Y)
+      - slope: Computed slope from regression
+      - intercept: Computed intercept from regression
+
+    Returns:
+      - R² value
+    """
+    mean_y = sum(equity) / len(equity)
+    ss_total = sum((y - mean_y) ** 2 for y in equity)
+    ss_residual = sum((y - (slope * x + intercept)) ** 2 for x, y in zip(evaluation, equity))
+    
+    return 1 - (ss_residual / ss_total) if ss_total != 0 else 0
+
+import numpy as np
+from scipy.stats import norm
+
+def map_equity_to_normal(evaluation, equity):
+    """
+    Maps equity values to a normal distribution of evaluation values.
+    
+    Parameters:
+      - evaluation: List of independent variable values (X)
+      - equity: List of dependent variable values (Y)
+
+    Returns:
+      - Mapped equity values following a normal distribution of evaluation values
+    """
+    mean_eval = np.mean(evaluation)
+    std_eval = np.std(evaluation)
+
+    # Normalize equity values to the standard normal distribution
+    equity_z = (equity - np.mean(equity)) / np.std(equity)
+
+    # Map to evaluation's normal distribution
+    mapped_equity = mean_eval + equity_z * std_eval
+
+    return mapped_equity
+
+def check_correlation():
+    evaluation, equity = get_eval_equity()
+    slope, intercept = linear_regression(evaluation, equity)
+    print(f"Equity = Evaluation*{slope}+{intercept}")
+    print(f"R^2={r_squared(evaluation, equity, slope, intercept)}")
+    print(np.mean(evaluation), np.std(evaluation), np.mean(equity), np.std(equity))
+    print(max(equity))
+
+

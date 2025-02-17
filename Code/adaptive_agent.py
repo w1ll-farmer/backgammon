@@ -1,36 +1,55 @@
 from turn import *
-# from double import *
+from random import randint
 
-def adaptive_midgame(moves, boards, player, player_score, opponent_score, cube_val, first_to):
+def adaptive_midgame(moves, boards, player, player_score, opponent_score, cube_val, first_to, weights, roll):
     # Aims to play the move that boosts equity most
     best_equity = calc_advanced_equity(boards[0], player, player_score, opponent_score, cube_val, first_to)
     best_board = boards[0]
     best_move = moves[0]
+    best_board_av_lookahead = None
     for board in boards:
-        equity = calc_advanced_equity(board, player, player_score, opponent_score, cube_val, first_to)
+        equity = calc_advanced_equity(board, player, player_score, opponent_score, cube_val, first_to, weights)
         if best_equity is None or best_equity < equity:
             best_equity = equity
             best_board = board
             best_move = moves[boards.index(best_board)]
+        elif best_equity == equity:
+            if best_board_av_lookahead is None:
+                best_board_av_lookahead = get_lookahead(best_board, player, roll, 
+                                                        player_score, opponent_score, cube_val,
+                                                        first_to, weights)
+            if best_board_av_lookahead != -999:   
+                current_board_av_lookahead = get_lookahead(board, player, roll, player_score,
+                                                        opponent_score, cube_val, first_to, weights)
+                if current_board_av_lookahead < best_board_av_lookahead:
+                    best_equity = equity
+                    best_board = board
+                    best_move = moves[boards.index(best_board)]
+                    best_board_av_lookahead = current_board_av_lookahead
     return best_move, best_board
 
-def calc_advanced_equity(board, player, player_score, opponent_score, cube_val, first_to):
-    # Adjusted weights (tuned through deeper analysis)
-    pip_weight = 0.05  # Increase importance of race in later game
-    blot_penalty = -0.2  # Harsher penalty for blots that can be hit
-    prime_weight = 0.12  # Increased impact of prime structures
-    home_board_weight = 0.08  # Stronger boards are more valuable
-    opp_home_board_penalty = -0.12  # Opponent's home board makes hits worse
-    gammon_weight = 0.25  # Increased weight for gammon potential
-    bearing_off_weight = 0.18  # Make bearing off more valuable
-    cube_volatility_weight = 0.15
+def calc_advanced_equity(board, player, player_score, opponent_score, cube_val, first_to, weights=None):
+    
+    if weights is None:
+        pip_weight = 0.05  # Increase importance of race in later game
+        blot_penalty = -0.2  # Harsher penalty for blots that can be hit
+        prime_weight = 0.12  # Increased impact of prime structures
+        home_board_weight = 0.08  # Stronger boards are more valuable
+        opp_home_board_penalty = -0.12  # Opponent's home board makes hits worse
+        gammon_weight = 0.25  # Increased weight for gammon potential
+        bearing_off_weight = 0.18  # Make bearing off more valuable
+        cube_volatility_weight = 0.15
+        pip_diff_normaliser = 0.01
+    else:
+        pip_weight, blot_penalty, prime_weight, home_board_weight, opp_home_board_penalty, \
+        gammon_weight, bearing_off_weight, cube_volatility_weight, pip_diff_normaliser = weights
     
     player_home = get_home_info(player, board)[1]
     opp_home = get_home_info(-player, board)[1]
     
     # PIP race adjusted for non-linear importance
     pip_adv = calc_pips(board, -player) - calc_pips(board, player)
-    normalized_pip_adv = pip_adv / 100  # Normalize pip difference
+    normalized_pip_adv = pip_adv *pip_diff_normaliser  # Normalize pip difference
 
     # Advanced blot assessment
     blot_equity = evaluate_blots(board, player)
@@ -64,8 +83,8 @@ def calc_advanced_equity(board, player, player_score, opponent_score, cube_val, 
         cube_volatility_weight * cube_volatility
     )
 
-    # Clamp equity to [-1, 1] range
-    return max(-1, min(1, equity))
+    
+    return equity
 
 def evaluate_cube_volatility(board, player, player_score, opponent_score, cube_val, first_to):
     base_volatility = calc_position_volatility(board, player)
@@ -232,7 +251,15 @@ def prob_opponent_can_hit(player, board, point):
                         if s + (roll1*2) == point or s+(roll2)*2 == point or s + (roll1*2)+roll2 == point or s + (roll2*2)+roll1 == point:
                             can_hit +=1
     return can_hit/36
-                
+
+def get_lookahead(start_board, player, roll, player_score, opponent_score, cube_val, first_to, weights):
+    equities = []
+    for roll1 in range(1, 7):
+        for roll2 in range(1, 7):
+            moves, boards = get_valid_moves(player, start_board, roll)
+            for board in boards:
+                equities.append(calc_advanced_equity(board, player, player_score, opponent_score, cube_val, first_to, weights))
+    return sum(equities)/len(equities) if len(equities) > 0 else -999
             
 def race_gwc(board, player):
     # Source: https://bkgm.com/articles/Matussek/BearoffGWC.pdf?utm_source=chatgpt.com
@@ -308,3 +335,25 @@ def classify_bearoff_position(dist_on_roll, dist_off_roll):
     else:
         return 1
 
+def move_furthest_back(player, current_board, moves, boards):
+    scores = [0]*len(boards)
+    for board in range(len(boards)):
+            # Encourage moving far-back pieces to prevent blockages later on
+            if player == 1:
+                for i in range(24):
+                    if did_move_piece(current_board[i], boards[board][i], player):
+                        scores[board] += (current_board[i] - boards[board][i]) * i
+                        
+            else:
+                for i in range(24):
+                    if did_move_piece(current_board[i], boards[board][i], player):
+                        j = 23- i
+                        scores[board] += j * (boards[board][i] - current_board[i])
+    boards_copy = [boards[board] for board in range(len(boards)) if scores[board] == max(scores)]
+    if len(boards_copy) == 1:
+        chosen_board = boards_copy[0]
+    else:
+        chosen_board = boards_copy[randint(0, len(boards_copy)-1)]
+    chosen_move = moves[boards.index(chosen_board)]
+    return chosen_move, chosen_board
+        

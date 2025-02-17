@@ -180,8 +180,6 @@ def get_legal_move(colour, board, die):
         # print(f"Must Enter {die}")
         move = can_enter(colour, board, die)
         if move:
-            if commentary:
-                print(move)
             valid_moves.append(move)
         else:
             if commentary:
