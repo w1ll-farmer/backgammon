@@ -38,3 +38,6 @@ def randobot_play(roll, moves, boards):
     
     board = boards[moves.index(move)]
     return board, move
+
+
+

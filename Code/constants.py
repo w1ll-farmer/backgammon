@@ -10,6 +10,9 @@ FPS = 30
 if USER_PLAY == True: commentary = True
 if GUI_FLAG == True: commentary = False
 
+strategies = ["GREEDY","GENETIC","EXPECTIMAX","ADAPTIVE"]
+
+
 test=False
 # GRAPHICS INITIALISATION
 if GUI_FLAG:
