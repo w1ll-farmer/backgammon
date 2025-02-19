@@ -3,30 +3,21 @@ from random import randint
 
 def adaptive_midgame(moves, boards, player, player_score, opponent_score, cube_val, first_to, weights, roll):
     # Aims to play the move that boosts equity most
-    best_equity = calc_advanced_equity(boards[0], player, player_score, opponent_score, cube_val, first_to)
-    best_board = boards[0]
-    best_move = moves[0]
-    best_board_av_lookahead = None
-    for board in boards:
-        equity = calc_advanced_equity(board, player, player_score, opponent_score, cube_val, first_to, weights)
-        if best_equity is None or best_equity < equity:
-            best_equity = equity
-            best_board = board
-            best_move = moves[boards.index(best_board)]
-        elif best_equity == equity:
-            if best_board_av_lookahead is None:
-                best_board_av_lookahead = get_lookahead(best_board, player, roll, 
-                                                        player_score, opponent_score, cube_val,
-                                                        first_to, weights)
-            if best_board_av_lookahead != -999:   
-                current_board_av_lookahead = get_lookahead(board, player, roll, player_score,
-                                                        opponent_score, cube_val, first_to, weights)
-                if current_board_av_lookahead < best_board_av_lookahead:
-                    best_equity = equity
-                    best_board = board
-                    best_move = moves[boards.index(best_board)]
-                    best_board_av_lookahead = current_board_av_lookahead
-    return best_move, best_board
+    
+    equities = [calc_advanced_equity(board, player, player_score, opponent_score, cube_val, first_to, weights) for board in boards]
+    best_boards = [boards[i] for i in range(len(boards)) if equities[i] == max(equities)]
+    if len(best_boards) > 1 and not is_double(roll):
+        lookahead_equities = [get_lookahead(board, player, roll, player_score, opponent_score, cube_val, first_to, weights) for board in best_boards]
+        best_boards = [best_boards[i] for i in range(len(best_boards)) if lookahead_equities[i] == min(lookahead_equities)]
+    
+    if len(best_boards) > 1:
+        chosen_board = best_boards[randint(0, len(best_boards))-1]
+        chosen_move = moves[boards.index(chosen_board)]
+    else:
+        chosen_board = best_boards[0]
+        chosen_move = moves[boards.index(chosen_board)]
+    
+    return chosen_move, chosen_board
 
 def calc_advanced_equity(board, player, player_score, opponent_score, cube_val, first_to, weights=None):
     
@@ -40,9 +31,36 @@ def calc_advanced_equity(board, player, player_score, opponent_score, cube_val, 
         bearing_off_weight = 0.18  # Make bearing off more valuable
         cube_volatility_weight = 0.15
         pip_diff_normaliser = 0.01
+        prime_bonus = 0.2
+        bear_off_normaliser = 0.33
+        win_volatility = 1.5
+        catch_up_volatility=0.8
+        blot_volatility=0.4
+        hit_volatility=0.3
+        opp_home_volatility=0.3
+        opp_piece_home_potential=0.2
+        opp_piece_player_potential=0.3
+        bear_off_potential=0.1
+        win_bonus=1.5
+        catch_up_bonus=1.3
+        close_bonus=1.0
+        no_chance_bonus=0.5
+        default=1.0
+        wall_mult=0.1
+        home_mult=-0.08
+        reentry_mult=0.12
+        exposed_mult=0.25
+        safe_mult=0.1
+        vulnerable_mult=0.2
+        volatility_normaliser =0.1
     else:
         pip_weight, blot_penalty, prime_weight, home_board_weight, opp_home_board_penalty, \
-        gammon_weight, bearing_off_weight, cube_volatility_weight, pip_diff_normaliser = weights
+        gammon_weight, bearing_off_weight, cube_volatility_weight, pip_diff_normaliser, \
+        prime_bonus, bear_off_normaliser,  win_volatility, catch_up_volatility, \
+        blot_volatility, hit_volatility, opp_home_volatility, opp_piece_home_potential, \
+        opp_piece_player_potential, bear_off_potential, win_bonus, catch_up_bonus, \
+        close_bonus, no_chance_bonus, default, wall_mult, home_mult, reentry_mult, \
+        exposed_mult, safe_mult, vulnerable_mult, volatility_normaliser = weights
     
     player_home = get_home_info(player, board)[1]
     opp_home = get_home_info(-player, board)[1]
@@ -52,24 +70,32 @@ def calc_advanced_equity(board, player, player_score, opponent_score, cube_val, 
     normalized_pip_adv = pip_adv *pip_diff_normaliser  # Normalize pip difference
 
     # Advanced blot assessment
-    blot_equity = evaluate_blots(board, player)
+    blot_equity = evaluate_blots(board, player, exposed_mult, safe_mult, vulnerable_mult)
 
     # Advanced prime assessment (longer primes count more)
     prime = calc_prime(board, player)
-    strong_prime_bonus = 0.2 if prime >= 4 else 0  # Extra weight for 4+ primes
+    strong_prime_bonus = prime_bonus if prime >= 4 else 0  # Extra weight for 4+ primes
 
     # Improved home board strength evaluation
-    home_strength = evaluate_home_board(board, player)
-    opp_home_strength = evaluate_home_board(board, -player)
+    home_strength = evaluate_home_board(board, player, wall_mult, home_mult, reentry_mult)
+    opp_home_strength = evaluate_home_board(board, -player, wall_mult, home_mult, reentry_mult)
 
     # Gammon potential scaling with match play
-    gammon_potential = calc_advanced_gammon_potential(board, player, player_home, opp_home, player_score, opponent_score)
+    gammon_potential = calc_advanced_gammon_potential(board, player, player_home, opp_home,
+                                                      player_score, opponent_score, first_to,
+                                                      bear_off_normaliser, opp_piece_home_potential,
+                                                      opp_piece_player_potential, bear_off_potential, 
+                                                      win_bonus, catch_up_bonus, close_bonus, no_chance_bonus, default)
 
     # Bearing off progress adjusted for checker distribution
-    bear_off_progress = abs(board[int(26.5+(player/2))]) / 3
+    bear_off_progress = abs(board[int(26.5+(player/2))]) * bear_off_normaliser
 
     # Cube leverage factor (reward positions where you have a strong double)
-    cube_volatility = evaluate_cube_volatility(board, player, player_score, opponent_score, cube_val, first_to)
+    cube_volatility = evaluate_cube_volatility(board, player, player_score, opponent_score,
+                                               cube_val, first_to, win_volatility,
+                                               catch_up_volatility, blot_volatility, hit_volatility,
+                                               opp_home_volatility, volatility_normaliser,
+                                               exposed_mult, safe_mult, vulnerable_mult)
 
     # Compute final equity
     equity = (
@@ -86,16 +112,24 @@ def calc_advanced_equity(board, player, player_score, opponent_score, cube_val, 
     
     return equity
 
-def evaluate_cube_volatility(board, player, player_score, opponent_score, cube_val, first_to):
-    base_volatility = calc_position_volatility(board, player)
+def evaluate_cube_volatility(board, player, player_score, opponent_score, cube_val, first_to,
+                             win_volatility, catch_up_volatility, blot_volatility,
+                             hit_volatility, opp_home_volatility, volatility_normaliser,
+                             exposed_mult, safe_mult, vulnerable_mult):
+    
+    base_volatility = calc_position_volatility(board, player, blot_volatility,
+                                               hit_volatility, opp_home_volatility, volatility_normaliser,
+                                               exposed_mult, safe_mult, vulnerable_mult)
     if player_score + cube_val >= first_to:
-        return base_volatility * 1.5
+        return base_volatility * win_volatility
     elif player_score < opponent_score -4:
-        return base_volatility * 0.8
+        return base_volatility * catch_up_volatility
     else:
         return base_volatility
     
-def calc_position_volatility(board, player):
+def calc_position_volatility(board, player, blot_volatility, hit_volatility,
+                             opp_home_volatility, volatility_normaliser, exposed_mult,
+                             safe_mult, vulnerable_mult):
     """
     Estimates the volatility of a position by considering:
       - The number of blots (higher volatility if many blots exist)
@@ -104,15 +138,19 @@ def calc_position_volatility(board, player):
       - The stage of the game (higher volatility in early/midgame)
     """
     num_blots = count_blots(board, player) + count_blots(board, -player)
-    hit_chances = evaluate_blots(board, -player) - evaluate_blots(board, player)
+    hit_chances = evaluate_blots(board, -player, exposed_mult, safe_mult, vulnerable_mult) \
+        - evaluate_blots(board, player, exposed_mult, safe_mult, vulnerable_mult)
     opp_home_strength = count_walls(get_home_info(-player, board)[1], -player)
-
     # Higher volatility if there are many blots, strong home boards, or high hitting chances
-    volatility = (0.4 * num_blots) + (0.3 * abs(hit_chances)) + (0.3 * opp_home_strength)
+    volatility = (blot_volatility * num_blots) + (hit_volatility * abs(hit_chances)) + (opp_home_volatility * opp_home_strength)
     
-    return min(1, volatility / 10)  # Normalize to [0,1] range
+    return min(1, volatility * volatility_normaliser)  # Normalize to [0,1] range
 
-def calc_advanced_gammon_potential(board, player, player_home, opp_home, player_score, opponent_score):
+def calc_advanced_gammon_potential(board, player, player_home, opp_home, player_score, opponent_score, first_to,
+                                   bear_off_normaliser, opp_piece_home_potential,
+                                   opp_piece_player_potential, bear_off_potential,
+                                   win_bonus, catch_up_bonus, close_bonus,
+                                   no_chance_bonus, default):
     """
     Computes the potential for the player to win a gammon, incorporating match score considerations.
 
@@ -127,27 +165,30 @@ def calc_advanced_gammon_potential(board, player, player_home, opp_home, player_
     opp_pieces_player_home = count_walls(player_home, -player) + count_blots(player_home, -player)
     
     # Player's bearing-off progress (normalized)
-    bearing_off_progress = abs(board[int(26.5 + (player / 2))]) / 3  # Normalized measure of bearing-off
-
+    bearing_off_progress = abs(board[int(26.5 + (player / 2))]) * bear_off_normaliser  # Normalized measure of bearing-off
     # Compute base gammon potential
     base_gammon_potential = (
-        0.2 * opp_pieces_home + 
-        0.3 * opp_pieces_player_home + 
-        0.1 * bearing_off_progress
+        opp_piece_home_potential * opp_pieces_home + 
+        opp_piece_player_potential * opp_pieces_player_home + 
+        bear_off_potential * bearing_off_progress
     )
     
     # **Match Score Factor:**
     # If the player benefits significantly from winning a gammon at this score, increase the weight.
     # If a gammon win is irrelevant (e.g., only 1 point needed to win the match), reduce weight.
-    match_factor = compute_match_gammon_importance(player_score, opponent_score)
+    match_factor = compute_match_gammon_importance(player_score, opponent_score, first_to, win_bonus,
+                                                   catch_up_bonus, close_bonus, no_chance_bonus, default)
     
     # Adjust gammon potential based on match factor
+    
     adjusted_gammon_potential = base_gammon_potential * match_factor
     
     # Ensure the result is between 0 and 1
     return min(1, adjusted_gammon_potential)
 
-def compute_match_gammon_importance(player_score, opponent_score):
+def compute_match_gammon_importance(player_score, opponent_score, first_to,
+                                    win_bonus, catch_up_bonus, close_bonus,
+                                    no_chance_bonus, default):
     """
     Computes how important a gammon win is based on match score.
     
@@ -158,26 +199,26 @@ def compute_match_gammon_importance(player_score, opponent_score):
       - If the player needs exactly 2 points to win, a gammon win secures the match (very high importance).
     """
     target_score = 25  # First-to-25 match
-
+    
     # If winning a gammon wins the match, it's very important
     if player_score + 2 >= target_score:
-        return 1.5  # Prioritize winning a gammon
+        return win_bonus  # Prioritize winning a gammon
 
     # If the player is far behind, gammon wins are highly valuable to catch up
     if player_score < opponent_score - 4:
-        return 1.3
+        return catch_up_bonus
 
     # If the match is close, gammon importance is moderate
     if abs(player_score - opponent_score) <= 3:
-        return 1.0
+        return close_bonus
 
     # If a gammon win doesn't change the outcome much, reduce weight
     if player_score + 2 >= target_score:
-        return 0.5  # Gammon doesn't matter if 1 point is enough
+        return no_chance_bonus  # Gammon doesn't matter if 1 point is enough
 
-    return 1.0  # Default value for normal situations
+    return default  # Default value for normal situations
 
-def evaluate_home_board(board, player):
+def evaluate_home_board(board, player, wall_mult, home_mult, reentry_mult):
     """
     Evaluates the strength of the player's home board.
     Factors include: 
@@ -195,7 +236,7 @@ def evaluate_home_board(board, player):
     reentry_difficulty = evaluate_reentry_difficulty(player_home, player)
     
     # The home board score is higher with more walls, fewer blots, and greater reentry difficulty for the opponent.
-    home_board_score = (0.10 * wall_count) - (0.08 * home_blots) + (0.12 * reentry_difficulty)
+    home_board_score = (wall_mult * wall_count) + (home_mult * home_blots) + (reentry_mult * reentry_difficulty)
     return home_board_score
 
 def evaluate_reentry_difficulty(home_points, player):
@@ -207,7 +248,7 @@ def evaluate_reentry_difficulty(home_points, player):
             difficulty += 1
     return difficulty / 6
 
-def evaluate_blots(board, player):
+def evaluate_blots(board, player, exposed_mult, safe_mult, vulnerable_mult):
     """
     Returns a blot score that penalizes exposed checkers and rewards checkers that are protected.
     Also, additional penalty is applied if a blot is within the opponent's hitting range.
@@ -228,7 +269,7 @@ def evaluate_blots(board, player):
     # Combine measures into a blot equity score.
     # (Weights are tunable; here we penalize exposed blots heavily,
     # reward safe positions slightly, and add extra penalty for vulnerable blots.)
-    blot_score = (-0.25 * exposed) + (0.10 * safe) - (0.20 * vulnerability_penalty)
+    blot_score = (-exposed_mult * exposed) + (safe_mult * safe) - (vulnerable_mult * vulnerability_penalty)
     return blot_score
 
 def adjacent_friend(board, point, player):
@@ -356,4 +397,4 @@ def move_furthest_back(player, current_board, moves, boards):
         chosen_board = boards_copy[randint(0, len(boards_copy)-1)]
     chosen_move = moves[boards.index(chosen_board)]
     return chosen_move, chosen_board
-        
+
