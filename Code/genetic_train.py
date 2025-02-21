@@ -1,4 +1,4 @@
-from random import randint, uniform
+from random import randint, uniform, gauss
 from main import *
 from time import sleep
 
@@ -39,10 +39,10 @@ def reproduce(mother, father, strat):
     # return max(children, key=lambda x: calc_fitness(x))
 
 
-def calc_fitness(individual, strat):
+def calc_fitness(individual, strat, first_to=13):
     oppstrat = "GREEDY" if strat == "GENETIC" else "GENETIC"
     opp_weights = None if strat == "GENETIC" else [10.0, 21.0, 12.0, 11.0, 15.0, 0.5664383320165035, 10.0, 4.0, 25.0, 6.0, 0.6461166029382669, 0.5378085318259279, 0.5831066576570856, 0.9552318750278183, 0.07412843879077036, 0.17550708535892934, 0.49191128795644823, 0.556755495835094]
-    _, g_score, _, opp_score = backgammon(5, strat ,individual, oppstrat, opp_weights)
+    _, g_score, _, opp_score = backgammon(first_to, strat ,individual, oppstrat, opp_weights)
     try:
         fitness = g_score / opp_score
     except ZeroDivisionError:
@@ -53,7 +53,7 @@ def calc_fitness(individual, strat):
 def calc_overall_fitness(P, strat):
     population_fitness = []
     for individual in P:
-        population_fitness.append(calc_fitness(individual, strat))
+        population_fitness.append(calc_fitness(individual, strat, 5))
     return population_fitness
 
 
@@ -65,7 +65,8 @@ def mutate(child):
     
     child[swap_1_index] = child[swap_2_index]
     child[swap_2_index] = temp
-    
+    for i in range(len(child)):
+        child[i] = gauss(child[i], 0.288)
     return child 
 
 
@@ -166,7 +167,8 @@ def genetic(max_iters, pop_size, strat):
     print("Calculating overall fitness")
     population_fitness = calc_overall_fitness(P, strat)
     # iterate through max_it times
-    for _ in range(max_iters):
+    for iteration in range(max_iters):
+        print(f"Iterations: {iteration}/{max_iters}")
         newP = []
         for i in range(pop_size):
             X = get_parent(P, population_fitness)
@@ -175,7 +177,7 @@ def genetic(max_iters, pop_size, strat):
             if randint(1, 100) > 95:
                 Z = mutate(Z)
                 Z_fitness = calc_fitness(Z, strat)
-            if Z_fitness >= 5:
+            if Z_fitness >= 2:
                 write(str(Z), strat)
             if Z_fitness > fittest_fitness:
                 fittest_fitness = Z_fitness
@@ -183,7 +185,7 @@ def genetic(max_iters, pop_size, strat):
                 print(fittest, fittest_fitness)
             newP.append(Z)
         P = newP
-        print('Fittest',fittest)
+        print('Fittest',fittest, fittest_fitness)
     fittest = co_evolve(strat)
     return fittest
 
@@ -226,6 +228,6 @@ def co_evolve(strat):
     return P[0]
 
 
-# print(genetic(25, 25, "ADAPTIVE"))
-print(co_evolve("ADAPTIVE"))
+print(genetic(10, 50, "ADAPTIVE"))
+# print(co_evolve("ADAPTIVE"))
 # [0.6219952084521901, 27.0, 4.0, 26.0, 0.46015349243263104, 0.713687637052133, 7.0, 2.0, 26.0, 4.0, 0.0, 0.6337036278226582, 0.15012449622656665, 0.5226624630505539, 0.7313044431665402, 0.6662731224336713, 0.667683543270852, 0.906174549240715]
