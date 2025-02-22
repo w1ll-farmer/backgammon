@@ -2,6 +2,7 @@ import pygame
 from constants import *
 from turn import roll_dice, get_home_info, game_over
 from time import sleep
+import os
 class Background: #creates a background
     def __init__(self,backgroundImage):
         # Sets background to passed in image

@@ -1,11 +1,12 @@
 from turn import get_valid_moves, print_board, make_board
+import os
 def log(board_before, roll,  move, board_after, player):
-    myFile = open("./Data/log.txt",'a')
+    myFile = open(os.path.join("Data","log.txt"),'a')
     myFile.write(f"{board_before}\t{roll}\t{move}\t{board_after}\t{player}\n")
     myFile.close()
 
 def greedy_summarise():
-    myFile = open("./Data/greedydata.txt")
+    myFile = open(os.path.join("Data","greedydata.txt"),'a')
     white_score = 0
     black_score = 0
     times_won = 0
@@ -24,17 +25,17 @@ def greedy_summarise():
     return white_score, black_score, games_played, times_won
 
 def timestep(timestep):
-    myFile = open("./Data/randomvrandom.txt",'a')
+    myFile = open(os.path.join("Data","randomvrandom.txt"),'a')
     myFile.write(f"{timestep}\n")
     myFile.close()
     
 def first_turn(p1):
-    myFile = open("./Data/first-turn.txt","a")
+    myFile = open(os.path.join("Data","first-turn.txt"),'a')
     myFile.write(f"{p1}\n")
     myFile.close()
     
 def calc_first():
-    myFile = open("./Data/first-turn.txt","r")
+    myFile = open(os.path.join("Data","first-turn.txt"),'r')
     total = 0
     for line in myFile:
         total += int(line.strip("\n"))
@@ -42,7 +43,7 @@ def calc_first():
     return total
 
 def write_eval(eval, player):
-    myFile = open("./Data/evaluations.txt","a")
+    myFile = open(os.path.join("Data","evaluations.txt"),'a')
     myFile.write(f"{eval, player}\n")
     myFile.close()
     
@@ -54,7 +55,7 @@ def calc_av_eval():
     white_pos, black_pos = 0,0
     black_moves = dict()
     white_moves = dict()
-    myFile = open("./Data/evaluations.txt","r")
+    myFile = open(os.path.join("Data","evaluations.txt"),'r')
     for line in myFile:
         val, player = line.split(",")
         val = float(val[1:])
@@ -121,12 +122,12 @@ def calc_av_eval():
 
 
 def save_roll(roll, player):
-    myFile = open("./Data/roll.txt","a")
+    myFile = open(os.path.join("Data","roll.txt"),'a')
     myFile.write(f"{roll}, {player}\n")
     myFile.close()
     
 def summarise_rolls():
-    myFile = open("./Data/roll.txt","r")
+    myFile = open(os.path.join("Data","roll.txt"),'r')
     black_rolls = 0
     white_rolls = 0
     black_doubles = 0
@@ -184,12 +185,12 @@ def transform_moves(moves):
     return transformed_moves
 
 def compare_eval_equity(evaluation, equity):
-    myFile = open("./Data/evalequitycompare.txt","a")
+    myFile = open(os.path.join("Data","evalequitycompare.txt"),'a')
     myFile.write(f"{evaluation}, {equity}\n")
     myFile.close()
     
 def get_eval_equity():
-    myFile = open("./Data/evalequitycompare.txt","r")
+    myFile = open(os.path.join("Data","evalequitycompare.txt"),'r')
     evaluation = []
     equity = []
     for line in myFile:

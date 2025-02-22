@@ -1,6 +1,7 @@
 from random import randint, uniform, gauss
 from main import *
 from time import sleep
+import os
 
 def write(individual, strat):
     strat = strat.lower()

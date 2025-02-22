@@ -1,13 +1,14 @@
 import pandas as pd
 import seaborn as sns  
 import matplotlib.pyplot as plt
+import os
 # from data import *
 
 
 
 # total_white_score, total_black_score, games_played, times_won = greedy_summarise()
 
-myFile = open("./Data/geneticvsgreedy.txt")
+myFile = open(os.path.join("Data","adaptivevsgenetic.txt"))
 white_score = []
 black_score = []
 white_wins = []
@@ -46,14 +47,14 @@ games = list(range(1, len(white_score) + 1))  # Game numbers (1-based)
 
 # Create scatter plot
 plt.figure(figsize=(8, 6))
-plt.plot(games, white_score, color='blue', label='Genetic Score', linewidth=3)
-plt.plot(games, black_score, color='red', label='Greedy Score', linewidth=3)
-plt.plot(games, white_wins, color='purple', label='Genetic Wins', linewidth=3)
-plt.plot(games, black_wins, color='orange', label='Greedy Wins', linewidth=3)
+plt.plot(games, white_score, color='blue', label='Adaptive Score', linewidth=3)
+plt.plot(games, black_score, color='red', label='Genetic Score', linewidth=3)
+plt.plot(games, white_wins, color='purple', label='Adaptive Wins', linewidth=3)
+plt.plot(games, black_wins, color='orange', label='Genetic Wins', linewidth=3)
 # Add labels, legend, and title
 plt.xlabel('Game Number')
 plt.ylabel('Cumulative Totals')
-plt.title('Cumulative Scores and Wins Across 10000 Games')
+plt.title('Cumulative Scores and Wins Across 400 First-to-25 Matches')
 plt.legend()
 plt.grid(True)
 plt.show()
