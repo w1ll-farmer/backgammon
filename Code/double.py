@@ -1,8 +1,8 @@
 from constants import *
 from random import randint
 from turn import *
-from adaptive_agent import calc_advanced_equity
-crawford_game = False
+from adaptive_agent import calc_advanced_equity, race_gwc
+from data import write_equity
 
 def calc_gammon_potential(board, player, player_home, opp_home):
     opp_pieces_home = count_walls(opp_home, -player) + count_blots(opp_home, -player)
@@ -47,11 +47,15 @@ def calc_equity(board, player):
     # Clamp equity to [-1, 1] range
     return max(-1, min(1, equity))
 
-def can_double(double_player, current_player):
-    if crawford_game: return False
-    elif double_player == 0: return True
-    elif double_player == current_player: return True
-    else: return False
+def can_double(double_player, current_player, w_score, b_score, score_to, prev_score):
+    if is_crawford_game(w_score, b_score, score_to, prev_score):
+        return False
+    elif double_player == 0:
+        return True
+    elif double_player == current_player:
+        return True
+    else:
+        return False
     
 def double(cube_val, player):
     return cube_val*2, -player
@@ -60,11 +64,19 @@ def randobot_accept_double():
     return bool(randint(0,1))
 
 def basic_should_double(equity):
-    return True if equity > 0.5 else False
+    return True if equity > 0.8144 else False
 
 def basic_accept_double(equity):
-    return True if equity > -0.5 else False
+    return True if equity > -0.2362 else False
 
+def advanced_should_double(equity, doubling_point = 1.4325859937671366): 
+    if doubling_point is None: doubling_point = 2.8334
+    return True if equity > doubling_point else False
+
+def advanced_accept_double(equity, doubling_point = -1.8523842372779313):
+    if doubling_point is None: doubling_point = -0.3126
+    return True if equity > doubling_point else False
+    
 def user_accept_double(player, cube_val, double_player):
     user_accept = input("Opponent offer x2. y/n").lower()
     if user_accept == 'y':
@@ -86,14 +98,25 @@ def is_crawford_game(w_score, b_score, score_to, prev_score):
 def get_double_rejected_board(player):
     return [int(0.5-(player/2)),0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,int(-0.5-(player/2)),0,0,int(-14.5+(player/2)),int(14.5+(player/2))]
 
-def double_process(playerstrat, player, board, oppstrat, cube_val, double_player, player_score, opponent_score, first_to):
+def double_process(playerstrat, player, board, oppstrat, cube_val, double_player, player_score, opponent_score, first_to, double_point=None, double_drop=None):
     has_double_rejected = False
-    if player in strategies:
-        if basic_should_double(calc_equity(board, player)):
+    double_offered = False
+    gwc = -1
+    if playerstrat in strategies:
+        if playerstrat == "ADAPTIVE":
+            if all_checkers_home(player, board) and all_past(board) and abs(board[int(26.5+0.5*player)]) >= 7:
+                gwc = race_gwc(board, player)
+            equity = calc_advanced_equity(board, player, player_score, opponent_score, cube_val, first_to, [0.9966066885314592, -0.9916984096898946, 0.3106830724424913, 0.529168163359478, -0.4710732676896102, 0.5969523488654117, 0.36822981983332415, 0.38958074063216697, 0.02676397245530815, 0.08588282381449319, 0.06094873757931751, 1.1095422351658368, 0.47764793610307643, 0.040753486445243126, 0.5495226441839489, 0.8875009606764003, 0.9333344067224983, 0.1340269726805713, 0.1978868967026618, 1.2096547126804458, 2.379707426788366, 0.6465298771549699, 0.509196585225148, 0.261875669397977, 0.36883752029556166, -0.481342015629518, 0.7098436807557322, 1.0250219115287624, 0.5739284594183071, 0.1796876959733017, 0.2679991261065485])
+        else:
+            equity = calc_equity(board, player)
+        if basic_should_double(equity) and playerstrat != "ADAPTIVE" or \
+            advanced_should_double(equity, double_point) and playerstrat == "ADAPTIVE" and gwc < 0 or \
+                playerstrat == "ADAPTIVE" and gwc > 0.8:
             # Player doubles opponenent
+            double_offered = True
             if oppstrat in strategies: 
                 if oppstrat == "ADAPTIVE":
-                    if basic_accept_double(calc_advanced_equity(board, player, player_score, opponent_score, cube_val, first_to)):
+                    if advanced_accept_double(calc_advanced_equity(board, player, player_score, opponent_score, cube_val, first_to, [0.9966066885314592, -0.9916984096898946, 0.3106830724424913, 0.529168163359478, -0.4710732676896102, 0.5969523488654117, 0.36822981983332415, 0.38958074063216697, 0.02676397245530815, 0.08588282381449319, 0.06094873757931751, 1.1095422351658368, 0.47764793610307643, 0.040753486445243126, 0.5495226441839489, 0.8875009606764003, 0.9333344067224983, 0.1340269726805713, 0.1978868967026618, 1.2096547126804458, 2.379707426788366, 0.6465298771549699, 0.509196585225148, 0.261875669397977, 0.36883752029556166, -0.481342015629518, 0.7098436807557322, 1.0250219115287624, 0.5739284594183071, 0.1796876959733017, 0.2679991261065485]), double_drop):
                         cube_val *= 2
                         double_player = -player
                 elif basic_accept_double(calc_equity(board, -player)):
@@ -135,8 +158,13 @@ def double_process(playerstrat, player, board, oppstrat, cube_val, double_player
             else:
                 print("Feature not yet implemented")
     return cube_val, double_player, has_double_rejected
-# Before dice roll, player has option to double
-# If player choooses to double, opponent may reject or accept
-# If reject, player wins point
-# If accept, game is now twice as valuable. Opponent is only one who can double
-# End of game, cube is reset
+
+"""Best Doubling points from 4x25 testing:
+(77, ' 1.4114902594531387', ' 0.9329566864476466') -> 200-130 = 70, 467-285=182 (15-5)
+
+(62, ' 1.7000678176853496', ' -0.08512374869267081') -> 241-172 = 69, 496-274=222 (18-2)
+(57, ' 1.4325859937671366', ' -1.8523842372779313') -> 234-150 = 84, 507-264 =243 (19-1)
+
+1.7000678176853496, -0.08512374869267081 -> 1209-817 = 392 (42-8)
+1.4325859937671366, -1.8523842372779313 -> 1210-765 = 445 (40-10)
+"""

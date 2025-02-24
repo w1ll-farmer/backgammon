@@ -4,6 +4,8 @@ import numpy as np
 from pygame.locals import *
 from random_agent import *
 from time import sleep, time
+from random import randint, uniform
+import os
 
 from turn import *
 from greedy_agent import *
@@ -328,10 +330,12 @@ def adaptive_play(moves, boards, player, turn, current_board, roll, player_score
         if abs(current_board[int(26.5+(player/2))]) >= 7:
             return adaptive_race(moves, boards, player)
         else:
-            move, board, _ = greedy_play(moves, boards, current_board, player, roll)
+            # Use genetic positioning and bearing off techniques until Matussek is applicable
+            move, board, _ = greedy_play(moves, boards, current_board, player, roll, weights=[10.0, 21.0, 12.0, 11.0, 15.0, 0.5664383320165035, 10.0, 4.0, 25.0, 6.0, 0.6461166029382669, 0.5378085318259279, 0.5831066576570856, 0.9552318750278183, 0.07412843879077036, 0.17550708535892934, 0.49191128795644823, 0.556755495835094])
             move = move.pop()
             return move, board
-    elif all_checkers_home(-player, current_board) and abs(current_board[int(26.5+(player/2))]) == 0:
+    elif all_checkers_home(-player, current_board) and abs(current_board[int(26.5+(player/2))]) == 0:#not all_checkers_home(player, current_board):
+        # Gammon prevention
         return move_furthest_back(player, current_board, moves, boards)
         
     else:
@@ -340,7 +344,7 @@ def adaptive_play(moves, boards, player, turn, current_board, roll, player_score
 ###############
 ## MAIN BODY ##
 ###############
-def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="GREEDY", blackweights = None):
+def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="GREEDY", blackweights = None, double_point=None, double_drop=None):
     """Play the backgammon game
 
     Args:
@@ -365,6 +369,8 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
     if commentary: print(whitestrat, blackstrat)
     #### MAIN LOOP ####
     while max([w_score, b_score]) < score_to:
+        black_equity = []
+        white_equity = []
         board = make_board()
         print_board(board)
         if GUI_FLAG:
@@ -464,8 +470,10 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 # All other rolls are generated on spot
                 if time_step > 1:
                     has_double_rejected = False   
-                    if can_double(double_player, player1strat):
-                        cube_val, double_player, has_double_rejected= double_process(player1strat, player1, board, player2strat, cube_val, double_player, player1score, player2score, score_to)
+                    equity = calc_equity(board, player1)
+                    write_equity(equity, "BasicEquity")
+                    if can_double(double_player, player1strat, w_score, b_score, score_to, prev_score):
+                        cube_val, double_player, has_double_rejected= double_process(player1strat, player1, board, player2strat, cube_val, double_player, player1score, player2score, score_to, double_point, double_drop)
                     if has_double_rejected:
                         if commentary: print("Double Rejected")
                         board = get_double_rejected_board(player1)
@@ -509,6 +517,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                         move, board = expectimax_play(moves1, boards1, player1)
                         move = move.pop()
                     elif player1strat == "ADAPTIVE":
+                        white_equity.append(calc_advanced_equity(board, player1, player1score, player2score, cube_val, score_to, weights1))
                         move, board = adaptive_play(moves1, boards1, player1, time_step, board, roll, player1score, player2score, cube_val, score_to, weights1)
                         
                     if commentary:
@@ -550,9 +559,11 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     sleep(1)
                 
                 #### BLACK PLAYER 2'S TURN ####
-                has_double_rejected = False   
-                if can_double(double_player, player2strat):
-                    cube_val, double_player, has_double_rejected= double_process(player2strat, player2, board, player1strat, cube_val, double_player, player2score, player1score, score_to)
+                has_double_rejected = False
+                equity = calc_equity(board, player2)
+                write_equity(equity, "BasicEquity")  
+                if can_double(double_player, player2strat, w_score, b_score, score_to, prev_score):
+                    cube_val, double_player, has_double_rejected= double_process(player2strat, player2, board, player1strat, cube_val, double_player, player2score, player1score, score_to, double_point, double_drop)
                 if has_double_rejected:
                     if commentary: print("Double Rejected")
                     board = get_double_rejected_board(player2)
@@ -585,7 +596,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                         move, board = expectimax_play(moves2, boards2, player2)
                         move = move.pop()
                     elif player2strat == "ADAPTIVE":
-                        
+                        black_equity.append(calc_advanced_equity(board, player2, player2score, player1score, cube_val, score_to, weights2))
                         move, board = adaptive_play(moves2, boards2, player2, time_step, board, roll, player2score, player1score, cube_val, score_to, weights2)
                         
                     if commentary:
@@ -642,7 +653,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                         move, board = expectimax_play(moves1, boards1, player1)
                         move = move.pop()
                     elif player1strat == "ADAPTIVE":
-                        
+                        black_equity.append(calc_advanced_equity(board, player1, player1score, player2score, cube_val, score_to, weights1))
                         move, board = adaptive_play(moves1, boards1, player1, time_step, board, roll, player1score, player2score, cube_val, score_to, weights1)
                         
                     if commentary:    
@@ -687,8 +698,10 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 
                 #### WHITE PLAYER 2'S TURN ####
                 has_double_rejected = False   
-                if can_double(double_player, player2strat):
-                    cube_val, double_player, has_double_rejected= double_process(player2strat, player2, board, player1strat, cube_val, double_player, player2score, player1score, score_to)
+                equity = calc_equity(board, player2)
+                write_equity(equity, "BasicEquity")
+                if can_double(double_player, player2strat, w_score, b_score, score_to, prev_score):
+                    cube_val, double_player, has_double_rejected= double_process(player2strat, player2, board, player1strat, cube_val, double_player, player2score, player1score, score_to, double_point, double_drop)
                 if has_double_rejected:
                     if commentary: print("Double Rejected")
                     board = get_double_rejected_board(player2)
@@ -720,7 +733,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                         move, board = expectimax_play(moves2, boards2, player2)
                         move = move.pop()
                     elif player2strat == "ADAPTIVE":
-                        
+                        white_equity.append(calc_advanced_equity(board, player2, player2score, player1score, cube_val, score_to, weights2))
                         move, board = adaptive_play(moves2, boards2, player2, time_step, board, roll, player2score, player1score, cube_val, score_to, weights2)
                         
                     if commentary:
@@ -815,6 +828,10 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 b_score = pminus1vector[0] + 2*pminus1vector[1] + 3*pminus1vector[2]
                 player1score = b_score
                 player2score = w_score
+                for eq in black_equity:
+                    write_equity(eq, "WinnerEquity")
+                for eq in white_equity:
+                    write_equity(eq, "LoserEquity")
             else:
                 # White won, so it moves first next round
                 player1 = 1
@@ -826,27 +843,33 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 w_score = p1vector[0] + 2*p1vector[1] + 3*p1vector[2]
                 player1score = w_score
                 player2score = b_score
+                for eq in white_equity:
+                    write_equity(eq, "WinnerEquity")
+                for eq in black_equity:
+                    write_equity(eq, "LoserEquity")
             cube_val = 1
             time_step = 1
             if commentary: print(f"White: {w_score} Black: {b_score}")
             if GUI_FLAG:
                 update_screen(background, white_score, black_score, board, w_score, b_score, True)    
         #### CHECKS FOR GAME OVER AND WINNING POINTS ####
-            if whitestrat == "ADAPTIVE" and blackstrat == "ADAPTIVE":
-                print(w_score, b_score)
+            
+            # print(w_score, b_score)
     return p1vector, w_score, pminus1vector, b_score
 
 
 def collect_data(p1strat, pminus1strat, first_to):
-    myFile = "./Data/adaptivevsgenetic.txt"
+    myFile = "./Data/adaptivevsgeneticdoubleon.txt"
     white_tot, black_tot = 0,0
     white_wins, black_wins = 0,0
     first_to = 25
-    for i in range(400):
+    adaptive_weights = [0.9966066885314592, -0.9916984096898946, 0.3106830724424913, 0.529168163359478, -0.4710732676896102, 0.5969523488654117, 0.36822981983332415, 0.38958074063216697, 0.02676397245530815, 0.08588282381449319, 0.06094873757931751, 1.1095422351658368, 0.47764793610307643, 0.040753486445243126, 0.5495226441839489, 0.8875009606764003, 0.9333344067224983, 0.1340269726805713, 0.1978868967026618, 1.2096547126804458, 2.379707426788366, 0.6465298771549699, 0.509196585225148, 0.261875669397977, 0.36883752029556166, -0.481342015629518, 0.7098436807557322, 1.0250219115287624, 0.5739284594183071, 0.1796876959733017, 0.2679991261065485]
+    genetic_weights = [10.0, 21.0, 12.0, 11.0, 15.0, 0.5664383320165035, 10.0, 4.0, 25.0, 6.0, 0.6461166029382669, 0.5378085318259279, 0.5831066576570856, 0.9552318750278183, 0.07412843879077036, 0.17550708535892934, 0.49191128795644823, 0.556755495835094]
+    double_point, double_drop = 1.4325859937671366, -1.8523842372779313
+    for i in range(50):
         dataFile = open(myFile, 'a')
-        
-        p1vector,w_score,pminus1vector,b_score= backgammon(first_to, "ADAPTIVE",[0.9966066885314592, -0.9916984096898946, 0.3106830724424913, 0.529168163359478, -0.4710732676896102, 0.5969523488654117, 0.36822981983332415, 0.38958074063216697, 0.02676397245530815, 0.08588282381449319, 0.06094873757931751, 1.1095422351658368, 0.47764793610307643, 0.040753486445243126, 0.5495226441839489, 0.8875009606764003, 0.9333344067224983, 0.1340269726805713, 0.1978868967026618, 1.2096547126804458, 2.379707426788366, 0.6465298771549699, 0.509196585225148, 0.261875669397977, 0.36883752029556166, -0.481342015629518, 0.7098436807557322, 1.0250219115287624, 0.5739284594183071, 0.1796876959733017, 0.2679991261065485], "GENETIC",[10.0, 21.0, 12.0, 11.0, 15.0, 0.5664383320165035, 10.0, 4.0, 25.0, 6.0, 0.6461166029382669, 0.5378085318259279, 0.5831066576570856, 0.9552318750278183, 0.07412843879077036, 0.17550708535892934, 0.49191128795644823, 0.556755495835094])
-        dataFile.write(f"{w_score}, {b_score}\n")
+        p1vector,w_score,pminus1vector,b_score= backgammon(first_to, "ADAPTIVE",adaptive_weights, "GENETIC",genetic_weights, double_point, double_drop)
+        dataFile.write(f"{w_score}, {b_score}, {double_point}, {double_drop}\n")
         # print(p1vector,w_score,pminus1vector,b_score)
         dataFile.close()
         white_tot+=w_score
@@ -855,7 +878,7 @@ def collect_data(p1strat, pminus1strat, first_to):
             black_wins += 1
         if w_score >= first_to:
             white_wins +=1
-        if i % 2 == 0:
+        if i % 2 == 1:
             print("score")
             print(white_tot, black_tot)
             print("Wins")
@@ -891,8 +914,8 @@ if __name__ == "__main__":
         
         # print(calc_first())
         score_to = 25
-        player1strat = "ADAPTIVE"
-        playerminus1strat = "GENETIC"
+        player1strat = "USER"
+        playerminus1strat = "ADAPTIVE"
         weights1, weights2 = None, None
         if player1strat == "GENETIC":
             # Optimal Weights for first-to-25 victory
@@ -902,7 +925,7 @@ if __name__ == "__main__":
         if playerminus1strat == "GENETIC":
             weights2 = [10.0, 21.0, 12.0, 11.0, 15.0, 0.5664383320165035, 10.0, 4.0, 25.0, 6.0, 0.6461166029382669, 0.5378085318259279, 0.5831066576570856, 0.9552318750278183, 0.07412843879077036, 0.17550708535892934, 0.49191128795644823, 0.556755495835094]
         elif playerminus1strat == "ADAPTIVE":
-            weights2 = [0.8034832573451393, -0.8172961884843793, 0.0248928408043515, 0.529168163359478, -0.4710732676896102, 0.5969523488654117, 0.36822981983332415, 0.38958074063216697, 0.02676397245530815, 0.08588282381449319, 0.06094873757931751, 1.1095422351658368, 0.47764793610307643, 0.040753486445243126, 0.5495226441839489, 0.8875009606764003, 0.9333344067224983, 0.1340269726805713, 0.1978868967026618, 1.2096547126804458, 2.379707426788366, 0.6465298771549699, 0.509196585225148, 0.261875669397977, 0.4019126309433697, -0.42461353686611036, 0.7004929123792514, 0.916324770601603, 0.7569391564615248, 0.1796876959733017, 0.2679991261065485]
+            weights2 = [0.9966066885314592, -0.9916984096898946, 0.3106830724424913, 0.529168163359478, -0.4710732676896102, 0.5969523488654117, 0.36822981983332415, 0.38958074063216697, 0.02676397245530815, 0.08588282381449319, 0.06094873757931751, 1.1095422351658368, 0.47764793610307643, 0.040753486445243126, 0.5495226441839489, 0.8875009606764003, 0.9333344067224983, 0.1340269726805713, 0.1978868967026618, 1.2096547126804458, 2.379707426788366, 0.6465298771549699, 0.509196585225148, 0.261875669397977, 0.36883752029556166, -0.481342015629518, 0.7098436807557322, 1.0250219115287624, 0.5739284594183071, 0.1796876959733017, 0.2679991261065485]
         # start=time()
         p1vector, w_score, pminus1vector, b_score = backgammon(score_to,player1strat,weights1,playerminus1strat,weights2)
         # print(time()-start)

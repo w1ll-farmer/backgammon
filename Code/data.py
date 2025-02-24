@@ -285,4 +285,66 @@ def check_correlation():
     print(np.mean(evaluation), np.std(evaluation), np.mean(equity), np.std(equity))
     print(max(equity))
 
+def write_equity(equity, equitytype):
+    myFile = open(os.path.join("Data",f"{equitytype}.txt"),'a')
+    myFile.write(f"{equity}\n")
+    myFile.close()
+    
+def normalise_equity():
+    myFile = open(os.path.join("Data",f"WinnerEquity.txt"),'r')
+    equity = []
+    for line in myFile:
+        eq = line.strip("\n")
+        equity.append(float(eq))
+    print("Advanced",np.mean(equity), np.std(equity))
+    myFile = open(os.path.join("Data",f"LoserEquity.txt"),'r')
+    equity = []
+    for line in myFile:
+        eq = line.strip("\n")
+        equity.append(float(eq))
+    print("Basic",np.mean(equity), np.std(equity))
 
+def should_have_doubled():
+    myFile = open(os.path.join("Data",f"AdvancedEquity.txt"),'r')
+    equity = []
+    for line in myFile:
+        eq = line.strip("\n")
+        equity.append(float(eq))
+    print(len([eq for eq in equity if eq > 2.8575])/ len(equity))
+    myFile = open(os.path.join("Data",f"BasicEquity.txt"),'r')
+    equity = []
+    for line in myFile:
+        eq = line.strip("\n")
+        equity.append(float(eq))
+    print(len([eq for eq in equity if eq > 0.8198])/ len(equity))
+
+def get_best_double_points():
+    myFile = open(os.path.join("Data","adaptivevsgeneticdoubleon.txt"),'r')
+    row_content = []
+    for line in myFile:
+        row_content.append(line.strip("\n"))
+    tot = 0
+    points = []
+    drops = []
+    tots = []
+    count = 0
+    for row in row_content[642:]:
+        w_score, b_score, double_point, double_drop = row.split(",")
+        w_score = int(w_score)
+        b_score = int(b_score)
+        tot += (w_score-b_score)
+        if count % 4 == 0:
+            double_point = float(double_point)
+            double_drop = float(double_drop)
+        if count % 4 == 3:
+            points.append(double_point)
+            drops.append(double_drop)
+            tots.append(tot)
+            tot = 0
+        count += 1
+    
+    sorted_triplets = sorted(zip(tots, points, drops), key=lambda x: x[0], reverse=True)
+    sorted_tots, sorted_points, sorted_drops = zip(*sorted_triplets)
+    return sorted_triplets[:10]
+
+print(get_best_double_points())
