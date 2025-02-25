@@ -1,4 +1,4 @@
-
+import os
 SCREEN_WIDTH, SCREEN_HEIGHT = 900, 790
 commentary = False
 USER_PLAY = False
@@ -9,6 +9,9 @@ FPS = 30
 
 if USER_PLAY == True: commentary = True
 if GUI_FLAG == True: commentary = False
+
+strategies = ["GREEDY","GENETIC","EXPECTIMAX","ADAPTIVE"]
+
 
 test=False
 # GRAPHICS INITIALISATION
@@ -21,20 +24,20 @@ if GUI_FLAG:
     window.fill(black)
     
     white_dice_paths = [
-        "Images/player_dice1.png",
-        "Images/player_dice2.png",
-        "Images/player_dice3.png",
-        "Images/player_dice4.png",
-        "Images/player_dice5.png",
-        "Images/player_dice6.png",
+        os.path.join("Images","player_dice1.png"),
+        os.path.join("Images","player_dice2.png"),
+        os.path.join("Images","player_dice3.png"),
+        os.path.join("Images","player_dice4.png"),
+        os.path.join("Images","player_dice5.png"),
+        os.path.join("Images","player_dice6.png"),
     ]
     black_dice_paths = [
-        "Images/adversary_dice1.png",
-        "Images/adversary_dice2.png",
-        "Images/adversary_dice3.png",
-        "Images/adversary_dice4.png",
-        "Images/adversary_dice5.png",
-        "Images/adversary_dice6.png",
+        os.path.join("Images","adversary_dice1.png"),
+        os.path.join("Images","adversary_dice2.png"),
+        os.path.join("Images","adversary_dice3.png"),
+        os.path.join("Images","adversary_dice4.png"),
+        os.path.join("Images","adversary_dice5.png"),
+        os.path.join("Images","adversary_dice6.png"),
     ]
     white_dice, black_dice = [], []
     for i in range(6):

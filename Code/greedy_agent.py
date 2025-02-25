@@ -181,16 +181,7 @@ def tiebreak(boards, current_board, player):
     tiebreak_scores = [0]*len(boards)
     for board in range(len(boards)):
         # How many contiguous walls are present
-        contiguous = 0
-        max_contiguous = 0
-        for point in boards[board]:
-            if is_wall(point, player):
-                contiguous +=1
-            else:
-                if contiguous > max_contiguous: max_contiguous = contiguous
-                contiguous = 0
-        
-        if contiguous > max_contiguous: max_contiguous = contiguous
+        max_contiguous = calc_prime(boards[board], player)
         tiebreak_scores[board] = max_contiguous
     boards_copy = [boards[board] for board in range(len(boards)) if tiebreak_scores[board] == max(tiebreak_scores)]
     if len(boards_copy) < len(boards) and test: print("Narrow 1")
