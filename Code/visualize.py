@@ -8,7 +8,7 @@ import os
 
 # total_white_score, total_black_score, games_played, times_won = greedy_summarise()
 
-myFile = open(os.path.join("Data","adaptivevsgenetic.txt"))
+myFile = open(os.path.join("Data","adaptivevsgeneticdoubleon.txt"))
 white_score = []
 black_score = []
 white_wins = []
@@ -54,7 +54,7 @@ plt.plot(games, black_wins, color='orange', label='Genetic Wins', linewidth=3)
 # Add labels, legend, and title
 plt.xlabel('Game Number')
 plt.ylabel('Cumulative Totals')
-plt.title('Cumulative Scores and Wins Across 400 First-to-25 Matches')
+plt.title('Cumulative Scores and Wins Across 860 First-to-25 Matches')
 plt.legend()
 plt.grid(True)
 plt.show()

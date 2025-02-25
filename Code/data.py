@@ -347,4 +347,4 @@ def get_best_double_points():
     sorted_tots, sorted_points, sorted_drops = zip(*sorted_triplets)
     return sorted_triplets[:10]
 
-print(get_best_double_points())
+
