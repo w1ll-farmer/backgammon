@@ -3,6 +3,7 @@ import numpy as np
 import copy
 import pandas as pd
 from constants import *
+from time import sleep
 if GUI_FLAG:
     import pygame
     pygame.init()
@@ -336,6 +337,7 @@ def is_error(board):
         print(sum([i for i in board if i < 0]),sum([i for i in board if i > 0]))
         errorFile = open('Error.txt','a')
         errorFile.write(f"Board: {board}\n")
+        sleep(10)
         return True
     else:
         return False

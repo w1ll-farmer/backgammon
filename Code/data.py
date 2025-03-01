@@ -347,4 +347,8 @@ def get_best_double_points():
     sorted_tots, sorted_points, sorted_drops = zip(*sorted_triplets)
     return sorted_triplets[:10]
 
-
+def write_board_points(boards, score):
+    for board in boards:
+        myFile = open(os.path.join("Data","board_success_2.txt"),"a")
+        myFile.write(f"{board}, {score}\n")
+        myFile.close()

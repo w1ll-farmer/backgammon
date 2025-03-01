@@ -48,6 +48,7 @@ def calc_equity(board, player):
     return max(-1, min(1, equity))
 
 def can_double(double_player, current_player, w_score, b_score, score_to, prev_score):
+    return False
     if is_crawford_game(w_score, b_score, score_to, prev_score):
         return False
     elif double_player == 0:
