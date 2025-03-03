@@ -50,9 +50,9 @@ def gap_fill():
     for line in myFile:
         line.strip("\n")
         board, movescore = line.split("[")
-        print(board)
+        # print(board)
         move, score = movescore.split("]")
-        print(score)
+        # print(score)
         if len(score) == 1:
             score = ",-0.05\n"
         myNewFile = open("Data/Deep/Opening/train2.txt",'a')
@@ -61,7 +61,7 @@ def gap_fill():
     myFile.close()
         
 def successful_boards():
-    myFile = open(os.path.join("Data","board_success_2.txt"),'r')
+    myFile = open(os.path.join("Data","board_success_5.txt"),'r')
     times_appear = {}
     total_score = {}
     avg_score = {}
@@ -77,14 +77,40 @@ def successful_boards():
             total_score[board] = score
     myFile.close()
     for board in times_appear:
-        if times_appear[board] > 49:
+        if times_appear[board] > 99:
             avg_score[board] = total_score[board] / times_appear[board]
     
     for board in avg_score:
         myFile = open(os.path.join("Data","Deep","BoardEquity",f"board_equity_db.txt"),'a')
         myFile.write(f"{board},{avg_score[board]}\n")
         myFile.close()
-        
-successful_boards()
+
+def use_prev_board():
+    myFile = open(os.path.join("Data","board_success.txt"),'r')
+    times_appear = {}
+    for line in myFile:
+        board, score = line.split("],")
+        board = board.strip("[")
+        board = board.strip()
+        board2 = board.split(",")
+        board2 = [int(i) for i in board2 if i != " "]
+        if board in times_appear:
+            times_appear[board] +=1
+        else:
+            times_appear[board] = 1
+    myFile.close() 
+    boards = []
+    for board in times_appear:
+        if times_appear[board] < 10:
+            board = board.strip("[")
+            board = board.strip()
+            board2 = board.split(",")
+            board2 = [int(i) for i in board2 if i != " "]
+            boards.append(board2)
+    # print(len(boards))
+    return boards
+
+# print(use_prev_board()[:3])
+# successful_boards()
 
         

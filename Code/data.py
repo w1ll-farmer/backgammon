@@ -349,6 +349,20 @@ def get_best_double_points():
 
 def write_board_points(boards, score):
     for board in boards:
-        myFile = open(os.path.join("Data","board_success_3.txt"),"a")
+        myFile = open(os.path.join("Data","board_success_known.txt"),"a")
         myFile.write(f"{board}, {score}\n")
         myFile.close()
+
+def mean_db_equity():
+    myFile = open(os.path.join("Data","Deep","BoardEquity","board_equity_db.txt"),"r")
+    total = 0
+    div = 0
+    for line in myFile:
+        line = line.strip("\n")
+        total += float(line.split(",")[-1])
+        div += 1
+    print(total/div)
+    myFile.close()
+
+
+        
