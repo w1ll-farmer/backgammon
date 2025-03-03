@@ -3,7 +3,6 @@ from random import randint
 from turn import *
 from adaptive_agent import calc_advanced_equity, race_gwc
 from data import write_equity
-
 def calc_gammon_potential(board, player, player_home, opp_home):
     opp_pieces_home = count_walls(opp_home, -player) + count_blots(opp_home, -player)
     opp_pieces_player_home = count_walls(player_home, -player) + count_blots(player_home, -player)

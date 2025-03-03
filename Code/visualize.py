@@ -58,3 +58,4 @@ plt.title('Cumulative Scores and Wins Across 860 First-to-25 Matches')
 plt.legend()
 plt.grid(True)
 plt.show()
+
