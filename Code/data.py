@@ -349,6 +349,6 @@ def get_best_double_points():
 
 def write_board_points(boards, score):
     for board in boards:
-        myFile = open(os.path.join("Data","board_success_2.txt"),"a")
+        myFile = open(os.path.join("Data","board_success_3.txt"),"a")
         myFile.write(f"{board}, {score}\n")
         myFile.close()

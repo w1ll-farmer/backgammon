@@ -894,7 +894,7 @@ def collect_data(p1strat, pminus1strat, first_to):
     for i in range(1000):
         # dataFile = open(myFile, 'a')
         starting_board = generate_random_board()
-        for j in range(100):
+        for j in range(50):
             p1vector,w_score,pminus1vector,b_score= backgammon(first_to, "ADAPTIVE",adaptive_weights, "GENETIC",genetic_weights, double_point, double_drop, starting_board)
         # dataFile.write(f"{w_score}, {b_score}\n")
         # print(p1vector,w_score,pminus1vector,b_score)
