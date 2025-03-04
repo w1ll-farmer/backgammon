@@ -280,20 +280,6 @@ def adjacent_friend(board, point, player):
         return True
     return False
 
-def prob_opponent_can_hit(player, board, point):
-    start_points = [i for i in range(len(board)) if (player == 1 and board[i] < 0) or (player == -1 and board[i] > 0)]
-    can_hit = 0
-    for roll1 in range(1,7):
-        for roll2 in range(1, 7):
-            for s in start_points:
-                if s + (roll1+roll2)*(1+roll1==roll2) <= point:
-                    if s + roll1 == point or s + roll2 == point:
-                        can_hit +=1
-                    elif roll1 == roll2:
-                        if s + (roll1*2) == point or s+(roll2)*2 == point or s + (roll1*2)+roll2 == point or s + (roll2*2)+roll1 == point:
-                            can_hit +=1
-    return can_hit/36
-
 def get_lookahead(start_board, player, roll, player_score, opponent_score, cube_val, first_to, weights):
     equities = []
     for roll1 in range(1, 7):

@@ -459,3 +459,140 @@ def calc_prime(board, player):
     if prime > max_prime: max_prime = prime
     return max_prime
     
+def prob_opponent_can_hit(player, board, point):
+    start_points = [i for i in range(len(board)) if (player == 1 and board[i] < 0) or (player == -1 and board[i] > 0)]
+    can_hit = 0
+    found = []
+    for roll1 in range(1,7):
+        for roll2 in range(1, 7):
+            # i = 0
+            # found = 0
+            for s in start_points:
+                if f"{roll1,roll2}" not in found:
+                    if (s + player*roll1 == point or s + player*roll2 == point):
+                        can_hit +=1
+                        found.append(f"{roll1,roll2}")
+                        
+                    elif roll1 == roll2 and can_double_hit(player, point, s, roll1, roll2, board):
+                        can_hit +=1
+                        found.append(f"{roll1,roll2}")
+                        
+                    elif player == 1 and roll1 != roll2:
+                        if s+roll1+roll2 == point:
+                            if board[s + roll1] <= 1 or board[s + roll2] <= 1: 
+                                can_hit += 1
+                                found.append(f"{roll1,roll2}")
+                                
+                    elif player == -1 and roll1 != roll2:
+                        if s-roll1-roll2 == point:
+                            if board[s - roll1] >= -1 or board[s - roll2] >= -1: 
+                                can_hit += 1
+                                found.append(f"{roll1,roll2}")          
+    return can_hit/36
+
+
+
+def can_double_hit(player, point, s, roll1, roll2, board):
+    if player ==1:
+        possible = False
+        moved = 0
+        while moved < 4 and not possible:
+            moved += 1
+            if s + roll1*moved == point:
+                possible = True
+            if s+ roll1*moved > 23:
+                break
+            if board[s+ roll1*moved] < -1:
+                break
+                
+        return possible
+            
+    else:
+        possible = False
+        moved = 0
+        while moved < 4 and not possible:
+            moved += 1
+            if s + roll1*-moved == point:
+                possible = True
+            if s+ roll1*-moved < 0:
+                break
+            if board[s+ roll1*-moved] > 1:
+                break
+                
+        return possible
+
+def calc_blockade_pass_chance(board, player):
+    passed = 0
+    furthest = get_furthest_back(board, -player)
+    if player == 1:
+        loc = 0
+        while board[loc] < player and loc < 24:
+            loc +=1
+        block_start=loc
+        while board[loc+1] >= player:
+            loc += 1
+    else:
+        loc = 23
+        while board[loc] > player and loc > -1:
+            loc -= 1
+        block_start=loc
+        while board[loc-1] <= player:
+            loc -= 1
+    
+    for roll1 in range(1,7):
+        for roll2 in range(1, 7):
+            if player == -1:
+                if furthest+(roll1+roll2)*(1+roll2==roll1) > loc:
+                    if is_double([roll1, roll2]):
+                        possible = True
+                        moved = 0
+                        while moved < 4 and possible:
+                            moved += 1
+                            if furthest + roll1*moved >= block_start and \
+                                furthest+roll1*moved <= loc:
+                                possible = False
+                            if furthest + roll1*moved > 23 and furthest + roll1*moved != 27:
+                                possible = False
+                            if board[furthest+ roll1*moved] < -1:
+                                possible = False
+                        if possible:
+                            passed += 1
+                    
+                    elif furthest + roll1 < block_start or \
+                            furthest + roll2 < block_start:
+                            passed += 1
+                            
+                    elif furthest + roll1 > loc or furthest + roll2 > loc:
+                        passed += 1
+            else:
+                if furthest-(roll1+roll2)*(1+roll2==roll1) > loc:
+                    if is_double([roll1, roll2]):
+                        possible = True
+                        moved = 0
+                        while moved < 4 and possible:
+                            moved += 1
+                            if furthest - roll1*moved <= block_start and \
+                                furthest-roll1*moved >= loc:
+                                possible = False
+                            if furthest - roll1*moved < 0:
+                                possible = False
+                            if board[furthest- roll1*moved] > 1:
+                                possible = False
+                        if possible:
+                            passed += 1
+                    
+                    elif furthest - roll1 > block_start or \
+                            furthest - roll2 > block_start:
+                            passed += 1
+                            
+                    elif furthest - roll1 < loc or furthest - roll2 < loc:
+                        passed += 1
+    return passed/36
+
+def decimal_to_binary(decimal):
+    binary = [0]*7
+    for i in range(6,-1,-1):
+        if decimal >= 2**i:
+            binary[6-i] = 1
+            decimal -= 2**i
+    return binary

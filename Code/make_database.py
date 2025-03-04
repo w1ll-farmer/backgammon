@@ -110,7 +110,88 @@ def use_prev_board():
     # print(len(boards))
     return boards
 
-# print(use_prev_board()[:3])
-# successful_boards()
-
+def generate_cp_db():
+    myFile = open(os.path.join("Data","board_success_known.txt"),'r')
+    times_appear = {}
+    total_score = {}
+    avg_score = {}
+    for line in myFile:
+        board, score = line.split("],")
+        board = board.strip("[")
+        score = int(score.strip("\n"))
+        if board in times_appear:
+            times_appear[board] +=1
+            total_score[board] += score
+        else:
+            times_appear[board] = 1
+            total_score[board] = score
+    myFile.close()
+    for board in times_appear:
+        if times_appear[board] > 99:
+            avg_score[board] = total_score[board]/times_appear[board]
+    
+    
+    for b in avg_score:
+        board = b.strip()
+        board = b.split(",")
+        board = [int(i) for i in board if i != " "]
+        input_vector = []
+        for i in range(24):
+            point_encoding = convert_point(board[i])
+            input_vector += point_encoding
+        for i in range(24):
+            input_vector.append(prob_opponent_can_hit(1, board, i))
+        for i in range(24, 26):
+            input_vector += convert_bar(board[i])
+        _, home = get_home_info(1, board)
+        _, opp_home = get_home_info(-1, board)
+        # % home points occupied
+        input_vector.append(len([i for i in home if i > 0])/6)
+        # % opp home points occupied
+        input_vector.append(len([i for i in opp_home if i > 0])/6)
+        # % pieces in home
+        input_vector.append(sum([i for i in home if i >0])/15)
+        # Prime?
+        input_vector.append(1 if calc_prime(board, 1) > 3 else 0)
+        # pip count
+        input_vector += decimal_to_binary(calc_pips(board, 1))
+        input_vector += decimal_to_binary(calc_pips(board, -1))
         
+        # chance blockade can't be passed
+        input_vector.append(calc_blockade_pass_chance(board, 1))
+        myFile = open(os.path.join("Data","Deep","289-input-x.txt"),"a")
+        input_vector = str(input_vector)[1:-1]
+        myFile.write(f"{input_vector}\n")
+        myFile.close()
+        
+        myFile = open(os.path.join("Data","Deep","289-input-y.txt"),"a")
+        myFile.write(f"{avg_score[b]}\n")
+        myFile.close()
+
+def convert_point(point):
+    base = [0]* 10
+    if point < 0:
+        for i in range(0, 5):
+            if point <= i-5 and (i == 0 or i == 3) or point == i-5:
+                base[i] = 1
+    elif point > 0:
+        for i in range(5, 10):
+            if point >= i - 4 and (i == 9 or i == 6) or point == i-4:
+                base[i] = 1
+    return base
+
+
+def convert_bar(point):
+    base = [0]*3
+    if point < 0:
+        for i in range(0, 2):
+            if point <= i-2 and i ==0 or point == i-2:
+                base[i]=1
+    elif point > 0:
+        for i in range(0, 3):
+            if point >= i and i == 2 or point == i:
+                base[i]=1
+    return base
+
+
+generate_cp_db()
