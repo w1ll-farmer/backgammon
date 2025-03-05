@@ -596,3 +596,41 @@ def decimal_to_binary(decimal):
             binary[6-i] = 1
             decimal -= 2**i
     return binary
+
+def convert_point(point):
+    base = [0]* 10
+    if point < 0:
+        for i in range(0, 5):
+            if point <= i-5 and (i == 0 or i == 3) or point == i-5:
+                base[i] = 1
+    elif point > 0:
+        for i in range(5, 10):
+            if point >= i - 4 and (i == 9 or i == 6) or point == i-4:
+                base[i] = 1
+    return base
+
+
+def convert_bar(point):
+    base = [0]*3
+    if point < 0:
+        for i in range(0, 2):
+            if point <= i-2 and i ==0 or point == i-2:
+                base[i]=1
+    elif point > 0:
+        for i in range(0, 3):
+            if point >= i and i == 2 or point == i:
+                base[i]=1
+    return base
+
+def list_to_str(lst, commas=True,spaces=True):
+    if not commas:
+        str_board = ""
+        for i in lst:
+            if spaces:
+                str_board += f"{i} "
+            else:
+                str_board += f"{i}"
+    else:
+        lst = str(lst)[1:-1]
+    return lst if commas else str_board
+

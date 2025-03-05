@@ -111,7 +111,7 @@ def use_prev_board():
     return boards
 
 def generate_cp_db():
-    myFile = open(os.path.join("Data","board_success_known.txt"),'r')
+    myFile = open(os.path.join("Data","board_success_online.txt"),'r')
     times_appear = {}
     total_score = {}
     avg_score = {}
@@ -168,30 +168,9 @@ def generate_cp_db():
         myFile.write(f"{avg_score[b]}\n")
         myFile.close()
 
-def convert_point(point):
-    base = [0]* 10
-    if point < 0:
-        for i in range(0, 5):
-            if point <= i-5 and (i == 0 or i == 3) or point == i-5:
-                base[i] = 1
-    elif point > 0:
-        for i in range(5, 10):
-            if point >= i - 4 and (i == 9 or i == 6) or point == i-4:
-                base[i] = 1
-    return base
-
-
-def convert_bar(point):
-    base = [0]*3
-    if point < 0:
-        for i in range(0, 2):
-            if point <= i-2 and i ==0 or point == i-2:
-                base[i]=1
-    elif point > 0:
-        for i in range(0, 3):
-            if point >= i and i == 2 or point == i:
-                base[i]=1
-    return base
-
-
-generate_cp_db()
+# 534 rows in initial
+# 1267 rows after board_success_2
+# 1857 rows after board_success_4
+# 2185 after board_success_5
+# 2695 after board_success_online
+# generate_cp_db()

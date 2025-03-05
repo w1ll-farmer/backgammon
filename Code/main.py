@@ -820,14 +820,14 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 
             if is_backgammon(board):
                 if board[26] == -15:
-                    write_board_points([invert_board(i) for i in black_boards], 3)
-                    write_board_points(white_boards, 0)
+                    # write_board_points([invert_board(i) for i in black_boards], 3)
+                    # write_board_points(white_boards, 0)
                     pminus1vector[2] +=cube_val
                     if commentary:
                         print("Player -1 win")
                 else:
-                    write_board_points(white_boards, 3)
-                    write_board_points([invert_board(i) for i in black_boards], 0)
+                    # write_board_points(white_boards, 3)
+                    # write_board_points([invert_board(i) for i in black_boards], 0)
                     p1vector[2] +=cube_val
                     if commentary:
                         print("Player 1 win")
@@ -836,14 +836,14 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     
             elif is_gammon(board):
                 if board[26] == -15:
-                    write_board_points([invert_board(i) for i in black_boards], 2)
-                    write_board_points(white_boards, 0)
+                    # write_board_points([invert_board(i) for i in black_boards], 2)
+                    # write_board_points(white_boards, 0)
                     pminus1vector[1] +=cube_val
                     if commentary:
                         print("Player -1 win")
                 else:
-                    write_board_points(white_boards, 2)
-                    write_board_points([invert_board(i) for i in black_boards], 0)
+                    # write_board_points(white_boards, 2)
+                    # write_board_points([invert_board(i) for i in black_boards], 0)
                     p1vector[1] +=cube_val
                     if commentary:
                         print("Player 1 win")
@@ -852,14 +852,14 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     
             else:
                 if board[26] == -15:
-                    write_board_points([invert_board(i) for i in black_boards], 1)
-                    write_board_points(white_boards, 0)
+                    # write_board_points([invert_board(i) for i in black_boards], 1)
+                    # write_board_points(white_boards, 0)
                     pminus1vector[0] +=cube_val
                     if commentary:
                         print("Player -1 win")
                 else:
-                    write_board_points(white_boards, 1)
-                    write_board_points([invert_board(i) for i in black_boards], 0)
+                    # write_board_points(white_boards, 1)
+                    # write_board_points([invert_board(i) for i in black_boards], 0)
                     p1vector[0] +=cube_val
                     if commentary:
                         print("Player 1 win")
@@ -980,9 +980,9 @@ if __name__ == "__main__":
         # print(calc_first())
         # print(b:=update_board(make_board(),(12, 9)))
         # print(update_board(b, (9, 7)))
-        score_to = 5
-        player1strat = "DEEP"
-        playerminus1strat = "GREEDY"
+        score_to = 25
+        player1strat = "USER"
+        playerminus1strat = "GENETIC"
         weights1, weights2 = None, None
         if player1strat == "GENETIC":
             # Optimal Weights for first-to-25 victory
