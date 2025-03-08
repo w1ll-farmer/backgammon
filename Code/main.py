@@ -19,6 +19,7 @@ from adaptive_agent import *
 from double import *
 from make_database import *
 from deep_agent import *
+from gnubg_interact import *
 
 global background
 global white_score
@@ -549,7 +550,8 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                         move, board = adaptive_play(moves1, boards1, player1, time_step, board, roll, player1score, player2score, cube_val, score_to, weights1)
                     elif player1strat == "DEEP":
                         move, board = deep_play(moves1, boards1, weights1)
-                    white_boards.append(board)    
+                    white_boards.append(board)
+                    write_move_equities(board, roll, player1) 
                     if commentary:
                         print(f"Move Taken: {move}")
                     if GUI_FLAG:
@@ -631,6 +633,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     elif player1strat == "DEEP":
                         move, board = deep_play(moves2, boards2, weights2, -1)
                     black_boards.append(board)    
+                    write_move_equities(board, roll, player2)
                     if commentary:
                         print(f"Move Taken: {move}")
                 else:
@@ -690,6 +693,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     elif player1strat == "DEEP":
                         move, board = deep_play(moves1, boards1, weights1, -1)
                     black_boards.append(board)
+                    write_move_equities(board, roll, player1)
                     if commentary:    
                         print(f"Move Taken: {move}")
                 else:
@@ -772,6 +776,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     elif player1strat == "DEEP":
                         move, board = deep_play(moves2, boards2, weights2)
                     white_boards.append(board)    
+                    write_move_equities(board, roll, player2)
                     if commentary:
                         print(f"Move Taken: {move}")
                 else:
@@ -981,7 +986,7 @@ if __name__ == "__main__":
         # print(b:=update_board(make_board(),(12, 9)))
         # print(update_board(b, (9, 7)))
         score_to = 25
-        player1strat = "USER"
+        player1strat = "GENETIC"
         playerminus1strat = "GENETIC"
         weights1, weights2 = None, None
         if player1strat == "GENETIC":

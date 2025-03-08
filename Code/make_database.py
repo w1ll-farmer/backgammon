@@ -1,29 +1,6 @@
 from turn import *
 from random import randint, uniform, gauss
 
-def generate_random_board():
-    white_remaining = 15
-    black_remaining = 15    
-    board = [0]*28
-    while white_remaining > 0 or black_remaining > 0:
-        pos = randint(0, 27)
-        x = uniform(-black_remaining,white_remaining)
-        player = -1 if x < 0 else 1
-        if player == 1 and pos != 24 and pos != 26 and board[pos] > -1:
-            point = int(gauss(2.5, 2)) if white_remaining >= 7 else randint(0, white_remaining)
-            while point > white_remaining or point < 0:
-                point = int(gauss(2.5, 2))
-            board[pos] += point
-            white_remaining -= point
-        elif player == -1 and pos != 25 and pos != 27 and board[pos] < 1:
-            point = int(gauss(2.5, 2)) if black_remaining >= 7 else randint(0,black_remaining)
-            while point < 0 or point > black_remaining:
-                point = int(gauss(2.5, 2))
-            board[pos] -= point
-            black_remaining -= point
-            
-    return board
-
 def make_opening(make_stuff=True):
     board = make_board()
     generated = {}
