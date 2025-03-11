@@ -2,7 +2,7 @@ from turn import *
 from constants import *
 from testfile import *
 from genetic_agent import *
-def eevaluate(move, board_before, board_after, player):
+def easy_evaluate(move, board_before, board_after, player):
     score = 0
     for m in move:
         start, end = m

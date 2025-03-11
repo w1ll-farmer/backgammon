@@ -346,18 +346,25 @@ def adaptive_play(moves, boards, player, turn, current_board, roll, player_score
 
 def deep_play(moves, boards, epoch=None, player=1):
     if player == -1:
+        print("Inverting boards")
         boards = [invert_board(board) for board in boards]
     equities = []
-    for board in boards:
-        equities.append(predict(board, epoch))
+    best_board = boards[0]
+    best_move = moves[0]
+    if len(boards) == 1:
+        return moves[0], best_board
+    for i in range(1, len(boards)):
+        left_board = best_board
+        right_board = boards[i]
+        prediction = predict(left_board, right_board)
+        if prediction < 0.5:
+            best_board = right_board
+            best_move = moves[i]
         # print(equities)
     # print(equities)
-    max_equity = max(equities)
     if player == -1:
-        boards = [invert_board(board) for board in boards]
-    chosen_board = boards[equities.index(max_equity)]
-    chosen_move = moves[equities.index(max_equity)]
-    return chosen_move, chosen_board
+        best_board = invert_board(best_board)
+    return best_move, best_board
 
 ###############
 ## MAIN BODY ##
@@ -543,7 +550,10 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                             compare_eval_equity(evaluation, equity)
                         move = move.pop()
                     elif player1strat == "EXPECTIMAX":
-                        move, board = expectimax_play(moves1, boards1, player1)
+                        if all_past(board):
+                            move, board = greedy_play(moves1, boards1, board, player1, roll)
+                        else:
+                            move, board = expectimax_play(moves1, boards1, player1)
                         move = move.pop()
                     elif player1strat == "ADAPTIVE":
                         white_equity.append(calc_advanced_equity(board, player1, player1score, player2score, cube_val, score_to, weights1))
@@ -551,7 +561,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     elif player1strat == "DEEP":
                         move, board = deep_play(moves1, boards1, weights1)
                     white_boards.append(board)
-                    write_move_equities(board, roll, player1) 
+                    # write_move_equities(board, roll, player1) 
                     if commentary:
                         print(f"Move Taken: {move}")
                     if GUI_FLAG:
@@ -625,15 +635,18 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                             compare_eval_equity(evaluation, equity)
                         move = move.pop()
                     elif player2strat == "EXPECTIMAX":
-                        move, board = expectimax_play(moves2, boards2, player2)
+                        if all_past(board):
+                            move, board = greedy_play(moves2, boards2, board, player2, roll)
+                        else:
+                            move, board = expectimax_play(moves2, boards2, player2)
                         move = move.pop()
                     elif player2strat == "ADAPTIVE":
                         black_equity.append(calc_advanced_equity(board, player2, player2score, player1score, cube_val, score_to, weights2))
                         move, board = adaptive_play(moves2, boards2, player2, time_step, board, roll, player2score, player1score, cube_val, score_to, weights2)
-                    elif player1strat == "DEEP":
+                    elif player2strat == "DEEP":
                         move, board = deep_play(moves2, boards2, weights2, -1)
                     black_boards.append(board)    
-                    write_move_equities(board, roll, player2)
+                    # write_move_equities(board, roll, player2)
                     if commentary:
                         print(f"Move Taken: {move}")
                 else:
@@ -685,7 +698,10 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                             compare_eval_equity(evaluation, equity)
                         move = move.pop()
                     elif player1strat == "EXPECTIMAX":
-                        move, board = expectimax_play(moves1, boards1, player1)
+                        if all_past(board):
+                            move, board = greedy_play(moves1, boards1, board, player1, roll)
+                        else:
+                            move, board = expectimax_play(moves1, boards1, player1)
                         move = move.pop()
                     elif player1strat == "ADAPTIVE":
                         black_equity.append(calc_advanced_equity(board, player1, player1score, player2score, cube_val, score_to, weights1))
@@ -693,7 +709,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     elif player1strat == "DEEP":
                         move, board = deep_play(moves1, boards1, weights1, -1)
                     black_boards.append(board)
-                    write_move_equities(board, roll, player1)
+                    # write_move_equities(board, roll, player1)
                     if commentary:    
                         print(f"Move Taken: {move}")
                 else:
@@ -768,15 +784,18 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                             compare_eval_equity(evaluation, equity)
                         move = move.pop()
                     elif player2strat == "EXPECTIMAX":
-                        move, board = expectimax_play(moves2, boards2, player2)
+                        if all_past(board):
+                            move, board = greedy_play(moves2, boards2, board, player2, roll)
+                        else:
+                            move, board = expectimax_play(moves2, boards2, player2)
                         move = move.pop()
                     elif player2strat == "ADAPTIVE":
                         white_equity.append(calc_advanced_equity(board, player2, player2score, player1score, cube_val, score_to, weights2))
                         move, board = adaptive_play(moves2, boards2, player2, time_step, board, roll, player2score, player1score, cube_val, score_to, weights2)
-                    elif player1strat == "DEEP":
+                    elif player2strat == "DEEP":
                         move, board = deep_play(moves2, boards2, weights2)
                     white_boards.append(board)    
-                    write_move_equities(board, roll, player2)
+                    # write_move_equities(board, roll, player2)
                     if commentary:
                         print(f"Move Taken: {move}")
                 else:
@@ -908,37 +927,23 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 update_screen(background, white_score, black_score, board, w_score, b_score, True)    
         #### CHECKS FOR GAME OVER AND WINNING POINTS ####
             
-            # print(w_score, b_score)
+            print(w_score, b_score)
     return p1vector, w_score, pminus1vector, b_score
 
 
 def collect_data(p1strat, pminus1strat, first_to):
-    myFile = "./Data/adaptivevsgeneticdoubleon.txt"
+    myFile = "./Data/deepvadaptivenocube.txt"
     white_tot, black_tot = 0,0
     white_wins, black_wins = 0,0
-    first_to = 1
+    first_to = 25
     adaptive_weights = [0.9966066885314592, -0.9916984096898946, 0.3106830724424913, 0.529168163359478, -0.4710732676896102, 0.5969523488654117, 0.36822981983332415, 0.38958074063216697, 0.02676397245530815, 0.08588282381449319, 0.06094873757931751, 1.1095422351658368, 0.47764793610307643, 0.040753486445243126, 0.5495226441839489, 0.8875009606764003, 0.9333344067224983, 0.1340269726805713, 0.1978868967026618, 1.2096547126804458, 2.379707426788366, 0.6465298771549699, 0.509196585225148, 0.261875669397977, 0.36883752029556166, -0.481342015629518, 0.7098436807557322, 1.0250219115287624, 0.5739284594183071, 0.1796876959733017, 0.2679991261065485]
     genetic_weights = [10.0, 21.0, 12.0, 11.0, 15.0, 0.5664383320165035, 10.0, 4.0, 25.0, 6.0, 0.6461166029382669, 0.5378085318259279, 0.5831066576570856, 0.9552318750278183, 0.07412843879077036, 0.17550708535892934, 0.49191128795644823, 0.556755495835094]
     double_point, double_drop = 1.4325859937671366, -1.8523842372779313
     for i in range(1000):
-        # dataFile = open(myFile, 'a')
-        starting_boards = use_prev_board()
-        used = []
+        dataFile = open(myFile, 'a')
         for i in range(1000):
-            x = randint(0, len(starting_boards)-1)
-            while x in used:
-                x = randint(0, len(starting_boards)-1)
-            starting_board = starting_boards[x]
-            used.append(x)
-            print(x, starting_board)
-            for j in range(50):
-                p1vector,w_score,pminus1vector,b_score= backgammon(first_to, "ADAPTIVE",adaptive_weights, "ADAPTIVE",adaptive_weights, double_point, double_drop, starting_board)
-            print("Adaptive v Adaptive Done")
-            for j in range(25):
-                p1vector,w_score,pminus1vector,b_score= backgammon(first_to, "ADAPTIVE",adaptive_weights, "GENETIC",genetic_weights, double_point, double_drop, starting_board)
-            print("Adaptive v Genetic Done")
-            for j in range(25):
-                p1vector,w_score,pminus1vector,b_score= backgammon(first_to, "ADAPTIVE",adaptive_weights, "GREEDY",None, double_point, double_drop, starting_board)
+            p1vector,w_score,pminus1vector,b_score= backgammon(first_to, "DEEP",None, "ADAPTIVE",adaptive_weights)
+            
         # dataFile.write(f"{w_score}, {b_score}\n")
         # print(p1vector,w_score,pminus1vector,b_score)
         # dataFile.close()
@@ -965,9 +970,9 @@ if __name__ == "__main__":
     if len(sys.argv[:]) > 1:
         if sys.argv[1] == "data":
             if len(sys.argv[:]) >= 3:
-                collect_data(sys.argv[2], sys.argv[3], 5)
+                collect_data(sys.argv[2], sys.argv[3], 25)
             else:
-                collect_data("RANDOM",'RANDOM',5)
+                collect_data("DEEP",'ADAPTIVE',25)
             # print(calc_first())
         else:
             score_to = 25
@@ -986,8 +991,9 @@ if __name__ == "__main__":
         # print(b:=update_board(make_board(),(12, 9)))
         # print(update_board(b, (9, 7)))
         score_to = 25
-        player1strat = "GENETIC"
-        playerminus1strat = "GENETIC"
+        player1strat = "DEEP"
+        playerminus1strat = "ADAPTIVE"
+        print(player1strat, playerminus1strat)
         weights1, weights2 = None, None
         if player1strat == "GENETIC":
             # Optimal Weights for first-to-25 victory

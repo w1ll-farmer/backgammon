@@ -460,6 +460,8 @@ def calc_prime(board, player):
     return max_prime
     
 def prob_opponent_can_hit(player, board, point):
+    if board[point] == player:
+        return 0
     start_points = [i for i in range(len(board)) if (player == 1 and board[i] < 0) or (player == -1 and board[i] > 0)]
     can_hit = 0
     found = []

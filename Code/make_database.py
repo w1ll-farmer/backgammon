@@ -151,3 +151,88 @@ def generate_cp_db():
 # 2185 after board_success_5
 # 2695 after board_success_online
 # generate_cp_db()
+
+def encode_cp(b):
+    board = b.strip()
+    board = b.split(",")
+    board = [int(i) for i in board if i != " "]
+    input_vector = []
+    for i in range(24):
+        point_encoding = convert_point(board[i])
+        input_vector += point_encoding
+    for i in range(24):
+        input_vector.append(prob_opponent_can_hit(1, board, i))
+    for i in range(24, 26):
+        input_vector += convert_bar(board[i])
+    _, home = get_home_info(1, board)
+    _, opp_home = get_home_info(-1, board)
+    # % home points occupied
+    input_vector.append(len([i for i in home if i > 0])/6)
+    # % opp home points occupied
+    input_vector.append(len([i for i in opp_home if i > 0])/6)
+    # % pieces in home
+    input_vector.append(sum([i for i in home if i >0])/15)
+    # Prime?
+    input_vector.append(1 if calc_prime(board, 1) > 3 else 0)
+    # pip count
+    input_vector += decimal_to_binary(calc_pips(board, 1))
+    input_vector += decimal_to_binary(calc_pips(board, -1))
+    
+    # chance blockade can't be passed
+    input_vector.append(calc_blockade_pass_chance(board, 1))
+    return input_vector
+    
+def comparison_paradigm(end, start = 0, testset=False):
+    for i in range(start, end):
+        myFile = open(os.path.join("Data","Deep","GNUBG-data",f"positions{i}.txt"),"r")
+        raw_boards, equities = [], []
+        for line in myFile:
+            raw_board, equity = line.split("],")
+            raw_boards.append(raw_board[1:])
+            equities.append(float(equity.strip()))
+        myFile.close()
+        used_boards = []
+        while len(used_boards) < len(raw_boards) -1:
+            index = randint(0, len(raw_boards)-1)
+            while index in used_boards:
+                index = randint(0, len(raw_boards)-1)
+            used_boards.append(index)
+            board1 = raw_boards[index]
+            equity1 = equities[index]
+            new_index = randint(0, len(raw_boards)-1)
+            while new_index in used_boards:
+                new_index = randint(0, len(raw_boards)-1)
+            used_boards.append(new_index)
+            board2, equity2 = raw_boards[new_index], equities[new_index]
+            if equity1 > equity2:
+                Y = 1
+                valY = 0
+            elif equity1 < equity2:
+                Y = 0
+                valY = 1
+            else:
+                continue
+            encoded_board1 = str(encode_cp(board1))
+            encoded_board2 = str(encode_cp(board2))
+            if testset == False:
+                # Write to train set
+                myFile = open(os.path.join("Data","Deep","BoardEquity","train.txt"),"a")
+                myFile.write(f"{encoded_board1[1:-1]},{encoded_board2[1:-1]},{Y}\n")
+                myFile.close()
+                # Write to Validation Set
+                # Same boards as train set but other way round, try to enforce symmetry
+                myFile = open(os.path.join("Data","Deep","BoardEquity","validation.txt"),"a")
+                myFile.write(f"{encoded_board2[1:-1]},{encoded_board1[1:-1]},{valY}\n")
+                myFile.close()
+            else:
+                myFile = open(os.path.join("Data","Deep","BoardEquity","test.txt"),"a")
+                myFile.write(f"{encoded_board1[1:-1]},{encoded_board2[1:-1]},{Y}\n")
+                myFile.close()
+
+if __name__ == "__main__":
+    data_size = len(os.listdir(os.path.join("Data","Deep","GNUBG-data"))) - 1
+    train_end =int(0.85*data_size)
+    print("Train")
+    comparison_paradigm(train_end, start = 0, testset=False)
+    print("Test")
+    comparison_paradigm(data_size, start = train_end, testset=True)

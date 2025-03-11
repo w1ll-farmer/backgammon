@@ -186,7 +186,11 @@ def convert_move(moves, roll, board):
         print(move)
         if "off" in move:
             move = move.strip()
-            move = move[:-3] + "28"
+            if move[-1] == "f":
+                move = move[:-3] + "28"
+            else:
+                index = move.index("o")
+                move = move[:index] + "28"+ move[index+2:]
         elif "bar" in move:
             move = move.strip()
             move = "26"+move[3:]
@@ -275,16 +279,17 @@ def get_move_equities(board, roll, player):
     print("Converting to opengammon...")
     return convert_to_opengammon(board, raw_moves, roll)
 
-def write_move_equities(board, roll, player):
+def write_move_equities(board, roll, player, i):
     moves, boards, equities = get_move_equities(board, roll, player)
-    myFile = open(os.path.join("Data","Deep","GNUBG-data","positions.txt"),"a")
+    myFile = open(os.path.join("Data","Deep","GNUBG-data",f"positions{i-1}.txt"),"w")
     for i in range(len(moves)):
         myFile.write(f"{boards[i]},{equities[i]}\n")
     myFile.close()
 
 def random_board_equities():
-    for i in range(10000):
-        print(f"Number of boards generated: {i+1}")
+    positions = len(os.listdir(os.path.join("Data","Deep","GNUBG-data")))
+    for i in range(100000):
+        print(f"Number of boards generated: {i+positions}")
         board = generate_random_board()
         # board = make_board()
         # board[23] -= 1
@@ -299,11 +304,12 @@ def random_board_equities():
             board = generate_random_board()
             moves, _ = get_valid_moves(1, board, roll)
         print(len(moves))
-        print(write_move_equities(board, roll, 1))
+        write_move_equities(board, roll, 1, i+positions)
         
 
 if __name__ == "__main__":
+    # print(len(os.listdir(os.path.join("Data","Deep","GNUBG-data"))))
     # print("3/off"[:-4]+"/28")
-    # random_board_equities()
+    random_board_equities()
     # print(convert_move("16/15 16/14*",[2,1]))
-    print(transform_board([-1, -10, 0, 0, 4, 0, 4, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, -3, 4, 0, 1, 0, 0, 0, -1, 0, 0, 0]))
+    # print(transform_board([-1, -10, 0, 0, 4, 0, 4, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, -3, 4, 0, 1, 0, 0, 0, -1, 0, 0, 0]))
