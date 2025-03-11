@@ -941,12 +941,11 @@ def collect_data(p1strat, pminus1strat, first_to):
     double_point, double_drop = 1.4325859937671366, -1.8523842372779313
     for i in range(1000):
         dataFile = open(myFile, 'a')
-        for i in range(1000):
-            p1vector,w_score,pminus1vector,b_score= backgammon(first_to, "DEEP",None, "ADAPTIVE",adaptive_weights)
+        p1vector,w_score,pminus1vector,b_score= backgammon(first_to, "DEEP",None, "ADAPTIVE",adaptive_weights)
             
-        # dataFile.write(f"{w_score}, {b_score}\n")
-        # print(p1vector,w_score,pminus1vector,b_score)
-        # dataFile.close()
+        dataFile.write(f"{w_score}, {b_score}\n")
+        print(p1vector,w_score,pminus1vector,b_score)
+        dataFile.close()
         white_tot+=w_score
         black_tot+=b_score
         if b_score >= first_to:
