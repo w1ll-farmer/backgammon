@@ -659,4 +659,3 @@ def generate_random_board():
             black_remaining -= point
             
     return board
-

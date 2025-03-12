@@ -236,3 +236,6 @@ if __name__ == "__main__":
     comparison_paradigm(train_end, start = 0, testset=False)
     print("Test")
     comparison_paradigm(data_size, start = train_end, testset=True)
+    
+    
+# Currently 2170 position files as of deep model 1.0

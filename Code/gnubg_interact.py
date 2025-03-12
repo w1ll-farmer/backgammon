@@ -40,17 +40,27 @@ def get_move(board, roll):
     """
     
     # Code from https://github.com/nitzankoll/backGammon-analyzer/blob/main/backgammon.py 
-    commands = f"""
-        new game
-        set player 1 name white
-        set player 0 name black
-        set board simple {board}
-        set turn 1
-        set dice {roll[0]} {roll[1]}
-        hint
-        quit
-        y"""
-    
+    if roll is not None:
+        commands = f"""
+            new game
+            set player 1 name white
+            set player 0 name black
+            set board simple {board}
+            set turn 1
+            set dice {roll[0]} {roll[1]}
+            hint
+            quit
+            y"""
+    else:
+        commands = f"""
+            new game
+            set player 1 name white
+            set player 0 name black
+            set board simple {board}
+            set turn 1
+            hint
+            quit
+            y"""
     try:
         print("Opening process...")
         # Start gnubg-cli process
@@ -69,30 +79,7 @@ def get_move(board, roll):
         process.terminate()
         print("Waiting...")
         process.wait()
-        # process.stdin.write("new game\n")
-        # process.stdin.flush()
-        # process.stdin.write("set player 1 name white\n")
-        # process.stdin.flush()
-        # process.stdin.write("set player 0 name black\n")
-        # process.stdin.flush()
-        # print("Setting board, turn and dice...")
-        # process.stdin.flush()
-        # process.stdin.write(f"set board simple {board}\n")
-        # process.stdin.flush()
-        # process.stdin.write("set turn 1\n")
-        # process.stdin.flush()
-        # process.stdin.write(f"set dice {roll[0]} {roll[1]}\n")
-        # process.stdin.flush()
-        # print("Calling hint...")
-        # process.stdin.write("hint\n")
-        # stdout = process.stdout.read()
-        # print("Quitting...")
-        # process.stdin.write("quit\n")
-        # process.stdin.write("y\n")
-        # process.stdin.close()
-        # process.terminate()
         
-
         """
         # Debug output
         print("GNU Backgammon Output:")
@@ -305,11 +292,49 @@ def random_board_equities():
             moves, _ = get_valid_moves(1, board, roll)
         print(len(moves))
         write_move_equities(board, roll, 1, i+positions)
+
+def extract_cube_action(gnu_output):
+    action = re.search(r"Proper cube action:\s*([A-Za-z\s,]+)", gnu_output)
+    action = action.group(1).strip()
+    return action
+
+def get_optimal_doubling(board):
+    transformed_board = transform_board(board)
+    gnu_output = get_move(transformed_board, None)
+    while gnu_output is None:
+        gnu_output = get_move(transformed_board, None)
+    return extract_cube_action(gnu_output)
+
+def write_optimal_doubling(board):
+    action = get_optimal_doubling(board)
+    offer = 1 if action[0] == "D" else 0
+    accept = 1 if action[-1] == "e" else 0
+    
+    # Write offer decision
+    path = os.path.join("Data","Deep","GNUBG-data","Cube")
+    offerFile = open(os.path.join(path, "Offer",f"positions.txt"),"a")
+    offerFile.write(f"{board},{offer}\n")
+    offerFile.close()
+    
+    # Invert board so can be used to know when to drop/take double
+    inverted_board = invert_board(board)
+    acceptFile = open(os.path.join(path, "Accept",f"positions.txt"),"a")
+    acceptFile.write(f"{inverted_board},{accept}\n")
+    acceptFile.close()
+    
+def random_cube_decisions():
+    i = 0
+    while True:
+        print(f"Generated {i} cube decisions")
+        board = generate_random_board()
+        write_optimal_doubling(board)
+        i += 1
         
+    
 
 if __name__ == "__main__":
-    # print(len(os.listdir(os.path.join("Data","Deep","GNUBG-data"))))
-    # print("3/off"[:-4]+"/28")
-    random_board_equities()
+    print(random_cube_decisions())
+    # print(write_optimal_doubling([-1, -10, 0, 0, 4, 0, 4, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, -3, 4, 0, 1, 0, 0, 0, -1, 0, 0, 0], 0))
+    # random_board_equities()
     # print(convert_move("16/15 16/14*",[2,1]))
     # print(transform_board([-1, -10, 0, 0, 4, 0, 4, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, -3, 4, 0, 1, 0, 0, 0, -1, 0, 0, 0]))

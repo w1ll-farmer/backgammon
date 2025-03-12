@@ -333,7 +333,7 @@ def adaptive_play(moves, boards, player, turn, current_board, roll, player_score
         if abs(current_board[int(26.5+(player/2))]) >= 7:
             return adaptive_race(moves, boards, player)
         else:
-            # Use genetic positioning and bearing off techniques until Matussek is applicable
+            # Use greedy positioning and bearing off techniques until Matussek is applicable
             move, board, _ = greedy_play(moves, boards, current_board, player, roll, weights=[10.0, 21.0, 12.0, 11.0, 15.0, 0.5664383320165035, 10.0, 4.0, 25.0, 6.0, 0.6461166029382669, 0.5378085318259279, 0.5831066576570856, 0.9552318750278183, 0.07412843879077036, 0.17550708535892934, 0.49191128795644823, 0.556755495835094])
             move = move.pop()
             return move, board
@@ -345,14 +345,13 @@ def adaptive_play(moves, boards, player, turn, current_board, roll, player_score
         return adaptive_midgame(moves, boards, player, player_score, opponent_score, cube_val, first_to, weights, roll)
 
 def deep_play(moves, boards, epoch=None, player=1):
+    if len(boards) == 1:
+        return moves[0], boards[0]
     if player == -1:
-        print("Inverting boards")
         boards = [invert_board(board) for board in boards]
     equities = []
     best_board = boards[0]
     best_move = moves[0]
-    if len(boards) == 1:
-        return moves[0], best_board
     for i in range(1, len(boards)):
         left_board = best_board
         right_board = boards[i]
@@ -932,7 +931,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
 
 
 def collect_data(p1strat, pminus1strat, first_to):
-    myFile = "./Data/deepvadaptivenocube.txt"
+    myFile = "./Data/deepvgeneticnocube.txt"
     white_tot, black_tot = 0,0
     white_wins, black_wins = 0,0
     first_to = 25
@@ -941,8 +940,7 @@ def collect_data(p1strat, pminus1strat, first_to):
     double_point, double_drop = 1.4325859937671366, -1.8523842372779313
     for i in range(1000):
         dataFile = open(myFile, 'a')
-        p1vector,w_score,pminus1vector,b_score= backgammon(first_to, "DEEP",None, "ADAPTIVE",adaptive_weights)
-            
+        p1vector,w_score,pminus1vector,b_score= backgammon(first_to, "DEEP",None, "GENETIC",genetic_weights)
         dataFile.write(f"{w_score}, {b_score}\n")
         print(p1vector,w_score,pminus1vector,b_score)
         dataFile.close()
@@ -967,8 +965,10 @@ def collect_data(p1strat, pminus1strat, first_to):
            
 if __name__ == "__main__":
     if len(sys.argv[:]) > 1:
-        if sys.argv[1] == "data":
+        if sys.argv[1].lower() == "data":
+            
             if len(sys.argv[:]) >= 3:
+                print("Player 1", sys.argv[2], "Player -1", sys.argv[3])
                 collect_data(sys.argv[2], sys.argv[3], 25)
             else:
                 collect_data("DEEP",'ADAPTIVE',25)
@@ -989,9 +989,9 @@ if __name__ == "__main__":
         # print(calc_first())
         # print(b:=update_board(make_board(),(12, 9)))
         # print(update_board(b, (9, 7)))
-        score_to = 25
-        player1strat = "DEEP"
-        playerminus1strat = "ADAPTIVE"
+        score_to = 1
+        player1strat = "USER"
+        playerminus1strat = "DEEP"
         print(player1strat, playerminus1strat)
         weights1, weights2 = None, None
         if player1strat == "GENETIC":
