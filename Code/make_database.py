@@ -152,7 +152,7 @@ def generate_cp_db():
 # 2695 after board_success_online
 # generate_cp_db()
 
-def encode_cp(b):
+def encode_board_vector(b):
     board = b.strip()
     board = b.split(",")
     board = [int(i) for i in board if i != " "]
@@ -182,9 +182,9 @@ def encode_cp(b):
     input_vector.append(calc_blockade_pass_chance(board, 1))
     return input_vector
     
-def comparison_paradigm(end, start = 0, testset=False):
+def prep_dataset(end, start = 0, testset=False, cp=True):
     for i in range(start, end):
-        myFile = open(os.path.join("Data","Deep","GNUBG-data",f"positions{i}.txt"),"r")
+        myFile = open(os.path.join("Data","Deep","GNUBG-data","Equity",f"positions{i}.txt"),"r")
         raw_boards, equities = [], []
         for line in myFile:
             raw_board, equity = line.split("],")
@@ -199,43 +199,55 @@ def comparison_paradigm(end, start = 0, testset=False):
             used_boards.append(index)
             board1 = raw_boards[index]
             equity1 = equities[index]
-            new_index = randint(0, len(raw_boards)-1)
-            while new_index in used_boards:
+            if cp:
                 new_index = randint(0, len(raw_boards)-1)
-            used_boards.append(new_index)
-            board2, equity2 = raw_boards[new_index], equities[new_index]
-            if equity1 > equity2:
-                Y = 1
-                valY = 0
-            elif equity1 < equity2:
-                Y = 0
-                valY = 1
-            else:
-                continue
-            encoded_board1 = str(encode_cp(board1))
-            encoded_board2 = str(encode_cp(board2))
+                while new_index in used_boards:
+                    new_index = randint(0, len(raw_boards)-1)
+                used_boards.append(new_index)
+                board2, equity2 = raw_boards[new_index], equities[new_index]
+                if equity1 > equity2:
+                    Y = 1
+                    valY = 0
+                elif equity1 < equity2:
+                    Y = 0
+                    valY = 1
+                else:
+                    continue
+            encoded_board1 = str(encode_board_vector(board1))
+            if cp:
+                encoded_board2 = str(encode_board_vector(board2))
             if testset == False:
                 # Write to train set
-                myFile = open(os.path.join("Data","Deep","BoardEquity","train.txt"),"a")
-                myFile.write(f"{encoded_board1[1:-1]},{encoded_board2[1:-1]},{Y}\n")
-                myFile.close()
-                # Write to Validation Set
-                # Same boards as train set but other way round, try to enforce symmetry
-                myFile = open(os.path.join("Data","Deep","BoardEquity","validation.txt"),"a")
-                myFile.write(f"{encoded_board2[1:-1]},{encoded_board1[1:-1]},{valY}\n")
-                myFile.close()
+                if cp:
+                    myFile = open(os.path.join("Data","Deep","BoardEquity","train.txt"),"a")
+                    myFile.write(f"{encoded_board1[1:-1]},{encoded_board2[1:-1]},{Y}\n")
+                    myFile.close()
+                    # Write to Validation Set
+                    # Same boards as train set but other way round, try to enforce symmetry
+                    myFile = open(os.path.join("Data","Deep","BoardEquity","validation.txt"),"a")
+                    myFile.write(f"{encoded_board2[1:-1]},{encoded_board1[1:-1]},{valY}\n")
+                    myFile.close()
+                else:
+                    myFile = open(os.path.join("Data","Deep","RSP","train.txt"),"a")
+                    myFile.write(f"{encoded_board1[1:-1]},{equity1}\n")
+                    myFile.close()
             else:
-                myFile = open(os.path.join("Data","Deep","BoardEquity","test.txt"),"a")
-                myFile.write(f"{encoded_board1[1:-1]},{encoded_board2[1:-1]},{Y}\n")
-                myFile.close()
+                if cp:
+                    myFile = open(os.path.join("Data","Deep","BoardEquity","test.txt"),"a")
+                    myFile.write(f"{encoded_board1[1:-1]},{encoded_board2[1:-1]},{Y}\n")
+                    myFile.close()
+                else:
+                    myFile = open(os.path.join("Data","Deep","RSP","test.txt"),"a")
+                    myFile.write(f"{encoded_board1[1:-1]},{equity1}\n")
+                    myFile.close()
 
 if __name__ == "__main__":
-    data_size = len(os.listdir(os.path.join("Data","Deep","GNUBG-data"))) - 1
+    data_size = len(os.listdir(os.path.join("Data","Deep","GNUBG-data","Equity"))) - 1
     train_end =int(0.85*data_size)
     print("Train")
-    comparison_paradigm(train_end, start = 0, testset=False)
+    prep_dataset(train_end, start = 0, testset=False, cp=False)
     print("Test")
-    comparison_paradigm(data_size, start = train_end, testset=True)
+    prep_dataset(data_size, start = train_end, testset=True, cp=False)
     
     
 # Currently 2170 position files as of deep model 1.0

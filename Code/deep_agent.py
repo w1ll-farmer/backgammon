@@ -62,8 +62,8 @@ class BGNet(nn.Module):
 # 3️⃣ Make Predictions
 def predict(left_board, right_board, epoch=None):
     model = BGNet()
-    suffix = "" if epoch is None else f"_{epoch}"
-    prefix = "Code/" if epoch is None or epoch == 499 else ""
+    suffix = "" if epoch is None else f"{epoch}"
+    prefix = "Code/" #if epoch is None or epoch == 499 else ""
     model.load_state_dict(torch.load(f"{prefix}backgammon_model{suffix}.pth"))
     model.eval()  # Set to evaluation mode (disables dropout, etc.)
     input_vector_left = torch.tensor(convert_board(left_board), dtype=torch.float32).unsqueeze(0)

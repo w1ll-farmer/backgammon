@@ -355,7 +355,7 @@ def deep_play(moves, boards, epoch=None, player=1):
     for i in range(1, len(boards)):
         left_board = best_board
         right_board = boards[i]
-        prediction = predict(left_board, right_board)
+        prediction = predict(left_board, right_board, epoch)
         if prediction < 0.5:
             best_board = right_board
             best_move = moves[i]
@@ -931,7 +931,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
 
 
 def collect_data(p1strat, pminus1strat, first_to):
-    myFile = "./Data/deepvgeneticnocube.txt"
+    myFile = "./Data/deepvgreedynocube.txt"
     white_tot, black_tot = 0,0
     white_wins, black_wins = 0,0
     first_to = 25
@@ -940,7 +940,7 @@ def collect_data(p1strat, pminus1strat, first_to):
     double_point, double_drop = 1.4325859937671366, -1.8523842372779313
     for i in range(1000):
         dataFile = open(myFile, 'a')
-        p1vector,w_score,pminus1vector,b_score= backgammon(first_to, "DEEP",None, "GENETIC",genetic_weights)
+        p1vector,w_score,pminus1vector,b_score= backgammon(first_to, "DEEP","v1", "DEEP","v2")
         dataFile.write(f"{w_score}, {b_score}\n")
         print(p1vector,w_score,pminus1vector,b_score)
         dataFile.close()
