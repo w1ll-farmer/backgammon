@@ -182,7 +182,7 @@ def encode_board_vector(b):
     input_vector.append(calc_blockade_pass_chance(board, 1))
     return input_vector
     
-def prep_dataset(end, start = 0, testset=False, cp=True):
+def prep_equity_dataset(end, start = 0, testset=False, cp=True):
     for i in range(start, end):
         myFile = open(os.path.join("Data","Deep","GNUBG-data","Equity",f"positions{i}.txt"),"r")
         raw_boards, equities = [], []
@@ -241,13 +241,51 @@ def prep_dataset(end, start = 0, testset=False, cp=True):
                     myFile.write(f"{encoded_board1[1:-1]},{equity1}\n")
                     myFile.close()
 
+
+def prep_cube_dataset(cubetype="Offer"):
+    raw_boards, decisions = [], []
+    myFile = open(os.path.join("Data","Deep","GNUBG-data","Cube",cubetype,f"positions.txt"),"r")
+    for line in myFile:
+        
+        raw_board, decision = line.split("],")
+        raw_boards.append(raw_board[1:])
+        decisions.append(float(decision.strip()))
+    myFile.close()
+    
+    data_size = len(raw_boards)
+    train_end = int(data_size*0.8)
+    myFile = open(os.path.join("Data","Deep","Cube",f"{cubetype}","train.txt"),"a")
+    for i in range(train_end):
+        encoded_board = str(encode_board_vector(raw_boards[i]))
+        myFile.write(f"{encoded_board[1:-1]},{decisions[i]}\n")
+    myFile.close()
+    myFile = open(os.path.join("Data","Deep","Cube",f"{cubetype}","test.txt"),"a")
+    for i in range(train_end, data_size):
+        encoded_board = str(encode_board_vector(raw_boards[i]))
+        myFile.write(f"{encoded_board[1:-1]},{decisions[i]}\n")
+    myFile.close()
+    
+        
+        
+        
+        
+    
+    
 if __name__ == "__main__":
-    data_size = len(os.listdir(os.path.join("Data","Deep","GNUBG-data","Equity"))) - 1
-    train_end =int(0.85*data_size)
-    print("Train")
-    prep_dataset(train_end, start = 0, testset=False, cp=False)
-    print("Test")
-    prep_dataset(data_size, start = train_end, testset=True, cp=False)
+    # data_size = len(os.listdir(os.path.join("Data","Deep","GNUBG-data","Equity"))) - 1
+    # train_end =int(0.85*data_size)
+    # print("Train")
+    # prep_equity_dataset(train_end, start = 0, testset=False, cp=False)
+    # print("Test")
+    # prep_equity_dataset(data_size, start = train_end, testset=True, cp=False)
+    
+    prep_cube_dataset()
+    prep_cube_dataset("Accept")
+    
+    
+    
+    
+    
     
     
 # Currently 2170 position files as of deep model 1.0

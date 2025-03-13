@@ -2,32 +2,7 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 from turn import *
-def convert_board(board):
-    input_vector = []
-    for i in range(24):
-        point_encoding = convert_point(board[i])
-        input_vector += point_encoding
-    for i in range(24):
-        input_vector.append(prob_opponent_can_hit(1, board, i))
-    for i in range(24, 26):
-        input_vector += convert_bar(board[i])
-    _, home = get_home_info(1, board)
-    _, opp_home = get_home_info(-1, board)
-    # % home points occupied
-    input_vector.append(len([i for i in home if i > 0])/6)
-    # % opp home points occupied
-    input_vector.append(len([i for i in opp_home if i > 0])/6)
-    # % pieces in home
-    input_vector.append(sum([i for i in home if i >0])/15)
-    # Prime?
-    input_vector.append(1 if calc_prime(board, 1) > 3 else 0)
-    # pip count
-    input_vector += decimal_to_binary(calc_pips(board, 1))
-    input_vector += decimal_to_binary(calc_pips(board, -1))
-    
-    # chance blockade can't be passed
-    input_vector.append(calc_blockade_pass_chance(board, 1))
-    return input_vector
+
 
 # 1️⃣ Define the Same Model Structure
 class BGNet(nn.Module):
