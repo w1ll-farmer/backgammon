@@ -5,6 +5,7 @@ from pygame.locals import *
 from random_agent import *
 from time import sleep, time
 from random import randint, uniform
+import torch
 import os
 
 from turn import *
@@ -345,20 +346,24 @@ def adaptive_play(moves, boards, player, turn, current_board, roll, player_score
         return adaptive_midgame(moves, boards, player, player_score, opponent_score, cube_val, first_to, weights, roll)
 
 def deep_play(moves, boards, epoch=None, player=1):
+    
     if len(boards) == 1:
         return moves[0], boards[0]
     if player == -1:
         boards = [invert_board(board) for board in boards]
     equities = []
     best_board = boards[0]
+    encoded_best_board = torch.tensor(convert_board(best_board), dtype=torch.float32).unsqueeze(0)
     best_move = moves[0]
     for i in range(1, len(boards)):
         left_board = best_board
         right_board = boards[i]
-        prediction = predict(left_board, right_board, epoch)
+        encoded_right_board = torch.tensor(convert_board(right_board), dtype=torch.float32).unsqueeze(0)
+        prediction = predict(left_board, right_board, encoded_best_board, encoded_right_board, epoch)
         if prediction < 0.5:
             best_board = right_board
             best_move = moves[i]
+            encoded_best_board = torch.tensor(convert_board(best_board), dtype=torch.float32).unsqueeze(0)
         # print(equities)
     # print(equities)
     if player == -1:
@@ -395,6 +400,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
     while max([w_score, b_score]) < score_to:
         black_equity = []
         white_equity = []
+        # starting_board = generate_random_race_board()
         if starting_board is None:
             board = make_board()
         else:
@@ -931,7 +937,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
 
 
 def collect_data(p1strat, pminus1strat, first_to):
-    myFile = "./Data/deepvgreedynocube.txt"
+    myFile = "./Data/cubefuldeep4.5vdeep1.txt"
     white_tot, black_tot = 0,0
     white_wins, black_wins = 0,0
     first_to = 25
@@ -940,7 +946,7 @@ def collect_data(p1strat, pminus1strat, first_to):
     double_point, double_drop = 1.4325859937671366, -1.8523842372779313
     for i in range(1000):
         dataFile = open(myFile, 'a')
-        p1vector,w_score,pminus1vector,b_score= backgammon(first_to, "DEEP","v1", "DEEP","v2")
+        p1vector,w_score,pminus1vector,b_score= backgammon(first_to, "DEEP",None, "DEEP","v1")
         dataFile.write(f"{w_score}, {b_score}\n")
         print(p1vector,w_score,pminus1vector,b_score)
         dataFile.close()
@@ -990,10 +996,10 @@ if __name__ == "__main__":
         # print(b:=update_board(make_board(),(12, 9)))
         # print(update_board(b, (9, 7)))
         score_to = 1
-        player1strat = "USER"
+        player1strat = "DEEP"
         playerminus1strat = "DEEP"
         print(player1strat, playerminus1strat)
-        weights1, weights2 = None, None
+        weights1, weights2 = "V1", "_50"
         if player1strat == "GENETIC":
             # Optimal Weights for first-to-25 victory
             weights1 = [10.0, 21.0, 12.0, 11.0, 15.0, 0.5664383320165035, 10.0, 4.0, 25.0, 6.0, 0.6461166029382669, 0.5378085318259279, 0.5831066576570856, 0.9552318750278183, 0.07412843879077036, 0.17550708535892934, 0.49191128795644823, 0.556755495835094]

@@ -136,16 +136,21 @@ def convert_to_opengammon(board, raw_moves, roll):
     moves, boards, equities = [], [], []
     for i in range(num_moves):
         move_string, eq_str = raw_moves[i]
-        print("Move before conversion:", move_string)
+        print(raw_moves[i])
+        print("Move before conversion:", move_string, roll)
         move = (convert_move(move_string, roll, board))
         moves.append(move)
         board_copy = board.copy()
         print(board_copy)
         pos_moves, _ = get_valid_moves(1, board, roll)
         if move not in pos_moves:
-            print(f"{move} not possible")
-            print(pos_moves)
-            exit()
+            furthest_back = get_furthest_back(board, 1)
+            if furthest_back == move[0][0]:
+                move = [(furthest_back, furthest_back - min(roll)), (furthest_back - min(roll), 27)]
+            if move not in pos_moves:
+                print(f"{move} not possible")
+                print(pos_moves)
+                exit()
         for m in move:
             board_copy = update_board(board_copy, m)
         print(board_copy, move)
@@ -177,7 +182,7 @@ def convert_move(moves, roll, board):
                 move = move[:-3] + "28"
             else:
                 index = move.index("o")
-                move = move[:index] + "28"+ move[index+2:]
+                move = move[:index] + "28"+ move[index+3:]
         elif "bar" in move:
             move = move.strip()
             move = "26"+move[3:]
@@ -226,16 +231,18 @@ def extract_base_move(base_move, roll, board):
         List | Tuple: The OpenBG encoded submove
     """
     start, end = base_move.split("/")
+    print(f"Start end {start, end}")
     try:
         start, end = (int(start)-1, int(end)-1)
-        # if start == 25: return (start, end)
     except ValueError:
+        print("Value error")
         print(base_move)
         exit()
-    if start - roll[0] > end and start - roll[1] > end:
+    if (start - roll[0] > end and start - roll[1] > end) or \
+        (end == 27 and start - roll[0] - roll[1] < 0 and (start - roll[0] >= 0 and start-roll[1] >= 0)):
         if not is_double(roll):
             ret = [()]*2
-            if board[start - roll[0]] < -1:
+            if board[start - roll[0]] < 0:
                 ret[0] = (start, start - roll[1])
                 ret[1] = (start - roll[1], end)
             else:
@@ -251,6 +258,7 @@ def extract_base_move(base_move, roll, board):
             return ret
     
     return start, end
+# print(extract_base_move("2/28", [4,2], [2, 12, 0, 1, 0, 0, 0, 0, 0, -5, 0, -2, 0, 0, -2, 0, 0, -4, 0, 0, -2, 0, 0, 0, 0, 0, 0, 0]))
 
 def get_move_equities(board, roll, player):
     if player == -1:
@@ -262,22 +270,23 @@ def get_move_equities(board, roll, player):
         roll = roll_dice()
         gnu_output = get_move(transformed_board, roll)
     print("Parsing input...")
+    
     raw_moves = hint_parser(gnu_output)
     print("Converting to opengammon...")
     return convert_to_opengammon(board, raw_moves, roll)
 
 def write_move_equities(board, roll, player, i):
     moves, boards, equities = get_move_equities(board, roll, player)
-    myFile = open(os.path.join("Data","Deep","GNUBG-data",f"positions{i-1}.txt"),"w")
+    myFile = open(os.path.join("Data","Deep","GNUBG-data","Equity",f"positions{i-1}.txt"),"w")
     for i in range(len(moves)):
         myFile.write(f"{boards[i]},{equities[i]}\n")
     myFile.close()
 
 def random_board_equities():
-    positions = len(os.listdir(os.path.join("Data","Deep","GNUBG-data")))
+    positions = len(os.listdir(os.path.join("Data","Deep","GNUBG-data","Equity")))
     for i in range(100000):
         print(f"Number of boards generated: {i+positions}")
-        board = generate_random_board()
+        board = generate_random_race_board()
         # board = make_board()
         # board[23] -= 1
         # board[25] += 1
@@ -288,7 +297,7 @@ def random_board_equities():
         moves, _ = get_valid_moves(1, board, roll)
         while len(moves) == 0 or is_double(roll) or len(moves) > 50:
             roll = roll_dice()
-            board = generate_random_board()
+            board = generate_random_race_board()
             moves, _ = get_valid_moves(1, board, roll)
         print(len(moves))
         write_move_equities(board, roll, 1, i+positions)
@@ -333,7 +342,7 @@ def random_cube_decisions():
     
 
 if __name__ == "__main__":
-    print(random_cube_decisions())
+    random_cube_decisions()
     # print(write_optimal_doubling([-1, -10, 0, 0, 4, 0, 4, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, -3, 4, 0, 1, 0, 0, 0, -1, 0, 0, 0], 0))
     # random_board_equities()
     # print(convert_move("16/15 16/14*",[2,1]))

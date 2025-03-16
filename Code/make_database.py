@@ -214,28 +214,55 @@ def prep_equity_dataset(end, start = 0, testset=False, cp=True):
                 else:
                     continue
             encoded_board1 = str(encode_board_vector(board1))
+            listboard1 = [int(b.strip()) for b in board1.split(",")]
             if cp:
                 encoded_board2 = str(encode_board_vector(board2))
+                listboard2 = [int(b.strip()) for b in board2.split(",")]
             if testset == False:
                 # Write to train set
                 if cp:
-                    myFile = open(os.path.join("Data","Deep","BoardEquity","train.txt"),"a")
-                    myFile.write(f"{encoded_board1[1:-1]},{encoded_board2[1:-1]},{Y}\n")
-                    myFile.close()
-                    # Write to Validation Set
-                    # Same boards as train set but other way round, try to enforce symmetry
-                    myFile = open(os.path.join("Data","Deep","BoardEquity","validation.txt"),"a")
-                    myFile.write(f"{encoded_board2[1:-1]},{encoded_board1[1:-1]},{valY}\n")
-                    myFile.close()
+                    # print([int(b.strip()) for b in board1.split(",")])
+                    
+                    if all_past(listboard1) and all_past(listboard2):
+                        if all_checkers_home(1, listboard1) and all_checkers_home(-1, listboard1) and all_checkers_home(1, listboard2) and all_checkers_home(-1, listboard2):
+                            racetype = "Bearoff"
+                        else:
+                            racetype = "Midboard"
+                        myFile = open(os.path.join("Data","Deep",f"{racetype}Race","train.txt"),"a")
+                        myFile.write(f"{encoded_board1[1:-1]},{encoded_board2[1:-1]},{Y}\n")
+                        myFile.close()
+                        # Write to Validation Set
+                        # Same boards as train set but other way round, try to enforce symmetry
+                        myFile = open(os.path.join("Data","Deep",f"{racetype}Race","validation.txt"),"a")
+                        myFile.write(f"{encoded_board2[1:-1]},{encoded_board1[1:-1]},{valY}\n")
+                        myFile.close()
+                    else:
+                        myFile = open(os.path.join("Data","Deep","Contact","train.txt"),"a")
+                        myFile.write(f"{encoded_board1[1:-1]},{encoded_board2[1:-1]},{Y}\n")
+                        myFile.close()
+                        # Write to Validation Set
+                        # Same boards as train set but other way round, try to enforce symmetry
+                        myFile = open(os.path.join("Data","Deep","Contact","validation.txt"),"a")
+                        myFile.write(f"{encoded_board2[1:-1]},{encoded_board1[1:-1]},{valY}\n")
+                        myFile.close()
                 else:
                     myFile = open(os.path.join("Data","Deep","RSP","train.txt"),"a")
                     myFile.write(f"{encoded_board1[1:-1]},{equity1}\n")
                     myFile.close()
             else:
                 if cp:
-                    myFile = open(os.path.join("Data","Deep","BoardEquity","test.txt"),"a")
-                    myFile.write(f"{encoded_board1[1:-1]},{encoded_board2[1:-1]},{Y}\n")
-                    myFile.close()
+                    if all_past(listboard1) and all_past(listboard2):
+                        if all_checkers_home(1, listboard1) and all_checkers_home(-1, listboard1) and all_checkers_home(1, listboard2) and all_checkers_home(-1, listboard2):
+                            racetype = "Bearoff"
+                        else:
+                            racetype = "Midboard"
+                        myFile = open(os.path.join("Data","Deep",f"{racetype}Race","test.txt"),"a")
+                        myFile.write(f"{encoded_board1[1:-1]},{encoded_board2[1:-1]},{Y}\n")
+                        myFile.close()
+                    else:
+                        myFile = open(os.path.join("Data","Deep","Contact","test.txt"),"a")
+                        myFile.write(f"{encoded_board1[1:-1]},{encoded_board2[1:-1]},{Y}\n")
+                        myFile.close()
                 else:
                     myFile = open(os.path.join("Data","Deep","RSP","test.txt"),"a")
                     myFile.write(f"{encoded_board1[1:-1]},{equity1}\n")
@@ -272,13 +299,13 @@ def prep_cube_dataset(cubetype="Offer"):
     
     
 if __name__ == "__main__":
-    # data_size = len(os.listdir(os.path.join("Data","Deep","GNUBG-data","Equity"))) - 1
-    # train_end =int(0.85*data_size)
+    data_size = len(os.listdir(os.path.join("Data","Deep","GNUBG-data","Equity"))) - 1
+    # train_end =int(0.8*data_size)
     # print("Train")
-    # prep_equity_dataset(train_end, start = 0, testset=False, cp=False)
+    # prep_equity_dataset(train_end, start = 0, testset=False, cp=True)
     # print("Test")
-    # prep_equity_dataset(data_size, start = train_end, testset=True, cp=False)
-    
+    # prep_equity_dataset(data_size, start = train_end, testset=True, cp=True)
+    # print(data_size)
     prep_cube_dataset()
     prep_cube_dataset("Accept")
     
@@ -288,4 +315,9 @@ if __name__ == "__main__":
     
     
     
+    
+    
 # Currently 2170 position files as of deep model 1.0
+# Deep 4.0 has 7718 position files = approx 77k boards
+
+# Cube 1.0 has 8343 board positions

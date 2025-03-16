@@ -107,7 +107,7 @@ def advanced_accept_double(equity, doubling_point = -1.8523842372779313):
 def deep_accept_double(board):
     input_vector = torch.tensor(convert_board(board), dtype=torch.float32).unsqueeze(0)
     model = AcceptNet()
-    model.load_state_dict(torch.load("cube_accept_model.pth"))
+    model.load_state_dict(torch.load("Code/cube_accept_model.pth"))
     model.eval()
     with torch.no_grad():
         decision = model(input_vector).item()  # Get the single output
@@ -116,7 +116,7 @@ def deep_accept_double(board):
 def deep_offer_double(board):
     input_vector = torch.tensor(convert_board(board), dtype=torch.float32).unsqueeze(0)
     model = OfferNet()
-    model.load_state_dict(torch.load("cube_offer_model.pth"))
+    model.load_state_dict(torch.load("Code/cube_offer_model.pth"))
     model.eval()
     with torch.no_grad():
         decision = model(input_vector).item()  # Get the single output

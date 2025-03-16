@@ -254,6 +254,7 @@ def get_legal_move(colour, board, die):
                         valid_moves.append((p, p-die))
     return valid_moves
 
+
 def get_valid_moves(colour, board, roll):
     moves = []
     boards = []
@@ -660,6 +661,29 @@ def generate_random_board():
             
     return board
 
+def generate_random_race_board():
+    white_remaining = 15
+    black_remaining = 15    
+    board = [0]*28
+    # Recall that white heads towards 0 and black heads towards 23
+    # white_furthest = randint(0, 17) # Not inside black home
+    while white_remaining > 0:
+        pos = randint(0, 11)
+        # if player == 1 and pos != 24 and pos != 26 and board[pos] > -1:
+        point = int(gauss(2.5, 2)) if white_remaining >= 7 else randint(0, white_remaining)
+        while point > white_remaining or point < 0:
+            point = int(gauss(2.5, 2))
+        board[pos] += point
+        white_remaining -= point
+    while black_remaining > 0:
+        pos = randint(12, 23)
+        point = int(gauss(2.5, 2)) if black_remaining >= 7 else randint(0,black_remaining)
+        while point < 0 or point > black_remaining:
+            point = int(gauss(2.5, 2))
+        board[pos] -= point
+        black_remaining -= point
+            
+    return board
 
 def convert_board(board):
     input_vector = []
@@ -687,3 +711,5 @@ def convert_board(board):
     # chance blockade can't be passed
     input_vector.append(calc_blockade_pass_chance(board, 1))
     return input_vector
+
+# print(get_legal_move(1, [4, 2, 2, 4, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -5, -2, -3, -2, -3, 0, 0, 0, 0], 6))
