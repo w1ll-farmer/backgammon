@@ -120,7 +120,7 @@ def deep_offer_double(board):
     model.eval()
     with torch.no_grad():
         decision = model(input_vector).item()  # Get the single output
-    return (decision > 0)
+    return (decision > 0.5)
 
 def user_accept_double(player, cube_val, double_player):
     user_accept = input("Opponent offer x2. y/n").lower()
