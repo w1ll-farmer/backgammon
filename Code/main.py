@@ -421,7 +421,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 for event in pygame.event.get():
                     if event.type == QUIT:
                         pygame.quit()
-            #### FIRST TURN ####            
+            #### FIRST TURN ####     
             if time_step == 1 and game == 1:
                 # Each player rolls a die to determine who moves first
                 white_roll, black_roll = roll_dice()
@@ -997,7 +997,7 @@ if __name__ == "__main__":
         # print(update_board(b, (9, 7)))
         score_to = 5
         player1strat = "USER"
-        playerminus1strat = "DEEP"
+        playerminus1strat = "USER"
         print(player1strat, playerminus1strat)
         weights1, weights2 = None, None
         if player1strat == "GENETIC":

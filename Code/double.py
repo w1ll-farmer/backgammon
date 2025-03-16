@@ -2,12 +2,15 @@ from constants import *
 from random import randint
 from turn import *
 from adaptive_agent import calc_advanced_equity, race_gwc
-from data import write_equity
+from gui import *
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F 
-
+if GUI_FLAG:
+    import pygame
+    from pygame.locals import *
+    
 class AcceptNet(nn.Module):
     def __init__(self):
         super(AcceptNet, self).__init__()
@@ -175,6 +178,7 @@ def double_process(playerstrat, player, board, oppstrat, cube_val, double_player
                     cube_val, double_player, has_double_rejected = user_accept_double(-player, cube_val, double_player)
                 else:
                     print("Feature is work in progress")
+                    ## Include accept here ##
     else:
         if playerstrat == "USER":
             if not GUI_FLAG:
@@ -188,6 +192,8 @@ def double_process(playerstrat, player, board, oppstrat, cube_val, double_player
                             if basic_accept_double(calc_advanced_equity(board, player, player_score, opponent_score, cube_val, first_to)):
                                 cube_val *= 2
                                 double_player = -player
+                            else:
+                                has_double_rejected = True
                         elif basic_accept_double(calc_equity(board, -player)):
                             # Opponent accepts double
                             cube_val *= 2
@@ -202,6 +208,48 @@ def double_process(playerstrat, player, board, oppstrat, cube_val, double_player
                             has_double_rejected = True
             else:
                 print("Feature not yet implemented")
+                cube = display_double_cube(player)
+                pygame.display.update()
+                clicked = False
+                while clicked == False:
+                    for event in pygame.event.get():
+                        if event.type == QUIT:
+                            pygame.quit()
+                        if event.type == pygame.MOUSEBUTTONDOWN:
+                            click = pygame.mouse.get_pos()
+                            if cube.rect.collidepoint(click):
+                                double_offered = True
+                            clicked = True
+                if double_offered:
+                    if oppstrat in strategies:
+                        if oppstrat == "ADAPTIVE":
+                            if basic_accept_double(calc_advanced_equity(board, player, player_score, opponent_score, cube_val, first_to)):
+                                cube_val *= 2
+                                double_player = -player
+                            else:
+                                has_double_rejected = True
+                        elif basic_accept_double(calc_equity(board, -player)):
+                            # Opponent accepts double
+                            cube_val *= 2
+                            double_player = -player
+                        else:
+                            has_double_rejected = True
+                    elif oppstrat == "RANDOM":
+                        if randobot_accept_double():
+                            cube_val *= 2
+                            double_player = -player
+                        else:
+                            has_double_rejected = True
+                    elif oppstrat == "DEEP":
+                        if deep_accept_double(board):
+                            cube_val *= 2
+                            double_player = -player
+                        else:
+                            has_double_rejected = True
+                    elif oppstrat == "USER":
+                        cube_val, double_player, has_double_rejected = user_accept_double(-player, cube_val, double_player)
+                    
+                            
         elif playerstrat == "DEEP":
             if deep_offer_double(board):
                 double_offered = True
