@@ -4,6 +4,32 @@ from turn import *
 from adaptive_agent import calc_advanced_equity, race_gwc
 from data import write_equity
 
+import torch
+import torch.nn as nn
+import torch.nn.functional as F 
+
+class AcceptNet(nn.Module):
+    def __init__(self):
+        super(AcceptNet, self).__init__()
+        self.fc1 = nn.Linear(289, 12)
+        self.fc2 = nn.Linear(12, 1)
+
+    def forward(self, x):
+        x = F.relu(self.fc1(x))
+        x = torch.sigmoid(self.fc2(x))
+        return x
+
+class OfferNet(nn.Module):
+    def __init__(self):
+        super(OfferNet, self).__init__()
+        self.fc1 = nn.Linear(289, 12)
+        self.fc2 = nn.Linear(12, 1)
+
+    def forward(self, x):
+        x = F.relu(self.fc1(x))
+        x = torch.sigmoid(self.fc2(x))
+        return x
+
 def calc_gammon_potential(board, player, player_home, opp_home):
     opp_pieces_home = count_walls(opp_home, -player) + count_blots(opp_home, -player)
     opp_pieces_player_home = count_walls(player_home, -player) + count_blots(player_home, -player)
@@ -48,6 +74,7 @@ def calc_equity(board, player):
     return max(-1, min(1, equity))
 
 def can_double(double_player, current_player, w_score, b_score, score_to, prev_score):
+    # return False
     if is_crawford_game(w_score, b_score, score_to, prev_score):
         return False
     elif double_player == 0:
@@ -76,7 +103,25 @@ def advanced_should_double(equity, doubling_point = 1.4325859937671366):
 def advanced_accept_double(equity, doubling_point = -1.8523842372779313):
     if doubling_point is None: doubling_point = -0.3126
     return True if equity > doubling_point else False
-    
+
+def deep_accept_double(board):
+    input_vector = torch.tensor(convert_board(board), dtype=torch.float32).unsqueeze(0)
+    model = AcceptNet()
+    model.load_state_dict(torch.load("Code/cube_accept_model.pth"))
+    model.eval()
+    with torch.no_grad():
+        decision = model(input_vector).item()  # Get the single output
+    return (decision > 0.5)
+
+def deep_offer_double(board):
+    input_vector = torch.tensor(convert_board(board), dtype=torch.float32).unsqueeze(0)
+    model = OfferNet()
+    model.load_state_dict(torch.load("Code/cube_offer_model.pth"))
+    model.eval()
+    with torch.no_grad():
+        decision = model(input_vector).item()  # Get the single output
+    return (decision > 0.5)
+
 def user_accept_double(player, cube_val, double_player):
     user_accept = input("Opponent offer x2. y/n").lower()
     if user_accept == 'y':
@@ -157,6 +202,36 @@ def double_process(playerstrat, player, board, oppstrat, cube_val, double_player
                             has_double_rejected = True
             else:
                 print("Feature not yet implemented")
+        elif playerstrat == "DEEP":
+            if deep_offer_double(board):
+                double_offered = True
+                if oppstrat == "DEEP":
+                    if deep_accept_double:
+                        cube_val *= 2
+                        double_player = -player
+                    else:
+                        has_double_rejected = True
+                elif oppstrat == "USER":
+                        cube_val, double_player, has_double_rejected = user_accept_double(-player, cube_val, double_player)
+                elif oppstrat in strategies:
+                    if oppstrat == "ADAPTIVE":
+                        if basic_accept_double(calc_advanced_equity(board, player, player_score, opponent_score, cube_val, first_to)):
+                            cube_val *= 2
+                            double_player = -player
+                    elif basic_accept_double(calc_equity(board, -player)):
+                        # Opponent accepts double
+                        cube_val *= 2
+                        double_player = -player
+                    else:
+                        has_double_rejected = True
+                elif oppstrat == "RANDOM":
+                    if randobot_accept_double():
+                        cube_val *= 2
+                        double_player = -player
+                    else:
+                        has_double_rejected = True
+                
+                        
     return cube_val, double_player, has_double_rejected
 
 """Best Doubling points from 4x25 testing:
