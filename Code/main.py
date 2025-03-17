@@ -373,7 +373,7 @@ def deep_play(moves, boards, epoch=None, player=1):
 ###############
 ## MAIN BODY ##
 ###############
-def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="GREEDY", blackweights = None, double_point=None, double_drop=None, starting_board=None):
+def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="GREEDY", blackweights = None, double_point=None, double_drop=None, starting_board=None, w_start_score = 0, b_start_score = 0):
     """Play the backgammon game
 
     Args:
@@ -390,7 +390,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                                         Score for black player
     """
     #### SCORE INITIALISATION ####
-    w_score, b_score = 0,0
+    w_score, b_score = int(w_start_score),int(b_start_score)
     prev_score = [0,0]
     p1vector = [0,0,0] 
     pminus1vector = [0,0,0] 
@@ -987,13 +987,31 @@ if __name__ == "__main__":
             # print(calc_first())
         else:
             score_to = 25
-            player1strat = "ADAPTIVE"
+            player1strat = sys.argv[1]
             playerminus1strat = sys.argv[2]
+            if len(sys.argv) == 5:
+                w_start_score = sys.argv[3]
+                b_start_score = sys.argv[4]
+            elif len(sys.argv) == 4 or len(sys.argv) > 5:
+                print("You've done something wrong")
+                print("Your command should be written in the format:")
+                print("python Code/main.py USER {AI} {WhiteScore} {BlackScore}")
+                print("Where {AI} is the AI you want to play")
+                print("And {WhiteScore} and {BlackScore} are the scores of your incomplete match (if one exists)")
+                print("If you don't have an incomplete match, don't worry putting in WhiteScore or BlackScore values")
+                exit()
+            weights1, weights2 = None, None
+            if player1strat == "GENETIC":
+            # Optimal Weights for first-to-25 victory
+                weights1 = [10.0, 21.0, 12.0, 11.0, 15.0, 0.5664383320165035, 10.0, 4.0, 25.0, 6.0, 0.6461166029382669, 0.5378085318259279, 0.5831066576570856, 0.9552318750278183, 0.07412843879077036, 0.17550708535892934, 0.49191128795644823, 0.556755495835094]
+            elif player1strat == "ADAPTIVE":
+                weights1 = [0.9966066885314592, -0.9916984096898946, 0.3106830724424913, 0.529168163359478, -0.4710732676896102, 0.5969523488654117, 0.36822981983332415, 0.38958074063216697, 0.02676397245530815, 0.08588282381449319, 0.06094873757931751, 1.1095422351658368, 0.47764793610307643, 0.040753486445243126, 0.5495226441839489, 0.8875009606764003, 0.9333344067224983, 0.1340269726805713, 0.1978868967026618, 1.2096547126804458, 2.379707426788366, 0.6465298771549699, 0.509196585225148, 0.261875669397977, 0.36883752029556166, -0.481342015629518, 0.7098436807557322, 1.0250219115287624, 0.5739284594183071, 0.1796876959733017, 0.2679991261065485]
             if playerminus1strat == "GENETIC":
                 weights2 = [10.0, 21.0, 12.0, 11.0, 15.0, 0.5664383320165035, 10.0, 4.0, 25.0, 6.0, 0.6461166029382669, 0.5378085318259279, 0.5831066576570856, 0.9552318750278183, 0.07412843879077036, 0.17550708535892934, 0.49191128795644823, 0.556755495835094]
-            else:
-                weights2 = None
-            p1vector, w_score, pminus1vector, b_score = backgammon(score_to, player1strat, None, playerminus1strat, weights2)
+            elif playerminus1strat == "ADAPTIVE":
+                weights2 = [0.9966066885314592, -0.9916984096898946, 0.3106830724424913, 0.529168163359478, -0.4710732676896102, 0.5969523488654117, 0.36822981983332415, 0.38958074063216697, 0.02676397245530815, 0.08588282381449319, 0.06094873757931751, 1.1095422351658368, 0.47764793610307643, 0.040753486445243126, 0.5495226441839489, 0.8875009606764003, 0.9333344067224983, 0.1340269726805713, 0.1978868967026618, 1.2096547126804458, 2.379707426788366, 0.6465298771549699, 0.509196585225148, 0.261875669397977, 0.36883752029556166, -0.481342015629518, 0.7098436807557322, 1.0250219115287624, 0.5739284594183071, 0.1796876959733017, 0.2679991261065485]
+            
+            p1vector, w_score, pminus1vector, b_score = backgammon(score_to, player1strat, None, playerminus1strat, weights2, w_start_score= w_start_score, b_start_score=b_start_score)
             print(w_score, b_score)
     else:
         # print(calc_av_eval())
