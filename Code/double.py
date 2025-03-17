@@ -178,7 +178,7 @@ def accept_process(board, player, player_score, oppstrat, opponent_score, first_
     has_double_rejected = False
     if oppstrat in strategies:
         if oppstrat == "ADAPTIVE":
-            if basic_accept_double(calc_advanced_equity(board, player, player_score, opponent_score, cube_val, first_to)):
+            if advanced_accept_double(calc_advanced_equity(board, player, player_score, opponent_score, cube_val, first_to)):
                 cube_val *= 2
                 double_player = -player
             else:
