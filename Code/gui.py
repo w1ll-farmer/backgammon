@@ -121,6 +121,17 @@ def display_dice(colour, die1, die2):
         dice_list = black_dice 
     window.blit(dice_list[die1-1], (mult*SCREEN_WIDTH//4-28, SCREEN_HEIGHT//2))
     window.blit(dice_list[die2-1], (mult*SCREEN_WIDTH//4+28, SCREEN_HEIGHT//2))
+
+def display_double_cube(player, cube_val):
+    colour = "white" if player == 1 else "black"
+    text_colour = black if player == 1 else white
+    cube = Shape(os.path.join("Images",f"blank_{colour}_dice.png"), 24, SCREEN_HEIGHT//2, 46, 51)
+    cube.draw(window)
+    cube.addText(window, f"{cube_val}", text_colour)
+    display_dice(player, 7, 7)
+    return cube
+    
+        
     
     
 def display_dice_roll(colour):
@@ -222,13 +233,16 @@ def highlight_home(colour):
     y_offset = colour*50
     window.blit(pygame.image.load("Images/house_lights_green.png"), (838, 430+y_offset))
   
-def update_screen(background, white_score, black_score, board, w_score, b_score, include_bground=False):
+def update_screen(background, white_score, black_score, board, w_score, b_score, include_bground=False, show_double=False, player=1, score_to = 5):
+    score_to = str(score_to)
     if include_bground:
         background.render()
     white_score.draw(window)
-    white_score.addText(window, f'{w_score}/5',black)
+    white_score.addText(window, f'{w_score}/{score_to}',black)
     black_score.draw(window)
-    black_score.addText(window, f'{b_score}/5',white)
+    black_score.addText(window, f'{b_score}/{score_to}',white)
+    if show_double:
+        display_double_cube(player)
     display_board(board)
     
     

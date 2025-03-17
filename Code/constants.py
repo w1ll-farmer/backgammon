@@ -23,6 +23,9 @@ if GUI_FLAG:
     pygame.display.set_caption("Backgammon")
     window.fill(black)
     
+    cross_path = os.path.join("Images","cross.png")
+    tick_path = os.path.join("Images","tick.png")
+    
     white_dice_paths = [
         os.path.join("Images","player_dice1.png"),
         os.path.join("Images","player_dice2.png"),
@@ -30,6 +33,8 @@ if GUI_FLAG:
         os.path.join("Images","player_dice4.png"),
         os.path.join("Images","player_dice5.png"),
         os.path.join("Images","player_dice6.png"),
+        os.path.join("Images","white_doubling_cube.png"),
+        os.path.join("Images","blank_white_dice.png")
     ]
     black_dice_paths = [
         os.path.join("Images","adversary_dice1.png"),
@@ -38,8 +43,10 @@ if GUI_FLAG:
         os.path.join("Images","adversary_dice4.png"),
         os.path.join("Images","adversary_dice5.png"),
         os.path.join("Images","adversary_dice6.png"),
+        os.path.join("Images","black_doubling_cube.png"),
+        os.path.join("Images","blank_black_dice.png")
     ]
     white_dice, black_dice = [], []
-    for i in range(6):
+    for i in range(8):
         white_dice.append(pygame.image.load(white_dice_paths[i]))
         black_dice.append(pygame.image.load(black_dice_paths[i]))

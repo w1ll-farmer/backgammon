@@ -126,12 +126,40 @@ def deep_offer_double(board):
     return (decision > 0.5)
 
 def user_accept_double(player, cube_val, double_player):
-    user_accept = input("Opponent offer x2. y/n").lower()
-    if user_accept == 'y':
-        cube_val, double_player = double(cube_val, player)
-        has_double_rejected = False
+    if not GUI_FLAG:
+        user_accept = input("Opponent offer x2. y/n").lower()
+        if user_accept == 'y':
+            cube_val, double_player = double(cube_val, player)
+            has_double_rejected = False
+        else:
+            has_double_rejected = True
     else:
-        has_double_rejected = True
+        double_accept_window = Shape(white_dice_paths[-1], SCREEN_WIDTH//2, SCREEN_HEIGHT//2, 240,160)
+        double_accept_window.draw(window)
+        double_accept_window.addText(window, "Opponent offers x2", black)
+        cross = Shape(cross_path, SCREEN_WIDTH//2 - 60, SCREEN_HEIGHT//2 + 40, 48, 48)
+        tick = Shape(tick_path, SCREEN_WIDTH//2 + 60, SCREEN_HEIGHT//2 + 40, 48, 48)
+        cross.draw(window)
+        tick.draw(window)
+        pygame.display.update()
+        clicked = False
+        while not clicked:
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    
+                    click = pygame.mouse.get_pos()
+                    if tick.rect.collidepoint(click):
+                        has_double_rejected = False
+                        cube_val, double_player = double(cube_val, player)
+                        
+                        clicked = True
+                    if cross.rect.collidepoint(click):
+                        has_double_rejected = True
+                        clicked = True
+                        
+               
     return cube_val, double_player, has_double_rejected
 
 
@@ -146,6 +174,37 @@ def is_crawford_game(w_score, b_score, score_to, prev_score):
 def get_double_rejected_board(player):
     return [int(0.5-(player/2)),0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,int(-0.5-(player/2)),0,0,int(-14.5+(player/2)),int(14.5+(player/2))]
 
+def accept_process(board, player, player_score, oppstrat, opponent_score, first_to, cube_val, double_player):
+    has_double_rejected = False
+    if oppstrat in strategies:
+        if oppstrat == "ADAPTIVE":
+            if basic_accept_double(calc_advanced_equity(board, player, player_score, opponent_score, cube_val, first_to)):
+                cube_val *= 2
+                double_player = -player
+            else:
+                has_double_rejected = True
+        elif basic_accept_double(calc_equity(board, -player)):
+            # Opponent accepts double
+            cube_val *= 2
+            double_player = -player
+        else:
+            has_double_rejected = True
+    elif oppstrat == "RANDOM":
+        if randobot_accept_double():
+            cube_val *= 2
+            double_player = -player
+        else:
+            has_double_rejected = True
+    elif oppstrat == "DEEP":
+        if deep_accept_double(board):
+            cube_val *= 2
+            double_player = -player
+        else:
+            has_double_rejected = True
+    elif oppstrat == "USER":
+        cube_val, double_player, has_double_rejected = user_accept_double(player, cube_val, double_player)
+    return cube_val, double_player, has_double_rejected
+                            
 def double_process(playerstrat, player, board, oppstrat, cube_val, double_player, player_score, opponent_score, first_to, double_point=None, double_drop=None):
     has_double_rejected = False
     double_offered = False
@@ -161,54 +220,20 @@ def double_process(playerstrat, player, board, oppstrat, cube_val, double_player
             advanced_should_double(equity, double_point) and playerstrat == "ADAPTIVE" and gwc < 0 or \
                 playerstrat == "ADAPTIVE" and gwc > 0.8:
             # Player doubles opponenent
-            double_offered = True
-            if oppstrat in strategies: 
-                if oppstrat == "ADAPTIVE":
-                    if advanced_accept_double(calc_advanced_equity(board, player, player_score, opponent_score, cube_val, first_to, [0.9966066885314592, -0.9916984096898946, 0.3106830724424913, 0.529168163359478, -0.4710732676896102, 0.5969523488654117, 0.36822981983332415, 0.38958074063216697, 0.02676397245530815, 0.08588282381449319, 0.06094873757931751, 1.1095422351658368, 0.47764793610307643, 0.040753486445243126, 0.5495226441839489, 0.8875009606764003, 0.9333344067224983, 0.1340269726805713, 0.1978868967026618, 1.2096547126804458, 2.379707426788366, 0.6465298771549699, 0.509196585225148, 0.261875669397977, 0.36883752029556166, -0.481342015629518, 0.7098436807557322, 1.0250219115287624, 0.5739284594183071, 0.1796876959733017, 0.2679991261065485]), double_drop):
-                        cube_val *= 2
-                        double_player = -player
-                elif basic_accept_double(calc_equity(board, -player)):
-                    # Opponent accepts double
-                    cube_val *= 2
-                    double_player = -player
-                else:
-                    has_double_rejected = True
-            elif oppstrat == "USER":
-                if not GUI_FLAG:
-                    cube_val, double_player, has_double_rejected = user_accept_double(-player, cube_val, double_player)
-                else:
-                    print("Feature is work in progress")
-                    ## Include accept here ##
+            cube_val, double_player, has_double_rejected = accept_process(
+                board, player, player_score, oppstrat, opponent_score, first_to, cube_val, double_player
+            )
     else:
         if playerstrat == "USER":
             if not GUI_FLAG:
                 print("Would you like to double your opponent?")
                 user_double = input("y/n ").lower()
                 if user_double == "y":
-                    if oppstrat == "USER":
-                        cube_val, double_player, has_double_rejected = user_accept_double(-player, cube_val, double_player)
-                    elif oppstrat in strategies:
-                        if oppstrat == "ADAPTIVE":
-                            if basic_accept_double(calc_advanced_equity(board, player, player_score, opponent_score, cube_val, first_to)):
-                                cube_val *= 2
-                                double_player = -player
-                            else:
-                                has_double_rejected = True
-                        elif basic_accept_double(calc_equity(board, -player)):
-                            # Opponent accepts double
-                            cube_val *= 2
-                            double_player = -player
-                        else:
-                            has_double_rejected = True
-                    elif oppstrat == "RANDOM":
-                        if randobot_accept_double():
-                            cube_val *= 2
-                            double_player = -player
-                        else:
-                            has_double_rejected = True
+                    cube_val, double_player, has_double_rejected = accept_process(
+                        board, player, player_score, oppstrat, opponent_score, first_to, cube_val, double_player
+                        )
             else:
-                print("Feature not yet implemented")
-                cube = display_double_cube(player)
+                cube = display_double_cube(player, cube_val)
                 pygame.display.update()
                 clicked = False
                 while clicked == False:
@@ -221,63 +246,16 @@ def double_process(playerstrat, player, board, oppstrat, cube_val, double_player
                                 double_offered = True
                             clicked = True
                 if double_offered:
-                    if oppstrat in strategies:
-                        if oppstrat == "ADAPTIVE":
-                            if basic_accept_double(calc_advanced_equity(board, player, player_score, opponent_score, cube_val, first_to)):
-                                cube_val *= 2
-                                double_player = -player
-                            else:
-                                has_double_rejected = True
-                        elif basic_accept_double(calc_equity(board, -player)):
-                            # Opponent accepts double
-                            cube_val *= 2
-                            double_player = -player
-                        else:
-                            has_double_rejected = True
-                    elif oppstrat == "RANDOM":
-                        if randobot_accept_double():
-                            cube_val *= 2
-                            double_player = -player
-                        else:
-                            has_double_rejected = True
-                    elif oppstrat == "DEEP":
-                        if deep_accept_double(board):
-                            cube_val *= 2
-                            double_player = -player
-                        else:
-                            has_double_rejected = True
-                    elif oppstrat == "USER":
-                        cube_val, double_player, has_double_rejected = user_accept_double(-player, cube_val, double_player)
+                    cube_val, double_player, has_double_rejected = accept_process(
+                        board, player, player_score, oppstrat, opponent_score, first_to, cube_val, double_player
+                    )
                     
                             
         elif playerstrat == "DEEP":
             if deep_offer_double(board):
-                double_offered = True
-                if oppstrat == "DEEP":
-                    if deep_accept_double:
-                        cube_val *= 2
-                        double_player = -player
-                    else:
-                        has_double_rejected = True
-                elif oppstrat == "USER":
-                        cube_val, double_player, has_double_rejected = user_accept_double(-player, cube_val, double_player)
-                elif oppstrat in strategies:
-                    if oppstrat == "ADAPTIVE":
-                        if basic_accept_double(calc_advanced_equity(board, player, player_score, opponent_score, cube_val, first_to)):
-                            cube_val *= 2
-                            double_player = -player
-                    elif basic_accept_double(calc_equity(board, -player)):
-                        # Opponent accepts double
-                        cube_val *= 2
-                        double_player = -player
-                    else:
-                        has_double_rejected = True
-                elif oppstrat == "RANDOM":
-                    if randobot_accept_double():
-                        cube_val *= 2
-                        double_player = -player
-                    else:
-                        has_double_rejected = True
+                cube_val, double_player, has_double_rejected = accept_process(
+                    board, player, player_score, oppstrat, opponent_score, first_to, cube_val, double_player
+                )
                 
                         
     return cube_val, double_player, has_double_rejected
