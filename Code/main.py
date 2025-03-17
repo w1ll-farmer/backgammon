@@ -206,7 +206,7 @@ def human_play(moves, boards, start_board, roll, colour):
                     if event.type == pygame.MOUSEBUTTONUP and move_made < 2 + (roll[0] == roll[1])*2:
                         # Clear highlights
                         window.fill(black)
-                        update_screen(background, white_score, black_score, current_board, w_score, b_score, True)
+                        update_screen(background, white_score, black_score, current_board, w_score, b_score, True, score_to = score_to)
                         display_dice(colour, roll[0], roll[1])
 
                         # Recreate start checkers without highlights
@@ -251,12 +251,12 @@ def human_play(moves, boards, start_board, roll, colour):
                         ]
                     pygame.display.update()
 
-            update_screen(background, white_score, black_score, current_board, w_score, b_score, True)
+            update_screen(background, white_score, black_score, current_board, w_score, b_score, True, score_to = score_to)
             pygame.display.update()
             board = current_board          
     else:
         if GUI_FLAG:
-            update_screen(background, white_score, black_score, board, w_score, b_score, True)
+            update_screen(background, white_score, black_score, board, w_score, b_score, True, score_to = score_to)
         if commentary:
             print("No valid moves available")
     return move, board
@@ -411,7 +411,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
         white_boards = []
         black_boards = []
         if GUI_FLAG:
-            update_screen(background, white_score, black_score, board, w_score, b_score, True)
+            update_screen(background, white_score, black_score, board, w_score, b_score, True, score_to = score_to)
         time_step = 1
         cube_val = 1
         double_player = 0
@@ -421,7 +421,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 for event in pygame.event.get():
                     if event.type == QUIT:
                         pygame.quit()
-            #### FIRST TURN ####            
+            #### FIRST TURN ####     
             if time_step == 1 and game == 1:
                 # Each player rolls a die to determine who moves first
                 white_roll, black_roll = roll_dice()
@@ -430,7 +430,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     
                     pygame.display.update()
                     framesPerSec.tick(30)
-                    update_screen(background, white_score, black_score, board, w_score, b_score, True)
+                    update_screen(background, white_score, black_score, board, w_score, b_score, True, score_to = score_to)
                     pygame.display.update()
                     sleep(1)
                     # Loop 60 times for rolling animation
@@ -496,7 +496,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     for event in pygame.event.get():
                         if event.type == QUIT:
                             pygame.quit()
-                    update_screen(background, white_score, black_score, board, w_score, b_score)
+                    update_screen(background, white_score, black_score, board, w_score, b_score, score_to = score_to)
                     pygame.display.update()
                     sleep(1)
                 # Initial roll made up of both starting dice
@@ -513,7 +513,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     has_double_rejected = False   
                     equity = calc_equity(board, player1)
                     # write_equity(equity, "BasicEquity")
-                    if can_double(double_player, player1strat, w_score, b_score, score_to, prev_score):
+                    if can_double(double_player, player1, w_score, b_score, score_to, prev_score):
                         cube_val, double_player, has_double_rejected= double_process(player1strat, player1, board, player2strat, cube_val, double_player, player1score, player2score, score_to, double_point, double_drop)
                     if has_double_rejected:
                         if commentary: print("Double Rejected")
@@ -522,6 +522,8 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     elif commentary:
                         print("Double accepted")
                         print(f"Cube now {cube_val}")
+                    elif GUI_FLAG:
+                        update_screen(background, white_score, black_score, board, w_score, b_score, True, score_to = score_to)
                 moves1, boards1, roll = start_turn(player1, board)
             if test:
                 save_roll(roll, player1)
@@ -584,10 +586,10 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                                 pygame.display.update()
                                 sleep(1)
                                 
-                                # update_screen(background, white_score, black_score, board, w_score, b_score, True)
+                                
                                 highlight_checker(end_checkers[i], end_point[i], "Images/white_pawn.png")
                                 pygame.display.update()
-                        update_screen(background, white_score, black_score, board, w_score, b_score, True)
+                        update_screen(background, white_score, black_score, board, w_score, b_score, True, score_to = score_to)
                         pygame.display.update()
                         sleep(1)
                     #### END OF WHITE PLAYER 1'S TURN ####
@@ -609,7 +611,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 has_double_rejected = False
                 equity = calc_equity(board, player2)
                 # write_equity(equity, "BasicEquity")  
-                if can_double(double_player, player2strat, w_score, b_score, score_to, prev_score):
+                if can_double(double_player, player2, w_score, b_score, score_to, prev_score):
                     cube_val, double_player, has_double_rejected= double_process(player2strat, player2, board, player1strat, cube_val, double_player, player2score, player1score, score_to, double_point, double_drop)
                 if has_double_rejected:
                     if commentary: print("Double Rejected")
@@ -618,6 +620,8 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 elif commentary:
                     print("Double accepted")
                     print(f"Cube now {cube_val}")
+                elif GUI_FLAG:
+                    update_screen(background, white_score, black_score, board, w_score, b_score, True, score_to = score_to)
                 moves2, boards2, roll = start_turn(player2, board)
                 
                 if test:
@@ -673,10 +677,10 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                             pygame.display.update()
                             sleep(1)
                             
-                            # update_screen(background, white_score, black_score, board, w_score, b_score, True)
+                            
                             highlight_checker(end_checkers[i], end_point[i], "Images/black_pawn.png")
                             pygame.display.update()
-                    update_screen(background, white_score, black_score, board, w_score, b_score, True)
+                    update_screen(background, white_score, black_score, board, w_score, b_score, True, score_to = score_to)
                     pygame.display.update()
                     sleep(1)
                     
@@ -736,11 +740,11 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                             pygame.display.update()
                             sleep(1)
                             
-                            # update_screen(background, white_score, black_score, board, w_score, b_score, True)
+                            
                             highlight_checker(end_checkers[i], end_point[i], "Images/black_pawn.png")
                             pygame.display.update()
                             
-                    update_screen(background, white_score, black_score, board, w_score, b_score, True)
+                    update_screen(background, white_score, black_score, board, w_score, b_score, True, score_to = score_to)
                     pygame.display.update()
                     sleep(1)
                     
@@ -759,7 +763,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 has_double_rejected = False   
                 equity = calc_equity(board, player2)
                 # write_equity(equity, "BasicEquity")
-                if can_double(double_player, player2strat, w_score, b_score, score_to, prev_score):
+                if can_double(double_player, player2, w_score, b_score, score_to, prev_score):
                     cube_val, double_player, has_double_rejected= double_process(player2strat, player2, board, player1strat, cube_val, double_player, player2score, player1score, score_to, double_point, double_drop)
                 if has_double_rejected:
                     if commentary: print("Double Rejected")
@@ -768,6 +772,8 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 elif commentary:
                     print("Double accepted")
                     print(f"Cube now {cube_val}")
+                elif GUI_FLAG:
+                    update_screen(background, white_score, black_score, board, w_score, b_score, True, score_to = score_to)
                 moves2, boards2, roll = start_turn(player2, board)
                 if test:
                     save_roll(roll, player2)
@@ -826,7 +832,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                             
                             highlight_checker(end_checkers[i], end_point[i], "Images/white_pawn.png")
                             pygame.display.update()
-                    update_screen(background, white_score, black_score, board, w_score, b_score, True)
+                    update_screen(background, white_score, black_score, board, w_score, b_score, True, score_to = score_to)
                     pygame.display.update()
                     sleep(1)
                 
@@ -929,7 +935,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
             time_step = 1
             if commentary: print(f"White: {w_score} Black: {b_score}")
             if GUI_FLAG:
-                update_screen(background, white_score, black_score, board, w_score, b_score, True)    
+                update_screen(background, white_score, black_score, board, w_score, b_score, True, score_to = score_to)    
         #### CHECKS FOR GAME OVER AND WINNING POINTS ####
             
             print(w_score, b_score)
@@ -995,7 +1001,7 @@ if __name__ == "__main__":
         # print(calc_first())
         # print(b:=update_board(make_board(),(12, 9)))
         # print(update_board(b, (9, 7)))
-        score_to = 5
+        score_to = 25
         player1strat = "USER"
         playerminus1strat = "DEEP"
         print(player1strat, playerminus1strat)
