@@ -404,6 +404,9 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
     while max([w_score, b_score]) < score_to:
         black_equity = []
         white_equity = []
+        starting_board = [2]+[0]*16+[0,-15,0,0,0,0,0,0,0,0,13]
+        # starting_board = [3,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,-3,-3,-3,-3,-3,0,0,0,0]
+        # starting_board = [5,5,5,-5,-5,-5]+[0]*22
         # starting_board = [-2,0,0,0,5,0,0,0,0,0,0,-5,10,0,0,0,0,-5,0,-3,0,0,0,0,0,0,0,0,0]
         if starting_board is None:
             board = make_board()

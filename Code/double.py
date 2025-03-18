@@ -91,6 +91,7 @@ def can_double(double_player, current_player, w_score, b_score, score_to, prev_s
 def double(cube_val, player):
     return cube_val*2, -player
 
+
 def randobot_accept_double():
     return bool(randint(0,1))
 
@@ -208,6 +209,8 @@ def accept_process(board, player, player_score, oppstrat, opponent_score, first_
             has_double_rejected = True
     elif oppstrat == "USER":
         cube_val, double_player, has_double_rejected = user_accept_double(player, cube_val, double_player)
+    else:
+        print("Unidentified strategy")
     return cube_val, double_player, has_double_rejected
                             
 def double_process(playerstrat, player, board, oppstrat, cube_val, double_player, player_score, opponent_score, first_to, double_point=None, double_drop=None):
