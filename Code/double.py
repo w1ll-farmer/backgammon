@@ -3,6 +3,7 @@ from random import randint
 from turn import *
 from adaptive_agent import calc_advanced_equity, race_gwc
 from gui import *
+from testfile import invert_board
 
 import torch
 import torch.nn as nn
@@ -107,19 +108,23 @@ def advanced_accept_double(equity, doubling_point = -1.8523842372779313):
     if doubling_point is None: doubling_point = -0.3126
     return True if equity > doubling_point else False
 
-def deep_accept_double(board):
+def deep_accept_double(board, player):
+    if player == -1:
+        board = invert_board(board)
     input_vector = torch.tensor(convert_board(board), dtype=torch.float32).unsqueeze(0)
     model = AcceptNet()
-    model.load_state_dict(torch.load("Code/cube_accept_model.pth"))
+    model.load_state_dict(torch.load(os.path.join("Code","cube_accept_model.pth")))
     model.eval()
     with torch.no_grad():
         decision = model(input_vector).item()  # Get the single output
     return (decision > 0.5)
 
-def deep_offer_double(board):
+def deep_offer_double(board, player):
+    if player == -1:
+        board = invert_board(board)
     input_vector = torch.tensor(convert_board(board), dtype=torch.float32).unsqueeze(0)
     model = OfferNet()
-    model.load_state_dict(torch.load("Code/cube_offer_model.pth"))
+    model.load_state_dict(torch.load(os.path.join("Code","cube_offer_model.pth")))
     model.eval()
     with torch.no_grad():
         decision = model(input_vector).item()  # Get the single output
@@ -196,7 +201,7 @@ def accept_process(board, player, player_score, oppstrat, opponent_score, first_
         else:
             has_double_rejected = True
     elif oppstrat == "DEEP":
-        if deep_accept_double(board):
+        if deep_accept_double(board, -player):
             cube_val *= 2
             double_player = -player
         else:
@@ -252,7 +257,7 @@ def double_process(playerstrat, player, board, oppstrat, cube_val, double_player
                     
                             
         elif playerstrat == "DEEP":
-            if deep_offer_double(board):
+            if deep_offer_double(board, player):
                 cube_val, double_player, has_double_rejected = accept_process(
                     board, player, player_score, oppstrat, opponent_score, first_to, cube_val, double_player
                 )

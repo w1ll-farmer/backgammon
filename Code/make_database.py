@@ -8,7 +8,7 @@ def make_opening(make_stuff=True):
         for roll2 in range(roll1, 7):
             moves, boards = get_valid_moves(1, board, (roll1, roll2))
             if make_stuff:
-                myFile = open("Data/Deep/Opening/train.txt",'a')
+                myFile = open(os.path.join("Data","Deep","Opening","train.txt"),'a')
             for b in boards:
                 m = moves[boards.index(b)]
                 key = str(b)
@@ -23,7 +23,7 @@ def make_opening(make_stuff=True):
     if make_stuff: myFile.close()
 
 def gap_fill():
-    myFile = open("Data/Deep/Opening/train.txt",'r')
+    myFile = open(os.path.join("Data","Deep","Opening","train.txt"),'r')
     for line in myFile:
         line.strip("\n")
         board, movescore = line.split("[")
@@ -32,7 +32,7 @@ def gap_fill():
         # print(score)
         if len(score) == 1:
             score = ",-0.05\n"
-        myNewFile = open("Data/Deep/Opening/train2.txt",'a')
+        myNewFile = open(os.path.join("Data","Deep","Opening","train2.txt"),'a')
         myNewFile.write(f"{board}{score[1:]}")
         myNewFile.close()
     myFile.close()

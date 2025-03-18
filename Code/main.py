@@ -30,9 +30,9 @@ global b_score
 
 ### INITIALISE BOARD ###
 if GUI_FLAG:
-    background = Background('Images/two_players_back.png')
-    white_score = Shape('Images/White-score.png', SCREEN_WIDTH-36, SCREEN_HEIGHT//2 + 40)
-    black_score = Shape('Images/Black-score.png', SCREEN_WIDTH-35, SCREEN_HEIGHT//2 - 40)
+    background = Background(os.path.join('Images','two_players_back.png'))
+    white_score = Shape(os.path.join('Images','White-score.png'), SCREEN_WIDTH-36, SCREEN_HEIGHT//2 + 40)
+    black_score = Shape(os.path.join('Images','Black-score.png'), SCREEN_WIDTH-35, SCREEN_HEIGHT//2 - 40)
     w_score, b_score = 0,0
     
 def start_turn(player, board):
@@ -115,9 +115,9 @@ def human_play(moves, boards, start_board, roll, colour):
             # Create highlight checkers
             for start in starts:
                 if colour == 1:
-                    start_checkers.append(highlight_checker(abs(current_board[start]) - 1, start, "Images/white_highlight.png", True))
+                    start_checkers.append(highlight_checker(abs(current_board[start]) - 1, start, os.path.join("Images","white_highlight.png"), True))
                 else:
-                    start_checkers.append(highlight_checker(abs(current_board[start]) - 1, start, "Images/black_highlight.png", True))
+                    start_checkers.append(highlight_checker(abs(current_board[start]) - 1, start, os.path.join("Images","black_highlight.png"), True))
 
             pygame.display.update()
             move_made = 0
@@ -148,7 +148,11 @@ def human_play(moves, boards, start_board, roll, colour):
                                     point_num = int(24.5+ 0.5*colour)
                                 if y <= 346:
                                     point_num = 23 - point_num
-                                points = highlight[point_num]
+                                try:
+                                    points = highlight[point_num]
+                                except KeyError:
+                                    point_num = 23-point_num
+                                    points = highlight[point_num]
                                 
                                 # Highlight the points that the pieces can be moved to
                                 highlight_bottom_points(points)
@@ -213,9 +217,9 @@ def human_play(moves, boards, start_board, roll, colour):
                         start_checkers = []
                         for start in starts:
                             if colour == 1:
-                                start_checkers.append(highlight_checker(abs(current_board[start]) - 1, start, "Images/white_highlight.png", True))
+                                start_checkers.append(highlight_checker(abs(current_board[start]) - 1, start, os.path.join("Images","white_highlight.png"), True))
                             else:
-                                start_checkers.append(highlight_checker(abs(current_board[start]) - 1, start, "Images/black_highlight.png", True))
+                                start_checkers.append(highlight_checker(abs(current_board[start]) - 1, start, os.path.join("Images","black_highlight.png"), True))
                         pygame.display.update()
                         
                 #### END OF MOVE SELECTION ####
@@ -241,12 +245,12 @@ def human_play(moves, boards, start_board, roll, colour):
                         highlight[start] = list(set(highlight[start]))
                     if colour == 1:
                         start_checkers = [
-                            highlight_checker(abs(current_board[start]) - 1, start, "Images/white_highlight.png", True)
+                            highlight_checker(abs(current_board[start]) - 1, start, os.path.join("Images","white_highlight.png"), True)
                             for start in highlight.keys()
                         ]
                     else:
                         start_checkers = [
-                            highlight_checker(abs(current_board[start]) - 1, start, "Images/black_highlight.png", True)
+                            highlight_checker(abs(current_board[start]) - 1, start, os.path.join("Images","black_highlight.png"), True)
                             for start in highlight.keys()
                         ]
                     pygame.display.update()
@@ -400,7 +404,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
     while max([w_score, b_score]) < score_to:
         black_equity = []
         white_equity = []
-        # starting_board = generate_random_race_board()
+        starting_board = [-2,0,0,0,5,0,0,0,0,0,0,-5,10,0,0,0,0,-5,0,-3,0,0,0,0,0,0,0,0,0]
         if starting_board is None:
             board = make_board()
         else:
@@ -578,16 +582,16 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                         if len(moves1) > 0 and player1strat != "USER":
                             start_point, start_checkers, end_point, end_checkers = parse_move(board, move)
                             for i in range(len(start_point)):
-                                highlight_checker(start_checkers[i], start_point[i], "Images/white_highlight.png")
+                                highlight_checker(start_checkers[i], start_point[i], os.path.join("Images","white_highlight.png"))
                                 pygame.display.update()
                                 sleep(1)
                                 
-                                highlight_checker(end_checkers[i], end_point[i], "Images/white_highlight.png")
+                                highlight_checker(end_checkers[i], end_point[i], os.path.join("Images","white_highlight.png"))
                                 pygame.display.update()
                                 sleep(1)
                                 
                                 
-                                highlight_checker(end_checkers[i], end_point[i], "Images/white_pawn.png")
+                                highlight_checker(end_checkers[i], end_point[i], os.path.join("Images","white_pawn.png"))
                                 pygame.display.update()
                         update_screen(background, white_score, black_score, board, w_score, b_score, True, score_to = score_to)
                         pygame.display.update()
@@ -604,7 +608,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     exit()
                 if game_over(board):
                     break
-                if USER_PLAY or GUI_FLAG:
+                if (USER_PLAY or GUI_FLAG) and not can_double(double_player, player2, w_score, b_score, score_to, prev_score):
                     sleep(1)
                 
                 #### BLACK PLAYER 2'S TURN ####
@@ -669,16 +673,16 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     if len(moves2) > 0 and player2strat != "USER":
                         start_point, start_checkers, end_point, end_checkers = parse_move(board, move)
                         for i in range(len(start_point)):
-                            highlight_checker(start_checkers[i], start_point[i], "Images/black_highlight.png")
+                            highlight_checker(start_checkers[i], start_point[i], os.path.join("Images","black_highlight.png"))
                             pygame.display.update()
                             sleep(1)
                             
-                            highlight_checker(end_checkers[i], end_point[i], "Images/black_highlight.png")
+                            highlight_checker(end_checkers[i], end_point[i], os.path.join("Images","black_highlight.png"))
                             pygame.display.update()
                             sleep(1)
                             
                             
-                            highlight_checker(end_checkers[i], end_point[i], "Images/black_pawn.png")
+                            highlight_checker(end_checkers[i], end_point[i], os.path.join("Images","black_pawn.png"))
                             pygame.display.update()
                     update_screen(background, white_score, black_score, board, w_score, b_score, True, score_to = score_to)
                     pygame.display.update()
@@ -732,16 +736,16 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     if len(moves1) > 0 and player1strat != "USER":          
                         start_point, start_checkers, end_point, end_checkers = parse_move(board, move)
                         for i in range(len(start_point)):
-                            highlight_checker(start_checkers[i], start_point[i], "Images/black_highlight.png")
+                            highlight_checker(start_checkers[i], start_point[i], os.path.join("Images","black_highlight.png"))
                             pygame.display.update()
                             sleep(1)
                             
-                            highlight_checker(end_checkers[i], end_point[i], "Images/black_highlight.png")
+                            highlight_checker(end_checkers[i], end_point[i], os.path.join("Images","black_highlight.png"))
                             pygame.display.update()
                             sleep(1)
                             
                             
-                            highlight_checker(end_checkers[i], end_point[i], "Images/black_pawn.png")
+                            highlight_checker(end_checkers[i], end_point[i], os.path.join("Images","black_highlight.png"))
                             pygame.display.update()
                             
                     update_screen(background, white_score, black_score, board, w_score, b_score, True, score_to = score_to)
@@ -752,7 +756,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 
                 if commentary:
                     print_board(board)
-                if USER_PLAY or GUI_FLAG:
+                if (USER_PLAY or GUI_FLAG) and not can_double(double_player, player2, w_score, b_score, score_to, prev_score):
                     sleep(1)
                 if is_error(board):
                     exit()
@@ -821,16 +825,16 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                         
                     
                         for i in range(len(start_point)):
-                            highlight_checker(start_checkers[i], start_point[i], "Images/white_highlight.png")
+                            highlight_checker(start_checkers[i], start_point[i], os.path.join("Images","white_highlight.png"))
                             pygame.display.update()
                             sleep(1)
                             
-                            highlight_checker(end_checkers[i], end_point[i], "Images/white_highlight.png")
+                            highlight_checker(end_checkers[i], end_point[i], os.path.join("Images","white_highlight.png"))
                             pygame.display.update()
                             sleep(1)
                             
                             
-                            highlight_checker(end_checkers[i], end_point[i], "Images/white_pawn.png")
+                            highlight_checker(end_checkers[i], end_point[i], os.path.join("Images","white_highlight.png"))
                             pygame.display.update()
                     update_screen(background, white_score, black_score, board, w_score, b_score, True, score_to = score_to)
                     pygame.display.update()
@@ -943,7 +947,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
 
 
 def collect_data(p1strat, pminus1strat, first_to):
-    myFile = "./Data/expectimax2vgreedy.txt"
+    myFile = os.path.join("Data","expectimax2vgreedy.txt")
     white_tot, black_tot = 0,0
     white_wins, black_wins = 0,0
     first_to = 25

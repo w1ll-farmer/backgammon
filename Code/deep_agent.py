@@ -38,17 +38,17 @@ class BGNet(nn.Module):
 def predict(left_board, right_board, input_vector_left, input_vector_right, epoch=None):
     model = BGNet()
     suffix = "" if epoch is None else f"{epoch}"
-    prefix = "Code/" #if epoch is None or epoch == 499 else ""
+    prefix = "Code" #if epoch is None or epoch == 499 else ""
     if epoch is None:
         if all_past(left_board) and all_past(right_board):
             if all_checkers_home(1, left_board) and all_checkers_home(1, right_board):
                 network = "bearoff_race"
             else:
                 network = "midboard_race"
-            model.load_state_dict(torch.load(f"{prefix}{network}{suffix}.pth"))
+            model.load_state_dict(torch.load(os.path.join(f"{prefix}",f"{network}{suffix}.pth")))
         else:
             network = "contact"
-            model.load_state_dict(torch.load("Code/backgammon_modelv1.pth"))
+            model.load_state_dict(torch.load(os.path.join("Code","backgammon_modelv1.pth")))
         
     elif epoch == "_50":
         if all_past(left_board) and all_past(right_board):
@@ -56,13 +56,13 @@ def predict(left_board, right_board, input_vector_left, input_vector_right, epoc
                 network = "bearoff_race"
             else:
                 network = "midboard_race"
-            model.load_state_dict(torch.load(f"{prefix}{network}{suffix}.pth"))
+            model.load_state_dict(torch.load(os.path.join(f"{prefix}",f"{network}{suffix}.pth")))
         else:
             # network = "contact" 
-            model.load_state_dict(torch.load("Code/backgammon_modelv1.pth"))
+            model.load_state_dict(torch.load(os.path.join("Code","backgammon_modelv1.pth")))
          
     else:
-        model.load_state_dict(torch.load("Code/backgammon_modelv1.pth"))
+        model.load_state_dict(torch.load(os.path.join("Code","backgammon_modelv1.pth")))
     model.eval()  # Set to evaluation mode (disables dropout, etc.)
     # input_vector_left = torch.tensor(convert_board(left_board), dtype=torch.float32).unsqueeze(0)
     # input_vector_right = torch.tensor(convert_board(right_board), dtype=torch.float32).unsqueeze(0)

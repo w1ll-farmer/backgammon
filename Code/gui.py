@@ -78,36 +78,36 @@ def display_board(board):
     for point in range(0,12):
         for checker in range(abs(board[point])):
             if board[point] > 0:
-                window.blit(pygame.image.load("Images/white_pawn.png"), get_bottom_row_checker_pos(point, checker))
+                window.blit(pygame.image.load(os.path.join("Images","white_pawn.png")), get_bottom_row_checker_pos(point, checker))
             elif board[point] < 0:
-                window.blit(pygame.image.load("Images/black_pawn.png"),get_bottom_row_checker_pos(point, checker))
+                window.blit(pygame.image.load(os.path.join("Images","black_pawn.png")),get_bottom_row_checker_pos(point, checker))
     
     for point in range(12, 24):        
         for checker in range(abs(board[point])):
             if board[point] > 0:
-                window.blit(pygame.image.load("Images/white_pawn.png"), get_top_row_checker_pos(point-12, checker))
+                window.blit(pygame.image.load(os.path.join("Images","white_pawn.png")), get_top_row_checker_pos(point-12, checker))
             elif board[point] < 0:
-                window.blit(pygame.image.load("Images/black_pawn.png"),get_top_row_checker_pos(point-12, checker))
+                window.blit(pygame.image.load(os.path.join("Images","black_pawn.png")),get_top_row_checker_pos(point-12, checker))
     
     if board[24] < 0:
-        black_bar_checker = Shape("Images/black_pawn.png", SCREEN_WIDTH//2 + 3,SCREEN_HEIGHT//2 - 40, 56, 56)
+        black_bar_checker = Shape(os.path.join("Images","black_pawn.png"), SCREEN_WIDTH//2 + 3,SCREEN_HEIGHT//2 - 40, 56, 56)
         black_bar_checker.draw(window)
         if board[24] < -1:
             black_bar_checker.addText(window, f"{abs(board[24])}", white)
     
     if board[25] > 0:
-        white_bar_checker = Shape("Images/white_pawn.png", SCREEN_WIDTH//2 + 3,SCREEN_HEIGHT//2 + 40, 56, 56)
+        white_bar_checker = Shape(os.path.join("Images","white_pawn.png"), SCREEN_WIDTH//2 + 3,SCREEN_HEIGHT//2 + 40, 56, 56)
         white_bar_checker.draw(window)
         if board[25] > 1:
             white_bar_checker.addText(window, f"{board[25]}", black)
     
     if board[26] < 0:
         for checker in range(-board[26]):
-            window.blit(pygame.image.load("Images/black_pawn_outside.png"), get_black_home_pos(checker))
+            window.blit(pygame.image.load(os.path.join("Images","black_pawn_outside.png")), get_black_home_pos(checker))
     
     if board[27] > 0:
         for checker in range(board[27]):
-            window.blit(pygame.image.load("Images/white_pawn_outside.png"), get_white_home_pos(checker))
+            window.blit(pygame.image.load(os.path.join("Images","white_pawn_outside.png")), get_white_home_pos(checker))
     
     pygame.display.update()
     
@@ -220,18 +220,18 @@ def highlight_bottom_points(points):
         if point < 12:
             offset = 142
             if point > 5: offset += 56
-            window.blit(pygame.image.load("Images/dest_light_bottom.png"), (SCREEN_WIDTH-(offset+point*56), SCREEN_HEIGHT-324))
+            window.blit(pygame.image.load(os.path.join("Images","dest_light_bottom.png")), (SCREEN_WIDTH-(offset+point*56), SCREEN_HEIGHT-324))
     
 def highlight_top_points(points):
     for point in points:
         if point > 11 and point < 24:
             offset = 142
             if point < 18: offset -= 56
-            window.blit(pygame.image.load("Images/dest_light_upper.png"), (offset + (point-12)*56, 51))
+            window.blit(pygame.image.load(os.path.join("Images","dest_light_upper.png")), (offset + (point-12)*56, 51))
 
 def highlight_home(colour):
     y_offset = colour*50
-    window.blit(pygame.image.load("Images/house_lights_green.png"), (838, 430+y_offset))
+    window.blit(pygame.image.load(os.path.join("Images","house_lights_green.png")), (838, 430+y_offset))
   
 def update_screen(background, white_score, black_score, board, w_score, b_score, include_bground=False, show_double=False, player=1, score_to = 5):
     score_to = str(score_to)
