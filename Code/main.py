@@ -558,7 +558,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                         move = move.pop()
                     elif player1strat == "EXPECTIMAX":
                         if all_past(board):
-                            move, board = greedy_play(moves1, boards1, board, player1, roll)
+                            move, board, evaluation = greedy_play(moves1, boards1, board, player1, roll)
                         else:
                             move, board = expectimax_play(moves1, boards1, player1)
                         move = move.pop()
@@ -645,7 +645,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                         move = move.pop()
                     elif player2strat == "EXPECTIMAX":
                         if all_past(board):
-                            move, board = greedy_play(moves2, boards2, board, player2, roll)
+                            move, board, evaluation = greedy_play(moves2, boards2, board, player2, roll)
                         else:
                             move, board = expectimax_play(moves2, boards2, player2)
                         move = move.pop()
@@ -708,7 +708,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                         move = move.pop()
                     elif player1strat == "EXPECTIMAX":
                         if all_past(board):
-                            move, board = greedy_play(moves1, boards1, board, player1, roll)
+                            move, board, evaluation = greedy_play(moves1, boards1, board, player1, roll)
                         else:
                             move, board = expectimax_play(moves1, boards1, player1)
                         move = move.pop()
@@ -796,7 +796,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                         move = move.pop()
                     elif player2strat == "EXPECTIMAX":
                         if all_past(board):
-                            move, board = greedy_play(moves2, boards2, board, player2, roll)
+                            move, board, evaluation = greedy_play(moves2, boards2, board, player2, roll)
                         else:
                             move, board = expectimax_play(moves2, boards2, player2)
                         move = move.pop()
@@ -943,7 +943,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
 
 
 def collect_data(p1strat, pminus1strat, first_to):
-    myFile = "./Data/cubefuldeep4.5vdeep1.txt"
+    myFile = "./Data/expectimax2vgreedy.txt"
     white_tot, black_tot = 0,0
     white_wins, black_wins = 0,0
     first_to = 25
@@ -952,7 +952,7 @@ def collect_data(p1strat, pminus1strat, first_to):
     double_point, double_drop = 1.4325859937671366, -1.8523842372779313
     for i in range(1000):
         dataFile = open(myFile, 'a')
-        p1vector,w_score,pminus1vector,b_score= backgammon(first_to, "DEEP",None, "DEEP","v1")
+        p1vector,w_score,pminus1vector,b_score= backgammon(first_to, "EXPECTIMAX",None, "GREEDY",None)
         dataFile.write(f"{w_score}, {b_score}\n")
         print(p1vector,w_score,pminus1vector,b_score)
         dataFile.close()
@@ -983,7 +983,7 @@ if __name__ == "__main__":
                 print("Player 1", sys.argv[2], "Player -1", sys.argv[3])
                 collect_data(sys.argv[2], sys.argv[3], 25)
             else:
-                collect_data("DEEP",'ADAPTIVE',25)
+                collect_data("EXPECTIMAX",'GREEDY',25)
             # print(calc_first())
         else:
             score_to = 25
