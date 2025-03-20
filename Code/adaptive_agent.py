@@ -1,6 +1,6 @@
 from turn import *
 from random import randint
-from data import write_equity
+
 
 def adaptive_midgame(moves, boards, player, player_score, opponent_score, cube_val, first_to, weights, roll):
     # Aims to play the move that boosts equity most
@@ -17,7 +17,7 @@ def adaptive_midgame(moves, boards, player, player_score, opponent_score, cube_v
     else:
         chosen_board = best_boards[0]
         chosen_move = moves[boards.index(chosen_board)]
-    write_equity(max(equities), "AdvancedEquityTest")
+    
     return chosen_move, chosen_board
 
 def calc_advanced_equity(board, player, player_score, opponent_score, cube_val, first_to, weights=None):

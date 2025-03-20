@@ -112,7 +112,8 @@ def advanced_accept_double(equity, doubling_point = -1.8523842372779313):
 def deep_accept_double(board, player):
     if player == -1:
         board = invert_board(board)
-    input_vector = torch.tensor(convert_board(board), dtype=torch.float32).unsqueeze(0)
+    encoded_board = convert_board(board)+[board[26]/15]+[board[27]/15]
+    input_vector = torch.tensor(encoded_board, dtype=torch.float32).unsqueeze(0)
     model = AcceptNet()
     model.load_state_dict(torch.load(os.path.join("Code","cube_accept_model.pth")))
     model.eval()
@@ -123,7 +124,8 @@ def deep_accept_double(board, player):
 def deep_offer_double(board, player):
     if player == -1:
         board = invert_board(board)
-    input_vector = torch.tensor(convert_board(board), dtype=torch.float32).unsqueeze(0)
+    encoded_board = convert_board(board)+[board[26]/15]+[board[27]/15]
+    input_vector = torch.tensor(encoded_board, dtype=torch.float32).unsqueeze(0)
     model = OfferNet()
     model.load_state_dict(torch.load(os.path.join("Code","cube_offer_model.pth")))
     model.eval()

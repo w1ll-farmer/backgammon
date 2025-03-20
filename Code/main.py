@@ -404,7 +404,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
     while max([w_score, b_score]) < score_to:
         black_equity = []
         white_equity = []
-        starting_board = [2]+[0]*16+[0,-15,0,0,0,0,0,0,0,0,13]
+        # starting_board = [2]+[0]*16+[0,-15,0,0,0,0,0,0,0,0,13]
         # starting_board = [3,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,-3,-3,-3,-3,-3,0,0,0,0]
         # starting_board = [5,5,5,-5,-5,-5]+[0]*22
         # starting_board = [-2,0,0,0,5,0,0,0,0,0,0,-5,10,0,0,0,0,-5,0,-3,0,0,0,0,0,0,0,0,0]
@@ -522,14 +522,14 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     # write_equity(equity, "BasicEquity")
                     if can_double(double_player, player1, w_score, b_score, score_to, prev_score):
                         cube_val, double_player, has_double_rejected= double_process(player1strat, player1, board, player2strat, cube_val, double_player, player1score, player2score, score_to, double_point, double_drop)
-                    if has_double_rejected:
-                        if commentary: print("Double Rejected")
-                        board = get_double_rejected_board(player1)
-                        break
-                    elif commentary:
-                        print("Double accepted")
-                        print(f"Cube now {cube_val}")
-                    elif GUI_FLAG:
+                        if has_double_rejected:
+                            if commentary: print("Double Rejected")
+                            board = get_double_rejected_board(player1)
+                            break
+                        elif commentary:
+                            print("Double accepted")
+                            print(f"Cube now {cube_val}")
+                    if GUI_FLAG:
                         update_screen(background, white_score, black_score, board, w_score, b_score, True, score_to = score_to)
                 moves1, boards1, roll = start_turn(player1, board)
             if test:
@@ -620,14 +620,14 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 # write_equity(equity, "BasicEquity")  
                 if can_double(double_player, player2, w_score, b_score, score_to, prev_score):
                     cube_val, double_player, has_double_rejected= double_process(player2strat, player2, board, player1strat, cube_val, double_player, player2score, player1score, score_to, double_point, double_drop)
-                if has_double_rejected:
-                    if commentary: print("Double Rejected")
-                    board = get_double_rejected_board(player2)
-                    break
-                elif commentary:
-                    print("Double accepted")
-                    print(f"Cube now {cube_val}")
-                elif GUI_FLAG:
+                    if has_double_rejected:
+                        if commentary: print("Double Rejected")
+                        board = get_double_rejected_board(player2)
+                        break
+                    elif commentary:
+                        print("Double accepted")
+                        print(f"Cube now {cube_val}")
+                if GUI_FLAG:
                     update_screen(background, white_score, black_score, board, w_score, b_score, True, score_to = score_to)
                 moves2, boards2, roll = start_turn(player2, board)
                 
@@ -772,14 +772,14 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 # write_equity(equity, "BasicEquity")
                 if can_double(double_player, player2, w_score, b_score, score_to, prev_score):
                     cube_val, double_player, has_double_rejected= double_process(player2strat, player2, board, player1strat, cube_val, double_player, player2score, player1score, score_to, double_point, double_drop)
-                if has_double_rejected:
-                    if commentary: print("Double Rejected")
-                    board = get_double_rejected_board(player2)
-                    break
-                elif commentary:
-                    print("Double accepted")
-                    print(f"Cube now {cube_val}")
-                elif GUI_FLAG:
+                    if has_double_rejected:
+                        if commentary: print("Double Rejected")
+                        board = get_double_rejected_board(player2)
+                        break
+                    elif commentary:
+                        print("Double accepted")
+                        print(f"Cube now {cube_val}")
+                if GUI_FLAG:
                     update_screen(background, white_score, black_score, board, w_score, b_score, True, score_to = score_to)
                 moves2, boards2, roll = start_turn(player2, board)
                 if test:
@@ -950,7 +950,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
 
 
 def collect_data(p1strat, pminus1strat, first_to):
-    myFile = os.path.join("Data","expectimax2vgreedy.txt")
+    myFile = os.path.join("Data","expectimax2vgenetic.txt")
     white_tot, black_tot = 0,0
     white_wins, black_wins = 0,0
     first_to = 25
@@ -959,7 +959,7 @@ def collect_data(p1strat, pminus1strat, first_to):
     double_point, double_drop = 1.4325859937671366, -1.8523842372779313
     for i in range(1000):
         dataFile = open(myFile, 'a')
-        p1vector,w_score,pminus1vector,b_score= backgammon(first_to, "EXPECTIMAX",None, "GREEDY",None)
+        p1vector,w_score,pminus1vector,b_score= backgammon(first_to, "EXPECTIMAX",None, "GENETIC",genetic_weights)
         dataFile.write(f"{w_score}, {b_score}\n")
         print(p1vector,w_score,pminus1vector,b_score)
         dataFile.close()
@@ -1028,7 +1028,7 @@ if __name__ == "__main__":
         # print(update_board(b, (9, 7)))
         score_to = 25
         player1strat = "USER"
-        playerminus1strat = "DEEP"
+        playerminus1strat = "ADAPTIVE"
         print(player1strat, playerminus1strat)
         weights1, weights2 = None, None
         if player1strat == "GENETIC":
