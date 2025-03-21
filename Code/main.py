@@ -950,7 +950,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
 
 
 def collect_data(p1strat, pminus1strat, first_to):
-    myFile = os.path.join("Data","Cubelessadaptivegenetic.txt")
+    myFile = os.path.join("Data","Cubefuladaptivegenetic.txt")
     white_tot, black_tot = 0,0
     white_wins, black_wins = 0,0
     first_to = 25

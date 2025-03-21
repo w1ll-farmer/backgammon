@@ -291,18 +291,18 @@ def write_equity(equity, equitytype):
     myFile.close()
     
 def normalise_equity():
-    myFile = open(os.path.join("Data",f"WinnerEquity.txt"),'r')
-    equity = []
-    for line in myFile:
-        eq = line.strip("\n")
-        equity.append(float(eq))
-    print("Advanced",np.mean(equity), np.std(equity))
-    myFile = open(os.path.join("Data",f"LoserEquity.txt"),'r')
+    myFile = open(os.path.join("Data",f"BasicEquity.txt"),'r')
     equity = []
     for line in myFile:
         eq = line.strip("\n")
         equity.append(float(eq))
     print("Basic",np.mean(equity), np.std(equity))
+    myFile = open(os.path.join("Data",f"LoserEquity.txt"),'r')
+    equity = []
+    for line in myFile:
+        eq = line.strip("\n")
+        equity.append(float(eq))
+    print("Loser",np.mean(equity), np.std(equity))
 
 def should_have_doubled():
     myFile = open(os.path.join("Data",f"AdvancedEquity.txt"),'r')

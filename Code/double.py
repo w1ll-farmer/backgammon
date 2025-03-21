@@ -118,10 +118,10 @@ def randobot_accept_double():
     return bool(randint(0,1))
 
 def basic_should_double(equity):
-    return True if equity > 0.8144 else False
+    return True if equity > 0.9828 else False
 
 def basic_accept_double(equity):
-    return True if equity > -0.2362 else False
+    return True if equity > -0.35 else False
 
 def advanced_should_double(equity, doubling_point = 1.4325859937671366): 
     if doubling_point is None: doubling_point = 2.8334
@@ -219,7 +219,7 @@ def accept_process(board, player, player_score, oppstrat, opponent_score, first_
     if oppstrat in strategies:
         if oppstrat == "ADAPTIVE":
             # Does this need to be changed to opponent instead of player?
-            if advanced_accept_double(calc_advanced_equity(board, player, player_score, opponent_score, cube_val, first_to)):
+            if advanced_accept_double(calc_advanced_equity(board, -player, opponent_score, player_score, cube_val, first_to)):
                 cube_val *= 2
                 double_player = -player
             else:
