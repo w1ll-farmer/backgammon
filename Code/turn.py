@@ -669,6 +669,10 @@ def generate_random_race_board():
     # white_furthest = randint(0, 17) # Not inside black home
     while white_remaining > 0:
         pos = randint(0, 11)
+        if pos < 6:
+            rand_num = randint(1,10)
+            if rand_num == 1:
+                pos = 27
         # if player == 1 and pos != 24 and pos != 26 and board[pos] > -1:
         point = int(gauss(2.5, 2)) if white_remaining >= 7 else randint(0, white_remaining)
         while point > white_remaining or point < 0:
@@ -677,6 +681,10 @@ def generate_random_race_board():
         white_remaining -= point
     while black_remaining > 0:
         pos = randint(12, 23)
+        if pos > 17:
+            rand_num = randint(1,10)
+            if rand_num == 1:
+                pos = 26
         point = int(gauss(2.5, 2)) if black_remaining >= 7 else randint(0,black_remaining)
         while point < 0 or point > black_remaining:
             point = int(gauss(2.5, 2))
@@ -685,13 +693,14 @@ def generate_random_race_board():
             
     return board
 
-def convert_board(board):
+def convert_board(board, race=False, cube=False):
     input_vector = []
     for i in range(24):
         point_encoding = convert_point(board[i])
         input_vector += point_encoding
-    for i in range(24):
-        input_vector.append(prob_opponent_can_hit(1, board, i))
+    if not race:
+        for i in range(24):
+            input_vector.append(prob_opponent_can_hit(1, board, i))
     for i in range(24, 26):
         input_vector += convert_bar(board[i])
     _, home = get_home_info(1, board)
@@ -702,14 +711,18 @@ def convert_board(board):
     input_vector.append(len([i for i in opp_home if i > 0])/6)
     # % pieces in home
     input_vector.append(sum([i for i in home if i >0])/15)
-    # Prime?
-    input_vector.append(1 if calc_prime(board, 1) > 3 else 0)
+    if not race:
+        # Prime?
+        input_vector.append(1 if calc_prime(board, 1) > 3 else 0)
     # pip count
     input_vector += decimal_to_binary(calc_pips(board, 1))
     input_vector += decimal_to_binary(calc_pips(board, -1))
-    
-    # chance blockade can't be passed
-    input_vector.append(calc_blockade_pass_chance(board, 1))
+    if not race:
+        # chance blockade can't be passed
+        input_vector.append(calc_blockade_pass_chance(board, 1))
+    if cube:
+        input_vector.append(board[26]/15)
+        input_vector.append(board[27]/15)
     return input_vector
 
 # print(get_legal_move(1, [4, 2, 2, 4, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -5, -2, -3, -2, -3, 0, 0, 0, 0], 6))

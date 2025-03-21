@@ -152,7 +152,7 @@ def generate_cp_db():
 # 2695 after board_success_online
 # generate_cp_db()
 
-def encode_board_vector(b, cube=False):
+def encode_board_vector(b, cube=False, race=False):
     board = b.strip()
     board = b.split(",")
     board = [int(i) for i in board if i != " "]
@@ -160,8 +160,9 @@ def encode_board_vector(b, cube=False):
     for i in range(24):
         point_encoding = convert_point(board[i])
         input_vector += point_encoding
-    for i in range(24):
-        input_vector.append(prob_opponent_can_hit(1, board, i))
+    if not race:
+        for i in range(24):
+            input_vector.append(prob_opponent_can_hit(1, board, i))
     for i in range(24, 26):
         input_vector += convert_bar(board[i])
     _, home = get_home_info(1, board)
@@ -172,14 +173,15 @@ def encode_board_vector(b, cube=False):
     input_vector.append(len([i for i in opp_home if i > 0])/6)
     # % pieces in home
     input_vector.append(sum([i for i in home if i >0])/15)
-    # Prime?
-    input_vector.append(1 if calc_prime(board, 1) > 3 else 0)
+    if not race:
+        # Prime?
+        input_vector.append(1 if calc_prime(board, 1) > 3 else 0)
     # pip count
     input_vector += decimal_to_binary(calc_pips(board, 1))
     input_vector += decimal_to_binary(calc_pips(board, -1))
-    
-    # chance blockade can't be passed
-    input_vector.append(calc_blockade_pass_chance(board, 1))
+    if not race:
+        # chance blockade can't be passed
+        input_vector.append(calc_blockade_pass_chance(board, 1))
     if cube:
         input_vector.append(board[26]/15)
         input_vector.append(board[27]/15)
@@ -274,7 +276,7 @@ def prep_equity_dataset(end, start = 0, testset=False, cp=True):
 
 def prep_cube_dataset(cubetype="Offer"):
     raw_boards, decisions = [], []
-    myFile = open(os.path.join("Data","Deep","GNUBG-data","Cube",cubetype,f"positions.txt"),"r")
+    myFile = open(os.path.join("Data","Deep","GNUBG-data","Cube","Race",cubetype,f"positions.txt"),"r")
     for line in myFile:
         
         raw_board, decision = line.split("],")
@@ -284,14 +286,14 @@ def prep_cube_dataset(cubetype="Offer"):
     
     data_size = len(raw_boards)
     train_end = int(data_size*0.8)
-    myFile = open(os.path.join("Data","Deep","Cube",f"{cubetype}","train.txt"),"a")
+    myFile = open(os.path.join("Data","Deep","RaceCube",f"{cubetype}","train.txt"),"a")
     for i in range(train_end):
-        encoded_board = str(encode_board_vector(raw_boards[i], cube=True))
+        encoded_board = str(encode_board_vector(raw_boards[i], cube=True, race=True))
         myFile.write(f"{encoded_board[1:-1]},{decisions[i]}\n")
     myFile.close()
-    myFile = open(os.path.join("Data","Deep","Cube",f"{cubetype}","test.txt"),"a")
+    myFile = open(os.path.join("Data","Deep","RaceCube",f"{cubetype}","test.txt"),"a")
     for i in range(train_end, data_size):
-        encoded_board = str(encode_board_vector(raw_boards[i], cube=True))
+        encoded_board = str(encode_board_vector(raw_boards[i], cube=True, race=True))
         myFile.write(f"{encoded_board[1:-1]},{decisions[i]}\n")
     myFile.close()
     
@@ -310,7 +312,7 @@ if __name__ == "__main__":
     # prep_equity_dataset(data_size, start = train_end, testset=True, cp=True)
     # print(data_size)
     prep_cube_dataset()
-    prep_cube_dataset("Accept")
+    # prep_cube_dataset("Accept")
     
     
     

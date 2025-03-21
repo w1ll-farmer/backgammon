@@ -316,32 +316,45 @@ def get_optimal_doubling(board):
 
 def write_optimal_doubling(board):
     action = get_optimal_doubling(board)
+    inverted_board = invert_board(board)
+    inverse_action = get_optimal_doubling(inverted_board)
+    print(action, inverse_action)
     offer = 1 if action[0] == "D" else 0
-    accept = 1 if action[-1] == "e" else 0
+    accept = 0 if action[-1] == "s" else 1
     
+    inv_offer = 1 if inverse_action[0] == "D" else 0
+    inv_accept = 0 if inverse_action[-1] == "s" else 1
     # Write offer decision
-    path = os.path.join("Data","Deep","GNUBG-data","Cube")
+    path = os.path.join("Data","Deep","GNUBG-data","Cube","Race")
     offerFile = open(os.path.join(path, "Offer",f"positions.txt"),"a")
     offerFile.write(f"{board},{offer}\n")
+    offerFile.write(f"{inverted_board},{inv_offer}\n")
     offerFile.close()
     
     # Invert board so can be used to know when to drop/take double
-    inverted_board = invert_board(board)
+    
     acceptFile = open(os.path.join(path, "Accept",f"positions.txt"),"a")
     acceptFile.write(f"{inverted_board},{accept}\n")
+    acceptFile.write(f"{board},{inv_accept}\n")
     acceptFile.close()
     
 def random_cube_decisions():
     i = 0
     while True:
         print(f"Generated {i} cube decisions")
-        board = generate_random_board()
+        board = generate_random_race_board()
         write_optimal_doubling(board)
         i += 1
         
     
 
 if __name__ == "__main__":
+    # random_cube_decisions()
+    board = [4,0,1,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,-4,-2,-2,-3,-2,-2,0,0,0,8]
+    # write_optimal_doubling(board)
+    # write_optimal_doubling(invert_board(board))
+    # print(get_optimal_doubling(board))
+    # print(get_optimal_doubling(invert_board(board)))
     random_cube_decisions()
     # print(write_optimal_doubling([-1, -10, 0, 0, 4, 0, 4, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, -3, 4, 0, 1, 0, 0, 0, -1, 0, 0, 0], 0))
     # random_board_equities()

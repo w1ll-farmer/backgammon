@@ -950,7 +950,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
 
 
 def collect_data(p1strat, pminus1strat, first_to):
-    myFile = os.path.join("Data","expectimax2vgenetic.txt")
+    myFile = os.path.join("Data","Cubelessadaptivegenetic.txt")
     white_tot, black_tot = 0,0
     white_wins, black_wins = 0,0
     first_to = 25
@@ -959,7 +959,7 @@ def collect_data(p1strat, pminus1strat, first_to):
     double_point, double_drop = 1.4325859937671366, -1.8523842372779313
     for i in range(1000):
         dataFile = open(myFile, 'a')
-        p1vector,w_score,pminus1vector,b_score= backgammon(first_to, "EXPECTIMAX",None, "GENETIC",genetic_weights)
+        p1vector,w_score,pminus1vector,b_score= backgammon(first_to, "ADAPTIVE",adaptive_weights, "GENETIC",genetic_weights)
         dataFile.write(f"{w_score}, {b_score}\n")
         print(p1vector,w_score,pminus1vector,b_score)
         dataFile.close()
@@ -996,6 +996,8 @@ if __name__ == "__main__":
             score_to = 25
             player1strat = sys.argv[1]
             playerminus1strat = sys.argv[2]
+            w_start_score = 0
+            b_start_score = 0
             if len(sys.argv) == 5:
                 w_start_score = sys.argv[3]
                 b_start_score = sys.argv[4]
