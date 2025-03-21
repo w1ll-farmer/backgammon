@@ -325,7 +325,7 @@ def write_optimal_doubling(board):
     inv_offer = 1 if inverse_action[0] == "D" else 0
     inv_accept = 0 if inverse_action[-1] == "s" else 1
     # Write offer decision
-    path = os.path.join("Data","Deep","GNUBG-data","Cube","Race")
+    path = os.path.join("Data","Deep","GNUBG-data","Cube")
     offerFile = open(os.path.join(path, "Offer",f"positions.txt"),"a")
     offerFile.write(f"{board},{offer}\n")
     offerFile.write(f"{inverted_board},{inv_offer}\n")
@@ -342,7 +342,7 @@ def random_cube_decisions():
     i = 0
     while True:
         print(f"Generated {i} cube decisions")
-        board = generate_random_race_board()
+        board = generate_random_board()
         write_optimal_doubling(board)
         i += 1
         
@@ -350,7 +350,7 @@ def random_cube_decisions():
 
 if __name__ == "__main__":
     # random_cube_decisions()
-    board = [4,0,1,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,-4,-2,-2,-3,-2,-2,0,0,0,8]
+    # board = [4,0,1,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,-4,-2,-2,-3,-2,-2,0,0,0,8]
     # write_optimal_doubling(board)
     # write_optimal_doubling(invert_board(board))
     # print(get_optimal_doubling(board))

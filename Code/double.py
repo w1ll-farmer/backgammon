@@ -164,7 +164,7 @@ def deep_offer_double(board, player, race):
         decision = model(input_vector).item()  # Get the single output
         print(decision)
     return (decision > 0.5)
-# deep_offer_double([0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,-2,-3,-1,-1,0,0,-7,13], -1, race=True)
+# deep_offer_double([0, 0, 0, 0, -8, 0, 0, 0, -4, 0, 4, 1, 0, 0, 4, 0, 0, 2, 0, 0, 0, 0, 4, 0, -3, 0, 0, 0], -1, race=False)
 def user_accept_double(player, cube_val, double_player):
     if not GUI_FLAG:
         user_accept = input("Opponent offer x2. y/n").lower()
@@ -237,7 +237,7 @@ def accept_process(board, player, player_score, oppstrat, opponent_score, first_
         else:
             has_double_rejected = True
     elif oppstrat == "DEEP":
-        race = all_past(board)
+        race = all_past(board) or board[26] < 0 or board[27] > 0
         if deep_accept_double(board, -player, race=race):
             cube_val *= 2
             double_player = -player
@@ -296,7 +296,7 @@ def double_process(playerstrat, player, board, oppstrat, cube_val, double_player
                     
                             
         elif playerstrat == "DEEP":
-            race = all_past(board)
+            race = all_past(board) or board[26] < 0 or board[27] > 0
             if deep_offer_double(board, player, race=race):
                 cube_val, double_player, has_double_rejected = accept_process(
                     board, player, player_score, oppstrat, opponent_score, first_to, cube_val, double_player

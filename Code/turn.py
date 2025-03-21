@@ -643,9 +643,15 @@ def generate_random_board():
     black_remaining = 15    
     board = [0]*28
     while white_remaining > 0 or black_remaining > 0:
-        pos = randint(0, 23) # Not including bar for now
+        pos = randint(0, 25) 
         x = uniform(-black_remaining,white_remaining)
         player = -1 if x < 0 else 1
+        if player == 1:
+            rand_num = randint(1,10)
+            if rand_num == 1: pos = 25
+        else:
+            rand_num = randint(1,10)
+            if rand_num == 1: pos = 24
         if player == 1 and pos != 24 and pos != 26 and board[pos] > -1:
             point = int(gauss(2.5, 2)) if white_remaining >= 7 else randint(0, white_remaining)
             while point > white_remaining or point < 0:

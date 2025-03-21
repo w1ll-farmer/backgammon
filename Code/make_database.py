@@ -286,14 +286,14 @@ def prep_cube_dataset(cubetype="Offer"):
     
     data_size = len(raw_boards)
     train_end = int(data_size*0.8)
-    myFile = open(os.path.join("Data","Deep","RaceCube",f"{cubetype}","train.txt"),"a")
+    myFile = open(os.path.join("Data","Deep","Cube",f"{cubetype}","train.txt"),"a")
     for i in range(train_end):
-        encoded_board = str(encode_board_vector(raw_boards[i], cube=True, race=True))
+        encoded_board = str(encode_board_vector(raw_boards[i], cube=True, race=False))
         myFile.write(f"{encoded_board[1:-1]},{decisions[i]}\n")
     myFile.close()
-    myFile = open(os.path.join("Data","Deep","RaceCube",f"{cubetype}","test.txt"),"a")
+    myFile = open(os.path.join("Data","Deep","Cube",f"{cubetype}","test.txt"),"a")
     for i in range(train_end, data_size):
-        encoded_board = str(encode_board_vector(raw_boards[i], cube=True, race=True))
+        encoded_board = str(encode_board_vector(raw_boards[i], cube=True, race=False))
         myFile.write(f"{encoded_board[1:-1]},{decisions[i]}\n")
     myFile.close()
     
@@ -312,7 +312,7 @@ if __name__ == "__main__":
     # prep_equity_dataset(data_size, start = train_end, testset=True, cp=True)
     # print(data_size)
     prep_cube_dataset()
-    # prep_cube_dataset("Accept")
+    prep_cube_dataset("Accept")
     
     
     
