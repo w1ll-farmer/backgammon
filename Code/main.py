@@ -396,8 +396,8 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
     #### SCORE INITIALISATION ####
     w_score, b_score = int(w_start_score),int(b_start_score)
     prev_score = [0,0]
-    p1vector = [0,0,0] 
-    pminus1vector = [0,0,0] 
+    p1vector = [w_score,0,0] 
+    pminus1vector = [b_score,0,0] 
     game = 1
     if commentary: print(whitestrat, blackstrat)
     #### MAIN LOOP ####

@@ -1,5 +1,6 @@
-pygame==2.5.2
-numpy==1.26.1
-pandas==2.2.2
-torch==2.2.2
-torchvision==0.17.2
+pygame~=2.5.2
+numpy~=1.26.1
+pandas~=2.2.2
+torch~=2.2.2
+torchvision~=0.17.2
+scipy
