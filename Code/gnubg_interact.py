@@ -350,12 +350,13 @@ def random_cube_decisions():
 
 if __name__ == "__main__":
     # random_cube_decisions()
+    print("Activated")
     # board = [4,0,1,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,-4,-2,-2,-3,-2,-2,0,0,0,8]
     # write_optimal_doubling(board)
     # write_optimal_doubling(invert_board(board))
     # print(get_optimal_doubling(board))
     # print(get_optimal_doubling(invert_board(board)))
-    random_cube_decisions()
+    # random_cube_decisions()
     # print(write_optimal_doubling([-1, -10, 0, 0, 4, 0, 4, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, -3, 4, 0, 1, 0, 0, 0, -1, 0, 0, 0], 0))
     # random_board_equities()
     # print(convert_move("16/15 16/14*",[2,1]))

@@ -2,7 +2,7 @@ import os
 SCREEN_WIDTH, SCREEN_HEIGHT = 900, 790
 commentary = False
 USER_PLAY = True
-GUI_FLAG = True
+GUI_FLAG = False
 black = [0,0,0]
 white = [255,255,255]
 FPS = 30
@@ -12,6 +12,8 @@ if GUI_FLAG == True: commentary = False
 
 strategies = ["GREEDY","GENETIC","EXPECTIMAX","ADAPTIVE"]
 
+LAMBDA = 0.7
+ALPHA = 0.1
 
 test=False
 # GRAPHICS INITIALISATION
