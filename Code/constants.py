@@ -1,7 +1,7 @@
 import os
 SCREEN_WIDTH, SCREEN_HEIGHT = 900, 790
 commentary = False
-USER_PLAY = False
+USER_PLAY = True
 GUI_FLAG = True
 black = [0,0,0]
 white = [255,255,255]

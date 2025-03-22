@@ -99,8 +99,9 @@ def calc_equity(board, player):
     # Clamp equity to [-1, 1] range
     return max(-1, min(1, equity))
 
-def can_double(double_player, current_player, w_score, b_score, score_to, prev_score):
-    # return False
+def can_double(double_player, current_player, w_score, b_score, score_to, prev_score, cube_on=True):
+    if not cube_on:
+        return False
     if is_crawford_game(w_score, b_score, score_to, prev_score):
         return False
     elif double_player == 0:
@@ -123,12 +124,15 @@ def basic_should_double(equity):
 def basic_accept_double(equity):
     return True if equity > -0.35 else False
 
-def advanced_should_double(equity, doubling_point = 1.4325859937671366): 
-    if doubling_point is None: doubling_point = 2.8334
+def advanced_should_double(equity, doubling_point = 3.4233): 
+    doubling_point = 3.8498771759475505
+    # doubling_point = 3.4233
     return True if equity > doubling_point else False
 
-def advanced_accept_double(equity, doubling_point = -1.8523842372779313):
-    if doubling_point is None: doubling_point = -0.3126
+def advanced_accept_double(equity, doubling_point=-0.6252):
+    doubling_point = 0.47946108471546767
+    # if doubling_point is None: doubling_point = -0.3126
+    # doubling_point = -0.6252
     return True if equity > doubling_point else False
 
 def deep_accept_double(board, player, race):

@@ -377,7 +377,7 @@ def deep_play(moves, boards, epoch=None, player=1):
 ###############
 ## MAIN BODY ##
 ###############
-def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="GREEDY", blackweights = None, double_point=None, double_drop=None, starting_board=None, w_start_score = 0, b_start_score = 0):
+def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="GREEDY", blackweights = None, double_point=None, double_drop=None, starting_board=None, w_start_score = 0, b_start_score = 0, cube_on=True):
     """Play the backgammon game
 
     Args:
@@ -520,7 +520,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     has_double_rejected = False   
                     equity = calc_equity(board, player1)
                     # write_equity(equity, "BasicEquity")
-                    if can_double(double_player, player1, w_score, b_score, score_to, prev_score):
+                    if can_double(double_player, player1, w_score, b_score, score_to, prev_score, cube_on=cube_on):
                         cube_val, double_player, has_double_rejected= double_process(player1strat, player1, board, player2strat, cube_val, double_player, player1score, player2score, score_to, double_point, double_drop)
                         if has_double_rejected:
                             if commentary: print("Double Rejected")
@@ -618,7 +618,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 has_double_rejected = False
                 equity = calc_equity(board, player2)
                 # write_equity(equity, "BasicEquity")  
-                if can_double(double_player, player2, w_score, b_score, score_to, prev_score):
+                if can_double(double_player, player2, w_score, b_score, score_to, prev_score, cube_on=cube_on):
                     cube_val, double_player, has_double_rejected= double_process(player2strat, player2, board, player1strat, cube_val, double_player, player2score, player1score, score_to, double_point, double_drop)
                     if has_double_rejected:
                         if commentary: print("Double Rejected")
@@ -759,7 +759,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 
                 if commentary:
                     print_board(board)
-                if (USER_PLAY or GUI_FLAG) and not can_double(double_player, player2, w_score, b_score, score_to, prev_score):
+                if (USER_PLAY or GUI_FLAG) and not can_double(double_player, player2, w_score, b_score, score_to, prev_score, cube_on=cube_on):
                     sleep(1)
                 if is_error(board):
                     exit()
@@ -770,7 +770,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 has_double_rejected = False   
                 equity = calc_equity(board, player2)
                 # write_equity(equity, "BasicEquity")
-                if can_double(double_player, player2, w_score, b_score, score_to, prev_score):
+                if can_double(double_player, player2, w_score, b_score, score_to, prev_score, cube_on=cube_on):
                     cube_val, double_player, has_double_rejected= double_process(player2strat, player2, board, player1strat, cube_val, double_player, player2score, player1score, score_to, double_point, double_drop)
                     if has_double_rejected:
                         if commentary: print("Double Rejected")
@@ -950,19 +950,25 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
 
 
 def collect_data(p1strat, pminus1strat, first_to):
-    myFile = os.path.join("Data","Cubefuladaptivegenetic.txt")
+    myFile = os.path.join("Data","Cubefuladaptivetestgenetic.txt")
     white_tot, black_tot = 0,0
     white_wins, black_wins = 0,0
     first_to = 25
     adaptive_weights = [0.9966066885314592, -0.9916984096898946, 0.3106830724424913, 0.529168163359478, -0.4710732676896102, 0.5969523488654117, 0.36822981983332415, 0.38958074063216697, 0.02676397245530815, 0.08588282381449319, 0.06094873757931751, 1.1095422351658368, 0.47764793610307643, 0.040753486445243126, 0.5495226441839489, 0.8875009606764003, 0.9333344067224983, 0.1340269726805713, 0.1978868967026618, 1.2096547126804458, 2.379707426788366, 0.6465298771549699, 0.509196585225148, 0.261875669397977, 0.36883752029556166, -0.481342015629518, 0.7098436807557322, 1.0250219115287624, 0.5739284594183071, 0.1796876959733017, 0.2679991261065485]
     genetic_weights = [10.0, 21.0, 12.0, 11.0, 15.0, 0.5664383320165035, 10.0, 4.0, 25.0, 6.0, 0.6461166029382669, 0.5378085318259279, 0.5831066576570856, 0.9552318750278183, 0.07412843879077036, 0.17550708535892934, 0.49191128795644823, 0.556755495835094]
-    double_point, double_drop = 1.4325859937671366, -1.8523842372779313
-    for i in range(1000):
-        dataFile = open(myFile, 'a')
-        p1vector,w_score,pminus1vector,b_score= backgammon(first_to, "ADAPTIVE",adaptive_weights, "GENETIC",genetic_weights)
-        dataFile.write(f"{w_score}, {b_score}\n")
+    
+    for i in range(100):
+        double_point, double_drop = uniform(1,4), uniform(-2,1)
+        # if i == 0: double_point, double_drop = 3.3178335, -1.563215
+        for j in range(5):
+            dataFile = open(myFile, 'a')
+            
+            print(double_point, double_drop)
+            p1vector,w_score,pminus1vector,b_score= backgammon(first_to, "ADAPTIVE",adaptive_weights, "GENETIC",genetic_weights, double_point=double_point, double_drop=double_drop)
+            dataFile.write(f"{w_score}, {b_score}, {double_point}, {double_drop}\n")
+            dataFile.close()
         print(p1vector,w_score,pminus1vector,b_score)
-        dataFile.close()
+        
         white_tot+=w_score
         black_tot+=b_score
         if b_score >= first_to:
@@ -998,16 +1004,23 @@ if __name__ == "__main__":
             playerminus1strat = sys.argv[2]
             w_start_score = 0
             b_start_score = 0
+            cubeful=True
             if len(sys.argv) == 5:
                 w_start_score = sys.argv[3]
                 b_start_score = sys.argv[4]
-            elif len(sys.argv) == 4 or len(sys.argv) > 5:
+            if len(sys.argv) == 6:
+                cubeful = bool(sys.argv[5])
+                print(cubeful)
+            elif len(sys.argv) == 4 or len(sys.argv) > 6:
                 print("You've done something wrong")
                 print("Your command should be written in the format:")
-                print("python Code/main.py USER {AI} {WhiteScore} {BlackScore}")
+                print("python Code/main.py USER {AI} {WhiteScore} {BlackScore} {Cube On?}")
                 print("Where {AI} is the AI you want to play")
                 print("And {WhiteScore} and {BlackScore} are the scores of your incomplete match (if one exists)")
+                print("And {Cube On} is 0 if you want to play without cube, and 1 if you want to play with")
                 print("If you don't have an incomplete match, don't worry putting in WhiteScore or BlackScore values")
+                print("But if you want to play without cube, you must include white and black scores")
+                print("Scores default to 0. Cube defaults to being on")
                 exit()
             weights1, weights2 = None, None
             if player1strat == "GENETIC":
@@ -1020,7 +1033,7 @@ if __name__ == "__main__":
             elif playerminus1strat == "ADAPTIVE":
                 weights2 = [0.9966066885314592, -0.9916984096898946, 0.3106830724424913, 0.529168163359478, -0.4710732676896102, 0.5969523488654117, 0.36822981983332415, 0.38958074063216697, 0.02676397245530815, 0.08588282381449319, 0.06094873757931751, 1.1095422351658368, 0.47764793610307643, 0.040753486445243126, 0.5495226441839489, 0.8875009606764003, 0.9333344067224983, 0.1340269726805713, 0.1978868967026618, 1.2096547126804458, 2.379707426788366, 0.6465298771549699, 0.509196585225148, 0.261875669397977, 0.36883752029556166, -0.481342015629518, 0.7098436807557322, 1.0250219115287624, 0.5739284594183071, 0.1796876959733017, 0.2679991261065485]
             
-            p1vector, w_score, pminus1vector, b_score = backgammon(score_to, player1strat, None, playerminus1strat, weights2, w_start_score= w_start_score, b_start_score=b_start_score)
+            p1vector, w_score, pminus1vector, b_score = backgammon(score_to, player1strat, None, playerminus1strat, weights2, w_start_score= w_start_score, b_start_score=b_start_score, cube_on=cubeful)
             print(w_score, b_score)
     else:
         # print(calc_av_eval())
@@ -1048,7 +1061,7 @@ if __name__ == "__main__":
         print(p1vector,pminus1vector)
         
         
-
+#[0.7415406241297784, -0.6385738700343816, 0.6696586010717575, 0.6607078936938275, -0.6549639521804487, 0.29255490794527783, 0.7296304847406643, 0.33626636379347985, 0.0025219652447242558, 0.9974240355117678, 0.38515178559322183, 1.3236157192065472, 0.04109751877662782, 0.24778909032872387, 0.0424611691547383, 0.3126117374220291, 0.6781189204388737, 0.6991871661411088, 0.4996759862168144, 1.6309572164855644, 1.6787490878909426, 1.8769859881843836, 0.8210568793937005, 0.9817220351980839, 0.16670558042308015, -0.8428412317804562, 0.10041514709723154, 0.4793124319038148, 0.2879951349974861, 0.4261550876824566, 0.9233475235217924]
 # [0.9966066885314592, -0.9916984096898946, 0.3106830724424913, 0.529168163359478, -0.4710732676896102, 0.5969523488654117, 0.36822981983332415, 0.38958074063216697, 0.02676397245530815, 0.08588282381449319, 0.06094873757931751, 1.1095422351658368, 0.47764793610307643, 0.040753486445243126, 0.5495226441839489, 0.8875009606764003, 0.9333344067224983, 0.1340269726805713, 0.1978868967026618, 1.2096547126804458, 2.379707426788366, 0.6465298771549699, 0.509196585225148, 0.261875669397977, 0.36883752029556166, -0.481342015629518, 0.7098436807557322, 1.0250219115287624, 0.5739284594183071, 0.1796876959733017, 0.2679991261065485]
 # [0.12956605564741974, -0.7036928210496392, 0.4074025237866028, 0.4799756327265836, -0.40291585703358956, 0.3886114104807685, 0.8366009902042647, 0.9238223233657615, 0.012446338390701084, 0.6878007594142832, 0.49076763383618993, 2.5772096603066896, 0.01872547641265143, 0.3567620173061472, 0.0054600651603922135, 0.7247670802779068, 0.6432669390280996, 0.2816665181247421, 0.9576215830934188, 2.1132790049996677, 1.018767811919806, 0.48013492994273, 0.371329501821977, 0.988761590907909, 0.990675955445724, -0.8410175300701395, 0.404656923138184, 0.5106857301341181, 0.36374552600495513, 0.9250343710417397, 0.5328884028513421]
 # [0.060036560799419325, -0.6322214931321674, 0.5777022031876009, 0.19049173665823282, -0.9935437697548243, 0.42447257975140584, 0.2505055135534632, 0.2962012595086625, 0.5176038621467028, 0.8488459391393087, 0.7859466567026897, 2.910243554132832, 0.9341629051769885, 0.6773999252120184, 0.054751057448326645, 0.5242456934735903, 0.9943016519994361, 0.18848883560844898, 0.31265078759496456, 2.9879011731714895, 1.5979572440850984, 0.20074714964701634, 0.05174938532749007, 0.5392755915824913, 0.6016371387913554, -0.8585670279590657, 0.1309780203636698, 0.3925562540338223, 0.838342613015815, 0.403251355165662, 0.03029734913362181]

@@ -54,7 +54,7 @@ def calc_fitness(individual, strat, first_to=13):
 def calc_overall_fitness(P, strat):
     population_fitness = []
     for individual in P:
-        population_fitness.append(calc_fitness(individual, strat, 5))
+        population_fitness.append(calc_fitness(individual, strat, 13))
     return population_fitness
 
 

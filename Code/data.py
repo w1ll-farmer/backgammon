@@ -291,19 +291,19 @@ def write_equity(equity, equitytype):
     myFile.close()
     
 def normalise_equity():
-    myFile = open(os.path.join("Data",f"BasicEquity.txt"),'r')
+    myFile = open(os.path.join("Data",f"WinnerEquity.txt"),'r')
     equity = []
     for line in myFile:
         eq = line.strip("\n")
         equity.append(float(eq))
-    print("Basic",np.mean(equity), np.std(equity))
+    print("Winner",np.mean(equity), np.std(equity))
     myFile = open(os.path.join("Data",f"LoserEquity.txt"),'r')
     equity = []
     for line in myFile:
         eq = line.strip("\n")
         equity.append(float(eq))
     print("Loser",np.mean(equity), np.std(equity))
-
+# normalise_equity()
 def should_have_doubled():
     myFile = open(os.path.join("Data",f"AdvancedEquity.txt"),'r')
     equity = []
@@ -333,10 +333,10 @@ def get_best_double_points():
         w_score = int(w_score)
         b_score = int(b_score)
         tot += (w_score-b_score)
-        if count % 4 == 0:
+        if count % 5 == 0:
             double_point = float(double_point)
             double_drop = float(double_drop)
-        if count % 4 == 3:
+        if count % 5 == 4:
             points.append(double_point)
             drops.append(double_drop)
             tots.append(tot)
