@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F 
+from constants import *
 
 class ReinforceNet(nn.Module):
     def __init__(self):
@@ -8,25 +9,71 @@ class ReinforceNet(nn.Module):
         self.fc1 = nn.Linear(198, 80)
         self.fc2 = nn.Linear(80, 6)
         
+        self.softmax = nn.Softmax(dim=1)
+        self.eligibility_traces = [torch.zeros_like(p) for p in self.parameters()]
+        
+        self.alpha = 0.1
+        self.lam = 0.7
+        self.gamma = 1
+        
+        self.register_buffer('rewards', torch.tensor([1, -1, 2, -2, 3, -3]))
+        
     def forward(self, x):
         x = self.fc1(x)
-        x = torch.sigmoid(x)
+        x = torch.relu(x)
         x = self.fc2(x)
-        return x
+        return self.softmax(x)
+    
+    def reset_eligbility_traces(self):
+        self.eligibility_traces = [torch.zeros_like(p) for p in self.parameters()]
         
-    def update_weights(self, p, p_next):
+    def expected_value(self, probs):
+        rewards = torch.tensor([
+            1, -1, 2, -2, 3, -3
+        ])
+        return torch.sum(probs*rewards, dim=1)
+    
+    def update_weights(self, current_state, next_state, reward, done):
         self.zero_grad()
         
-        p.backward()
+        # 1. Convert states to tensors
+        current_state_tensor = torch.FloatTensor(current_state).unsqueeze(0)  # Shape: [1, 198]
+        next_state_tensor = torch.FloatTensor(next_state).unsqueeze(0) if next_state is not None else None
         
+        # 2. Forward pass for current state
+        probs_current = self(current_state_tensor)
+        V_current = torch.sum(probs_current * self.rewards)  # Scalar expected value
+        
+        # 3. Backpropagate to compute gradients of V_current
+        V_current.backward()
+        
+        # 4. Compute V_next (detached from computation graph)
         with torch.no_grad():
-            td_error = p_next - p
-            
+            if done or next_state is None:
+                V_next = 0.0
+            else:
+                probs_next = self(next_state_tensor)
+                V_next = torch.sum(probs_next * self.rewards).item()
         
-model = ReinforceNet()
-total_params = sum(p.numel() for p in model.parameters())
-print(total_params)
-
+        # 5. Calculate TD error
+        delta = reward + self.gamma * V_next - V_current.item()
+        
+        # 6. Update eligibility traces and parameters
+        with torch.no_grad():
+            for i, param in enumerate(self.parameters()):
+                # Update eligibility traces: γλ * e_prev + ∇V_current
+                self.eligibility_traces[i] = (
+                    self.gamma * self.lam * self.eligibility_traces[i] + param.grad
+                )
+                
+                # Update weights: α * δ * e
+                param.data += self.alpha * delta * self.eligibility_traces[i]
+        
+        return delta
+    
+    # def train_self_play(env, num_episodes = 1000000):
+    #     for _ in range(num_episodes):
+            
 
 """
 Gradient Descent Alg:
