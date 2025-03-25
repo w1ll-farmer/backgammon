@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F 
 from constants import *
+import numpy as np
 
 class ReinforceNet(nn.Module):
     def __init__(self):
@@ -12,8 +13,8 @@ class ReinforceNet(nn.Module):
         self.softmax = nn.Softmax(dim=1)
         self.eligibility_traces = [torch.zeros_like(p) for p in self.parameters()]
         
-        self.alpha = 0.1
-        self.lam = 0.7
+        self.alpha = 0.1 #1e-2 #1e-4
+        self.lam = 0.7 # 0
         self.gamma = 1
         
         self.register_buffer('rewards', torch.tensor([1, -1, 2, -2, 3, -3]))
@@ -62,17 +63,28 @@ class ReinforceNet(nn.Module):
         with torch.no_grad():
             for i, param in enumerate(self.parameters()):
                 # Update eligibility traces: γλ * e_prev + ∇V_current
-                self.eligibility_traces[i] = (
-                    self.gamma * self.lam * self.eligibility_traces[i] + param.grad
-                )
+                if self.lam != 0:
+                    self.eligibility_traces[i] = (
+                        self.gamma * self.lam * self.eligibility_traces[i] + param.grad
+                    )
+                else:
+                    self.eligibility_traces[i] = param.grad
                 
                 # Update weights: α * δ * e
                 param.data += self.alpha * delta * self.eligibility_traces[i]
         
         return delta
     
-    # def train_self_play(env, num_episodes = 1000000):
-    #     for _ in range(num_episodes):
+    def select_action(self, encoded_boards):
+        board_tensors = torch.FloatTensor(np.array(encoded_boards))
+            # outcome_probs = []
+        with torch.no_grad():
+            outcome_probs = self(board_tensors)  # Shape: [num_boards, 6]
+            expected_values = self.expected_value(outcome_probs)  # Shape: [num_boards]
+
+        action_idx = torch.argmax(expected_values).item()  # Pick board with highest expected value
+        return action_idx
+    
             
 
 """

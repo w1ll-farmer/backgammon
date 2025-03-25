@@ -5,8 +5,12 @@ import reinforce_agent # OpenLearn
 import main
 import random_agent
 from turn import *
+from greedy_agent import easy_evaluate, evaluate
+from expectimax_agent import expectimax_play
 import torch
 from random import randint, uniform
+from testfile import invert_board
+import copy
 # from gnubg_interact import encode_board_vector
 
 class BackgammonEnv(gym.Env):
@@ -54,52 +58,36 @@ class BackgammonEnv(gym.Env):
     def step(self, action_idx):
         if self.done:
             return self._get_obs(), 0, True, {}
-        
-        # Capture current state
-        current_state = self._get_obs()
-        
+
+        # Capture current state BEFORE making a move
+        current_state = self._get_obs()  
+
+        # Apply the move if action_idx is valid
         if action_idx is not None:
-            self.current_board = self.valid_raw_boards[action_idx]
-            # print(self.current_board, "AGENT", self.roll, self.valid_moves[action_idx], self.current_player)
-            current_state = self.valid_encoded_boards[action_idx]
+            self.current_board = self.valid_raw_boards[action_idx]  # Apply the move
+            # move = self.valid_moves[action_idx]
+            # VALIDATION PRINTOUT
+            # print(f"Player {self.current_player} {self.current_board} {move} {self.roll}")
+        # Switch player
         self.current_player *= -1
-            
-        # Get reward and check termination
+
+        # Check for game over and compute reward
         reward_vector, self.done = self._check_game_over()
         reward = self._get_reward_scalar(reward_vector)
-        if reward_vector != [0]*6:
-            print(f"{reward_vector}\n{reward}")
-            print(self.current_board)
-            
-        
-        # Get next state via opponent's turn
-        next_state = None
-        if not self.done:
-            next_state = self.opponent_turn()  # Returns encoded state
-        # Update weights using pre-encoded next_state
+
+        # Capture next state AFTER the move is applied
+        next_state = self._get_obs() if not self.done else None
+
+        # Update model weights
         model.update_weights(
-            current_state=current_state,
-            next_state=next_state,  # Directly use returned encoded state
+            current_state=current_state,  # BEFORE the move
+            next_state=next_state,  # AFTER the move
             reward=reward,
             done=self.done
         )
-    
+
         return next_state, reward, self.done, {"reward": reward_vector}
-          
-    def opponent_turn(self):
-        self._start_turn()
-        if len(self.valid_moves) > 0:
-            if self.opponent == "RANDOM":
-                # self.current_board, _ = random_agent.randobot_play(
-                #     self.roll, self.valid_moves, self.valid_raw_boards
-                # )
-                idx = randint(0, len(self.valid_raw_boards)-1)
-                self.current_board = self.valid_raw_boards[idx]
-            # print(self.current_board, "Random", self.roll, self.valid_moves[idx], self.current_player)
-        self.update_time_step()
-        self.current_player *= -1
-        return self._encode_state(self.current_board)
-        
+
         
     def _calculate_score(self, player):
         if self.current_board[int(26.5+player*0.5)] != 15:
@@ -115,7 +103,9 @@ class BackgammonEnv(gym.Env):
         return sum(reward_vector) if reward_vector[0] == 1 else -sum(reward_vector)
     
     
-    def _encode_state(self, board_state):
+    def _encode_state(self, board_state, player=None):
+        if player is None:
+            player = self.current_player
         vector = []
         for point in range(24):
             vector += self._encode_point(board_state[point])
@@ -123,21 +113,26 @@ class BackgammonEnv(gym.Env):
         vector.append(board_state[25]/2)
         vector.append(abs(board_state[26]/15))
         vector.append(board_state[27]/15)
-        vector.append(int(self.current_player == 1))
-        vector.append(int(self.current_player == -1))
+        vector.append(int(player == 1))
+        vector.append(int(player == -1))
         return torch.FloatTensor(vector)
     
     def _start_turn(self):
         self.roll = roll_dice()
-        self._get_valid_moves()
+        if self.current_player == -1:
+            self._get_valid_moves(1)
+        else:
+            self._get_valid_moves()
     
-    def _get_valid_moves(self):
+    def _get_valid_moves(self, inverted_player=None):
+        if inverted_player is None:
+            inverted_player = self.current_player
         self.valid_moves, self.valid_raw_boards =  get_valid_moves(
             self.current_player, self.current_board, self.roll
         )
         if len(self.valid_raw_boards) > 0:
             self.valid_encoded_boards = [
-                self._encode_state(board) for board in self.valid_raw_boards
+                self._encode_state(board, inverted_player) for board in self.valid_raw_boards
             ]
        
     def _check_game_over(self):
@@ -190,46 +185,86 @@ def save_model(model, episode, path="backgammon_model.pth"):
         'eligibility_traces': model.eligibility_traces  # Eligibility traces
     }, path)
     print(f"Model saved to {path}")
+
+def load_model(model, path):
+    """Load model checkpoint"""
+    checkpoint = torch.load(path)
+    model.load_state_dict(checkpoint['model_state_dict'])
+    model.eligibility_traces = checkpoint['eligibility_traces']
+    print(f"Model loaded from {path} (episode {checkpoint['episode']})")
     
+# model = reinforce_agent.ReinforceNet()
+# load_model(model, os.path.join("Code","RL","reinforcement_self_36000.pth"))
+# env = BackgammonEnv("RANDOM")
+# opponent_model = copy.deepcopy(model)
+    
+# wins_in_row = 0
+# for episode in range(36001,3000001):
+#     state = env.reset()
+#     model.reset_eligbility_traces()
+#     done = False
+#     if episode % 200 == 1:
+#     # if wins_in_row >= 5:
+#         print("Updating opponent model")
+#         opponent_model = copy.deepcopy(model)
+#         # wins_in_row = 0
+#     opponent_model.reset_eligbility_traces()
+#     if env.current_player == -1:
+#         env._get_valid_moves()
+#         env.opponent_turn()
+    
+#     while not done:
+#         if env.time_step == 0:
+#             env._get_valid_moves()
+#         else:
+#             env._start_turn()
+        
+#         if len(env.valid_raw_boards) > 0:
+#             # Inside training loop
+#             board_tensors = torch.FloatTensor(np.array(env.valid_encoded_boards))
+#             # outcome_probs = []
+#             with torch.no_grad():
+#                 outcome_probs = model(board_tensors)  # Shape: [num_boards, 6]
+#                 expected_values = model.expected_value(outcome_probs)  # Shape: [num_boards]
+
+#             action_idx = torch.argmax(expected_values).item()  # Pick board with highest expected value
+#             # action_idx = randint(0, len(env.valid_raw_boards)-1)
+#             # env.current_board = env.valid_raw_boards[action_idx]
+#         else:
+#             action_idx = None            
+#         next_state, reward, done, _ = env.step(action_idx)
+    
+#     if episode % 100 == 0:
+#         print(f"Episode {episode}")
+#     if episode % 1000 == 0:
+#         save_model(model, episode, path=f"Code/RL/reinforcement_self_{episode}.pth")
+
 model = reinforce_agent.ReinforceNet()
+load_model(model, os.path.join("Code","RL","reinforcement_self_111000.pth"))
 env = BackgammonEnv("RANDOM")
-
-# agent_score = 0
-# opp_score = 0
-for episode in range(1,201):
-    # agent_score += env.w_score
-    # opp_score += env.b_score
-    # print(f"\n {agent_score}-{opp_score}")
+       
+for episode in range(111001, 3000001):
     state = env.reset()
+    model.reset_eligbility_traces()
     done = False
-    if env.current_player == -1:
-        env._get_valid_moves()
-        env.opponent_turn()
-    
-    while not done:
-        if env.time_step == 0:
-            env._get_valid_moves()
+    time_steps = 0
+    while not done and time_steps < 10000:
+        if time_steps > 0:
+            env._start_turn()  # Get valid moves, roll
         else:
-            env._start_turn()
-        
-        if len(env.valid_raw_boards) > 0:
-            # Inside training loop
-            board_tensors = torch.FloatTensor(np.array(env.valid_encoded_boards))
-            # outcome_probs = []
-            with torch.no_grad():
-                outcome_probs = model(board_tensors)  # Shape: [num_boards, 6]
-                # for board_tensor in board_tensors:
-                    # outcome_probs += model(board_tensor)
-                expected_values = model.expected_value(outcome_probs)  # Shape: [num_boards]
+            env._get_valid_moves(1) # Get valid moves
 
-            action_idx = torch.argmax(expected_values).item()  # Pick board with highest expected value
-            # action_idx = randint(0, len(env.valid_raw_boards)-1)
-            # env.current_board = env.valid_raw_boards[action_idx]
+        if len(env.valid_raw_boards) > 0:
+            # Both players use the same model to decide moves
+            action_idx = model.select_action(env.valid_encoded_boards)
         else:
-            action_idx = None            
+            action_idx = None  # No valid move, must pass
+
+        # Step forward in the game and update model *after every move*
         next_state, reward, done, _ = env.step(action_idx)
-        
+
+        time_steps += 1
     if episode % 100 == 0:
-        save_model(model, episode, path=f"Code/RL/reinforcement_{episode}.pth")
-        
-        
+        print(f"Episode {episode}")
+    if episode % 5000 == 0:
+        save_model(model, episode, path=f"Code/RL/reinforcement_self_{episode}.pth")

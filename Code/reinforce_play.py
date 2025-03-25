@@ -37,14 +37,14 @@ def encode_point(point):
                 base[7] = min((point-3)/2,1)
         return base
       
-def reinforce_play(boards, moves, player):
+def reinforce_play(boards, moves, player, ep=20000):
     if player == -1:
         inverted_boards = [invert_board(i) for i in boards]
-        encoded_boards = [encode_state(board, player) for board in inverted_boards]
+        encoded_boards = [encode_state(board, -player) for board in inverted_boards]
     else:
         encoded_boards = [encode_state(board, player) for board in boards]
     model = ReinforceNet()
-    model.load_state_dict(torch.load(os.path.join("Code","RL","reinforcement_200.pth"))['model_state_dict'])
+    model.load_state_dict(torch.load(os.path.join("Code","RL",f"reinforcement_{ep}.pth"))['model_state_dict'])
     # encoded_boards = [encode_state(board) for board in inverted_boards]
     board_tensors = torch.FloatTensor(np.array(encoded_boards))
     with torch.no_grad():
@@ -56,7 +56,7 @@ def reinforce_play(boards, moves, player):
     chosen_move = moves[action_idx]
     return chosen_move, chosen_board
 
-def load_model(model, path="backgammon_model.pth"):
+def load_model(model, path):
     """Load model checkpoint"""
     checkpoint = torch.load(path)
     model.load_state_dict(checkpoint['model_state_dict'])

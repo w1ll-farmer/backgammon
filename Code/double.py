@@ -100,6 +100,8 @@ def calc_equity(board, player):
     return max(-1, min(1, equity))
 
 def can_double(double_player, current_player, w_score, b_score, score_to, prev_score, cube_on=True):
+    if (w_score == 24 and current_player == -1) or (b_score == 24 and current_player == 1):
+        return False # If it rejects double it loses match.
     if not cube_on:
         return False
     if is_crawford_game(w_score, b_score, score_to, prev_score):

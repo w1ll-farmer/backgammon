@@ -576,7 +576,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     elif player1strat == "DEEP":
                         move, board = deep_play(moves1, boards1, weights1)
                     elif player1strat == "REINFORCEMENT":
-                        move, board = reinforce_play(boards1, moves1, player1)
+                        move, board = reinforce_play(boards1, moves1, player1, weights1)
                     white_boards.append(board)
                     # write_move_equities(board, roll, player1) 
                     if commentary:
@@ -665,7 +665,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     elif player2strat == "DEEP":
                         move, board = deep_play(moves2, boards2, weights2, -1)
                     elif player2strat == "REINFORCEMENT":
-                        move, board = reinforce_play(boards2, moves2, player2)
+                        move, board = reinforce_play(boards2, moves2, player2, weights2)
                     black_boards.append(board)    
                     # write_move_equities(board, roll, player2)
                     if commentary:
@@ -730,7 +730,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     elif player1strat == "DEEP":
                         move, board = deep_play(moves1, boards1, weights1, -1)
                     elif player1strat == "REINFORCEMENT":
-                        move, board = reinforce_play(boards1, moves1, player1)    
+                        move, board = reinforce_play(boards1, moves1, player1, weights1)    
                     black_boards.append(board)
                     # write_move_equities(board, roll, player1)
                     if commentary:    
@@ -820,7 +820,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     elif player2strat == "DEEP":
                         move, board = deep_play(moves2, boards2, weights2)
                     elif player2strat == "REINFORCEMENT":
-                        move, board = reinforce_play(boards2, moves2, player2)
+                        move, board = reinforce_play(boards2, moves2, player2, weights2)
                     white_boards.append(board)    
                     # write_move_equities(board, roll, player2)
                     if commentary:
@@ -959,7 +959,7 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
 
 
 def collect_data(p1strat, pminus1strat, first_to):
-    myFile = os.path.join("Data","cubelessdeepexpectimax.txt")
+    myFile = os.path.join("Data","RL16kvRL5k.txt")
     white_tot, black_tot = 0,0
     white_wins, black_wins = 0,0
     first_to = 25
@@ -973,7 +973,8 @@ def collect_data(p1strat, pminus1strat, first_to):
         dataFile = open(myFile, 'a')
         
         # print(double_point, double_drop)
-        p1vector,w_score,pminus1vector,b_score= backgammon(first_to, "DEEP",None, "EXPECTIMAX",None, cube_on=False)
+        # 33k best currently from self, 5k otherwise
+        p1vector,w_score,pminus1vector,b_score= backgammon(first_to, "REINFORCEMENT","self_111000", "GREEDY",None, cube_on=False)
         dataFile.write(f"{w_score}, {b_score}\n")
         dataFile.close()
         print(p1vector,w_score,pminus1vector,b_score)
@@ -1051,10 +1052,10 @@ if __name__ == "__main__":
         # print(b:=update_board(make_board(),(12, 9)))
         # print(update_board(b, (9, 7)))
         score_to = 25
-        player1strat = "REINFORCEMENT"
-        playerminus1strat = "RANDOM"
+        player1strat = "USER"
+        playerminus1strat = "REINFORCEMENT"
         print(player1strat, playerminus1strat)
-        weights1, weights2 = None, None
+        weights1, weights2 = None, "self_111000"
         if player1strat == "GENETIC":
             # Optimal Weights for first-to-25 victory
             weights1 = [10.0, 21.0, 12.0, 11.0, 15.0, 0.5664383320165035, 10.0, 4.0, 25.0, 6.0, 0.6461166029382669, 0.5378085318259279, 0.5831066576570856, 0.9552318750278183, 0.07412843879077036, 0.17550708535892934, 0.49191128795644823, 0.556755495835094]
@@ -1065,7 +1066,7 @@ if __name__ == "__main__":
         elif playerminus1strat == "ADAPTIVE":
             weights2 = [0.9966066885314592, -0.9916984096898946, 0.3106830724424913, 0.529168163359478, -0.4710732676896102, 0.5969523488654117, 0.36822981983332415, 0.38958074063216697, 0.02676397245530815, 0.08588282381449319, 0.06094873757931751, 1.1095422351658368, 0.47764793610307643, 0.040753486445243126, 0.5495226441839489, 0.8875009606764003, 0.9333344067224983, 0.1340269726805713, 0.1978868967026618, 1.2096547126804458, 2.379707426788366, 0.6465298771549699, 0.509196585225148, 0.261875669397977, 0.36883752029556166, -0.481342015629518, 0.7098436807557322, 1.0250219115287624, 0.5739284594183071, 0.1796876959733017, 0.2679991261065485]
         # start=time()
-        p1vector, w_score, pminus1vector, b_score = backgammon(score_to,player1strat,weights1,playerminus1strat,weights2)
+        p1vector, w_score, pminus1vector, b_score = backgammon(score_to,player1strat,weights1,playerminus1strat,weights2, cube_on=False)
         # print(time()-start)
         print(p1vector,pminus1vector)
         
