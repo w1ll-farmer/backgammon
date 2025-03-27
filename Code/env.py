@@ -2,8 +2,6 @@ import gym
 from gym import spaces
 import numpy as np
 import reinforce_agent # OpenLearn
-import main
-import random_agent
 from turn import *
 from greedy_agent import easy_evaluate, evaluate
 from expectimax_agent import expectimax_play
@@ -11,6 +9,7 @@ import torch
 from random import randint, uniform
 from testfile import invert_board
 import copy
+import main
 # from gnubg_interact import encode_board_vector
 
 class BackgammonEnv(gym.Env):
@@ -106,6 +105,9 @@ class BackgammonEnv(gym.Env):
     def _encode_state(self, board_state, player=None):
         if player is None:
             player = self.current_player
+        elif player == 1 and self.current_player == -1:
+            board_state = invert_board(board_state)
+            
         vector = []
         for point in range(24):
             vector += self._encode_point(board_state[point])
@@ -193,62 +195,37 @@ def load_model(model, path):
     model.eligibility_traces = checkpoint['eligibility_traces']
     print(f"Model loaded from {path} (episode {checkpoint['episode']})")
     
-# model = reinforce_agent.ReinforceNet()
-# load_model(model, os.path.join("Code","RL","reinforcement_self_36000.pth"))
-# env = BackgammonEnv("RANDOM")
-# opponent_model = copy.deepcopy(model)
+def benchmark(episode):
+    agent_score, opp_score = 0,0
+    weights1 = f"self_{episode}"
+    for i in range(100):
+        # w_vector, w_score, b_vector, b_score = main.backgammon(1, "REINFORCEMENT", weights1, "REINFORCEMENT", "self_111000", cube_on=False)
+        w_vector, w_score, b_vector, b_score = main.backgammon(1, "REINFORCEMENT", weights1, "GREEDY", "EASY", cube_on=False)
+        agent_score += w_score
+        opp_score += b_score
+    print(f"Episode {episode}: {agent_score}-{opp_score} v Easy")
+    agent_score, opp_score = 0,0
+    for i in range(100):
+        w_vector, w_score, b_vector, b_score = main.backgammon(1, "REINFORCEMENT", weights1, "REINFORCEMENT", "self_150000", cube_on=False)
+        agent_score += w_score
+        opp_score += b_score
+    print(f"Episode {episode}: {agent_score}-{opp_score} v RL150k")
+    diff = str(agent_score - opp_score)
+    ep = str(episode)
+    myFile = open(os.path.join("Data","RL","benchmark.txt"),"a")
+    myFile.write(f"{ep},{diff}\n")
+    myFile.close()
     
-# wins_in_row = 0
-# for episode in range(36001,3000001):
-#     state = env.reset()
-#     model.reset_eligbility_traces()
-#     done = False
-#     if episode % 200 == 1:
-#     # if wins_in_row >= 5:
-#         print("Updating opponent model")
-#         opponent_model = copy.deepcopy(model)
-#         # wins_in_row = 0
-#     opponent_model.reset_eligbility_traces()
-#     if env.current_player == -1:
-#         env._get_valid_moves()
-#         env.opponent_turn()
-    
-#     while not done:
-#         if env.time_step == 0:
-#             env._get_valid_moves()
-#         else:
-#             env._start_turn()
-        
-#         if len(env.valid_raw_boards) > 0:
-#             # Inside training loop
-#             board_tensors = torch.FloatTensor(np.array(env.valid_encoded_boards))
-#             # outcome_probs = []
-#             with torch.no_grad():
-#                 outcome_probs = model(board_tensors)  # Shape: [num_boards, 6]
-#                 expected_values = model.expected_value(outcome_probs)  # Shape: [num_boards]
-
-#             action_idx = torch.argmax(expected_values).item()  # Pick board with highest expected value
-#             # action_idx = randint(0, len(env.valid_raw_boards)-1)
-#             # env.current_board = env.valid_raw_boards[action_idx]
-#         else:
-#             action_idx = None            
-#         next_state, reward, done, _ = env.step(action_idx)
-    
-#     if episode % 100 == 0:
-#         print(f"Episode {episode}")
-#     if episode % 1000 == 0:
-#         save_model(model, episode, path=f"Code/RL/reinforcement_self_{episode}.pth")
-
 model = reinforce_agent.ReinforceNet()
-load_model(model, os.path.join("Code","RL","reinforcement_self_111000.pth"))
+load_model(model, os.path.join("Code","RL","reinforcement_self_192000.pth"))
 env = BackgammonEnv("RANDOM")
        
-for episode in range(111001, 3000001):
+for episode in range(192001, 1080001):
     state = env.reset()
     model.reset_eligbility_traces()
     done = False
     time_steps = 0
-    while not done and time_steps < 10000:
+    while not done and time_steps < 500:
         if time_steps > 0:
             env._start_turn()  # Get valid moves, roll
         else:
@@ -264,7 +241,9 @@ for episode in range(111001, 3000001):
         next_state, reward, done, _ = env.step(action_idx)
 
         time_steps += 1
+    if time_steps >= 10000: print(f"Reached {time_steps} time steps")
     if episode % 100 == 0:
         print(f"Episode {episode}")
-    if episode % 5000 == 0:
+    if episode % 1000 == 0:
         save_model(model, episode, path=f"Code/RL/reinforcement_self_{episode}.pth")
+        benchmark(episode)

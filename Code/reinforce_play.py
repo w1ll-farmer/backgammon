@@ -37,7 +37,7 @@ def encode_point(point):
                 base[7] = min((point-3)/2,1)
         return base
       
-def reinforce_play(boards, moves, player, ep=20000):
+def reinforce_play(boards, moves, player, ep=20000, board=None):
     if player == -1:
         inverted_boards = [invert_board(i) for i in boards]
         encoded_boards = [encode_state(board, -player) for board in inverted_boards]

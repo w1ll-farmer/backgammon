@@ -13,7 +13,7 @@ class ReinforceNet(nn.Module):
         self.softmax = nn.Softmax(dim=1)
         self.eligibility_traces = [torch.zeros_like(p) for p in self.parameters()]
         
-        self.alpha = 0.1 #1e-2 #1e-4
+        self.alpha = 0.01 #1e-2 #1e-4
         self.lam = 0.7 # 0
         self.gamma = 1
         
