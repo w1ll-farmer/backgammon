@@ -326,7 +326,8 @@ def game_over(board):
 
 def is_backgammon(board):
     # Checks for a backgammon
-    return sum(board[18:24]) + board[25] > 0 or sum(board[0:6]) + board[24] < 0
+    return is_gammon(board) and (sum(board[18:24]) + board[25] > 0 or sum(board[0:6]) + board[24] < 0)
+
 
 def is_gammon(board):
     # Checks for a gammon

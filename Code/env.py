@@ -217,10 +217,10 @@ def benchmark(episode):
     myFile.close()
     
 model = reinforce_agent.ReinforceNet()
-load_model(model, os.path.join("Code","RL","reinforcement_self_192000.pth"))
+load_model(model, os.path.join("Code","RL","reinforcement_self_791000.pth"))
 env = BackgammonEnv("RANDOM")
        
-for episode in range(192001, 1080001):
+for episode in range(791001, 1080001):
     state = env.reset()
     model.reset_eligbility_traces()
     done = False
@@ -246,4 +246,4 @@ for episode in range(192001, 1080001):
         print(f"Episode {episode}")
     if episode % 1000 == 0:
         save_model(model, episode, path=f"Code/RL/reinforcement_self_{episode}.pth")
-        benchmark(episode)
+        # benchmark(episode)

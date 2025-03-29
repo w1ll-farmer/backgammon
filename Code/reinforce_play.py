@@ -50,7 +50,8 @@ def reinforce_play(boards, moves, player, ep=20000, board=None):
     with torch.no_grad():
         outcome_probs = model(board_tensors)  # Shape: [num_boards, 6]
         expected_values = model.expected_value(outcome_probs)  # Shape: [num_boards]
-
+    # print(f"model: {ep}")
+    # print(expected_values)
     action_idx = torch.argmax(expected_values).item()  # Pick board with highest expected value
     chosen_board = boards[action_idx]
     chosen_move = moves[action_idx]

@@ -332,7 +332,7 @@ def greedy_play(moves, boards, current_board, player, roll, weights=None):
 
 def adaptive_play(moves, boards, player, turn, current_board, roll, player_score, opponent_score, cube_val, first_to, weights=None):
     if turn == 1:
-        move, board, _ =  greedy_play(moves, boards, current_board, player, roll)
+        move, board, _ =  greedy_play(moves, boards, current_board, player, roll, weights=[10.0, 21.0, 12.0, 11.0, 15.0, 0.5664383320165035, 10.0, 4.0, 25.0, 6.0, 0.6461166029382669, 0.5378085318259279, 0.5831066576570856, 0.9552318750278183, 0.07412843879077036, 0.17550708535892934, 0.49191128795644823, 0.556755495835094])
         move = move.pop()
         return move, board
     elif all_checkers_home(player, current_board) and all_past(current_board):
@@ -579,6 +579,10 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                     elif player1strat == "REINFORCEMENT":
                         
                         move, board = reinforce_play(boards1, moves1, player1, weights1, board)
+                    else:
+                        # print(f"Valid moves {moves1}")
+                        move, board = gnubg_move(board, roll, player1, moves1, boards1)
+                        if commentary: print("GNUBG move", move)
                         
                     white_boards.append(board)
                     # write_move_equities(board, roll, player1) 
@@ -669,7 +673,10 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                         move, board = deep_play(moves2, boards2, weights2, -1)
                     elif player2strat == "REINFORCEMENT":
                         move, board = reinforce_play(boards2, moves2, player2, weights2, board)
-                    black_boards.append(board)    
+                    else:
+                        # print(f"Valid moves {moves2}")
+                        move, board = gnubg_move(board, roll, player2, moves2, boards2)
+                        if commentary: print("GNUBG move", move)
                     # write_move_equities(board, roll, player2)
                     if commentary:
                         print(f"Move Taken: {move}")
@@ -734,7 +741,10 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                         move, board = deep_play(moves1, boards1, weights1, -1)
                     elif player1strat == "REINFORCEMENT":
                         move, board = reinforce_play(boards1, moves1, player1, weights1, board)    
-                    black_boards.append(board)
+                    else:
+                        # print(f"Valid moves {moves1}")
+                        move, board = gnubg_move(board, roll, player1, moves1, boards1)
+                        if commentary: print("GNUBG move", move)
                     # write_move_equities(board, roll, player1)
                     if commentary:    
                         print(f"Move Taken: {move}")
@@ -824,7 +834,10 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                         move, board = deep_play(moves2, boards2, weights2)
                     elif player2strat == "REINFORCEMENT":
                         move, board = reinforce_play(boards2, moves2, player2, weights2, board)
-                    white_boards.append(board)    
+                    else:
+                        # print(f"Valid moves {moves2}")
+                        move, board = gnubg_move(board, roll, player2, moves2, boards2)
+                        if commentary: print("GNUBG move", move)
                     # write_move_equities(board, roll, player2)
                     if commentary:
                         print(f"Move Taken: {move}")
@@ -962,26 +975,31 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
 
 
 def collect_data(p1strat, pminus1strat, first_to):
-    myFile = os.path.join("Data","RL16kvRL5k.txt")
+    myFile = os.path.join("Data","RL","gnubgv150k.txt")
     white_tot, black_tot = 0,0
     white_wins, black_wins = 0,0
-    first_to = 25
+    first_to = 1
     adaptive_weights = [0.9966066885314592, -0.9916984096898946, 0.3106830724424913, 0.529168163359478, -0.4710732676896102, 0.5969523488654117, 0.36822981983332415, 0.38958074063216697, 0.02676397245530815, 0.08588282381449319, 0.06094873757931751, 1.1095422351658368, 0.47764793610307643, 0.040753486445243126, 0.5495226441839489, 0.8875009606764003, 0.9333344067224983, 0.1340269726805713, 0.1978868967026618, 1.2096547126804458, 2.379707426788366, 0.6465298771549699, 0.509196585225148, 0.261875669397977, 0.36883752029556166, -0.481342015629518, 0.7098436807557322, 1.0250219115287624, 0.5739284594183071, 0.1796876959733017, 0.2679991261065485]
     genetic_weights = [10.0, 21.0, 12.0, 11.0, 15.0, 0.5664383320165035, 10.0, 4.0, 25.0, 6.0, 0.6461166029382669, 0.5378085318259279, 0.5831066576570856, 0.9552318750278183, 0.07412843879077036, 0.17550708535892934, 0.49191128795644823, 0.556755495835094]
     
-    for i in range(10000):
+    for i in range(150,201): #range(43,201):
         # double_point, double_drop = uniform(1,4), uniform(-2,1)
         # if i == 0: double_point, double_drop = 3.3178335, -1.563215
-        # for j in range(5):
         dataFile = open(myFile, 'a')
+        w_subtot, b_subtot = 0,0
         
-        # print(double_point, double_drop)
-        # 33k best currently from self, 5k otherwise
-        print("Playing collect data")
-        p1vector,w_score,pminus1vector,b_score= backgammon(first_to, "REINFORCEMENT","self_550000", "REINFORCEMENT","self_379000", cube_on=False)
-        dataFile.write(f"{w_score}, {b_score}\n")
+        p1strat, weights1 = "GNUBG", None
+        pminus1strat, weights2 = "REINFORCEMENT", f"self_{i*5000}"
+        print(f"Player 1: {p1strat} Player 2: {pminus1strat}")
+        for j in range(100):
+            p1vector,w_score,pminus1vector,b_score= backgammon(first_to, p1strat,weights1, pminus1strat,weights2, cube_on=False)
+            print(p1vector,w_score,pminus1vector,b_score)
+            w_subtot += w_score
+            b_subtot += b_score
+            if j % 10 == 0: print(w_subtot, b_subtot)
+        dataFile.write(f"{b_subtot-w_subtot}\n")
         dataFile.close()
-        print(p1vector,w_score,pminus1vector,b_score)
+            
         
         white_tot+=w_score
         black_tot+=b_score
@@ -1057,10 +1075,10 @@ if __name__ == "__main__":
         # print(b:=update_board(make_board(),(12, 9)))
         # print(update_board(b, (9, 7)))
         score_to = 25
-        player1strat = "USER"
+        player1strat = "DEEP"
         playerminus1strat = "REINFORCEMENT"
         print(player1strat, playerminus1strat)
-        weights1, weights2 = None, "self_362000"
+        weights1, weights2 = "self_700000", "self_257000"
         if player1strat == "GENETIC":
             # Optimal Weights for first-to-25 victory
             weights1 = [10.0, 21.0, 12.0, 11.0, 15.0, 0.5664383320165035, 10.0, 4.0, 25.0, 6.0, 0.6461166029382669, 0.5378085318259279, 0.5831066576570856, 0.9552318750278183, 0.07412843879077036, 0.17550708535892934, 0.49191128795644823, 0.556755495835094]

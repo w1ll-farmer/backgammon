@@ -364,5 +364,3 @@ def mean_db_equity():
     print(total/div)
     myFile.close()
 
-
-        
