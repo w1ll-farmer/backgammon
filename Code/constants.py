@@ -2,11 +2,11 @@ import os
 SCREEN_WIDTH, SCREEN_HEIGHT = 900, 790
 commentary = False
 USER_PLAY = False
-GUI_FLAG = False
+GUI_FLAG = True
 black = [0,0,0]
 white = [255,255,255]
 FPS = 30
-train = True
+train = False
 if USER_PLAY == True: commentary = True
 if GUI_FLAG == True: commentary = False
 

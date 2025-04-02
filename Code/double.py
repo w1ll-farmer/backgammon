@@ -221,6 +221,8 @@ def get_double_rejected_board(player):
     return [int(0.5-(player/2)),0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,int(-0.5-(player/2)),0,0,int(-14.5+(player/2)),int(14.5+(player/2))]
 
 def accept_process(board, player, player_score, oppstrat, opponent_score, first_to, cube_val, double_player):
+    if player_score + cube_val > first_to:
+        return cube_val*2, -player, False
     has_double_rejected = False
     if oppstrat in strategies:
         if oppstrat == "ADAPTIVE":

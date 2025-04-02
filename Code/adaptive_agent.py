@@ -284,7 +284,7 @@ def get_lookahead(start_board, player, roll, player_score, opponent_score, cube_
     equities = []
     for roll1 in range(1, 7):
         for roll2 in range(1, 7):
-            moves, boards = get_valid_moves(player, start_board, roll)
+            moves, boards = get_valid_moves(player, start_board, [roll1, roll2])
             for board in boards:
                 equities.append(calc_advanced_equity(board, player, player_score, opponent_score, cube_val, first_to, weights))
     return sum(equities)/len(equities) if len(equities) > 0 else -999

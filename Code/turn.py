@@ -25,7 +25,7 @@ def print_board(board):
 def roll_dice():
     # Returns the value of the two dice rolled
     return randint(1, 6), randint(1, 6)
-    # return 1, 5
+    # return 2, 4
     """return 5, 1 !!! Unsymmetrical AI decisions !!!
     note if its 5, 1 that white wins 25-0, and if other way round causes a loop due to 
     constant hitting, entering and hitting cycle"""

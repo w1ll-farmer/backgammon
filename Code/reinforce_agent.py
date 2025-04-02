@@ -29,10 +29,10 @@ class ReinforceNet(nn.Module):
         self.eligibility_traces = [torch.zeros_like(p) for p in self.parameters()]
         
     def expected_value(self, probs):
-        rewards = torch.tensor([
-            1, -1, 2, -2, 3, -3
-        ])
-        return torch.sum(probs*rewards, dim=1)
+        # rewards = torch.tensor([
+        #     1, -1, 2, -2, 2, -3 # Win by backgammon set to 2 to be more risk averse
+        # ])
+        return torch.sum(probs*self.rewards, dim=1)
     
     def update_weights(self, current_state, next_state, reward, done):
         self.zero_grad()
@@ -85,7 +85,7 @@ class ReinforceNet(nn.Module):
         action_idx = torch.argmax(expected_values).item()  # Pick board with highest expected value
         return action_idx
     
-            
+   
 
 """
 Gradient Descent Alg:
