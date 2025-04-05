@@ -970,13 +970,13 @@ def backgammon(score_to=1,whitestrat="GREEDY", whiteweights = None, blackstrat="
                 update_screen(background, white_score, black_score, board, w_score, b_score, True, score_to = score_to)    
         #### CHECKS FOR GAME OVER AND WINNING POINTS ####
             
-            if whitestrat != "REINFORCEMENT" and blackstrat != "GREEDY":
+            if not(whitestrat == "REINFORCEMENT" and blackstrat == "GREEDY"):
                 print(w_score, b_score)
     return p1vector, w_score, pminus1vector, b_score
 
 
 def collect_data(p1strat, pminus1strat, first_to):
-    myFile = os.path.join("Data","RL","test.txt")
+    myFile = os.path.join("Data","cubefuladvancedvRL.txt")
     white_tot, black_tot = 0,0
     white_wins, black_wins = 0,0
     first_to = 25

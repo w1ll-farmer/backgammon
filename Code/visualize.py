@@ -94,7 +94,7 @@ def plot_scores(myFile):
     
     plt.xlabel('Episodes')
     plt.ylabel('PPG Differential')
-    plt.title('Model Performance vs Genetic Agent')
+    plt.title('Model Performance vs GNUBG Beginner Mode')
     # plt.ylim(-100, 100)
     plt.legend()
     plt.grid(True)
@@ -170,11 +170,11 @@ def make_bar(txt_filename):
     # Add the legend
     # Create custom legends for each color used
     legend_labels = {
-        'blue': 'Deep Agent',
-        'orange': 'Adaptive Agent',
-        'green': 'Genetic Agent',
-        'red': 'Expectimax Agent',
-        'purple': 'Greedy Agent',
+        'blue': 'Deep',
+        'orange': 'Adaptive',
+        'green': 'Genetic',
+        'red': 'Expectimax',
+        'purple': 'Greedy',
         # 'brown': 'Score Win Pair (Brown)',
         # 'pink': 'Score Win Pair (Pink)',
         # 'gray': 'Score Win Pair (Gray)',
@@ -191,22 +191,13 @@ def make_bar(txt_filename):
     plt.xticks(positions, ["Score", "Score", "Wins", "Wins"]*(len(positions)//4), rotation=15)  # Repeating x-tick labels
     plt.show()
 
-# Example usage:
-# make_bar('game_results.txt')
-
-
-# Example usage:
-# make_bar('game_results.txt')
-
-
-
 
 
     
 
 # myFile = open(os.path.join("Data","cubelessdeepexpectimax.txt"))
 # head_to_head(myFile)
-# myFile = open(os.path.join("Data","RL","benchmark2genetic.txt"))
-# plot_scores(myFile)
-myFile = os.path.join("Data","Results","deep.txt")
-make_bar(myFile)
+myFile = open(os.path.join("Data","RL","benchmark2beginner.txt"))
+plot_scores(myFile)
+# myFile = os.path.join("Data","Results","deep.txt")
+# make_bar(myFile)

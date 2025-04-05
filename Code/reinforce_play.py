@@ -8,7 +8,7 @@ from constants import *
 from testfile import invert_board
 from turn import *
 # from env import BackgammonEnv as env
-from reinforce_agent import ReinforceNet
+from reinforce_agent import ReinforceNet, ReinforceNet3
 
 def encode_state(board_state, player):
         vector = []
@@ -58,15 +58,38 @@ def reinforce_lookahead(board, player, model):
             
                 
    
-def reinforce_play(boards, moves, player, ep=20000, board=None, lookahead=True):
+def reinforce_play(boards, moves, player, ep="self_170000", board=None, lookahead=True):
+    """Reinforcement Agent selects a move
+
+    Args:
+        boards (list(list(int))): All valid boards
+        moves (list(list(tuple))): All valid moves
+        player (int): The player whose move it is
+        ep (str, optional): The episode chosen to act as the agent. Defaults to "self_170000".
+        board (list(int), optional): The current board state. Defaults to None.
+        lookahead (bool, optional): Whether or not the agent looks ahead. Defaults to True.
+
+    Returns:
+        moves, boards: The moves and the boards
+    """
+    model = ReinforceNet3() if ep[0:2] == "V3" else ReinforceNet()
     if player == -1:
         inverted_boards = [invert_board(i) for i in boards]
-        encoded_boards = [encode_state(board, -player) for board in inverted_boards]
+        if ep[0:2] == "V3":
+            encoded_boards = [convert_board(board, False, cube=True, RL=True, player=1) for board in inverted_boards]
+                
+        else:
+            encoded_boards = [encode_state(board, -player) for board in inverted_boards]
     else:
-        encoded_boards = [encode_state(board, player) for board in boards]
-    model = ReinforceNet()
+        if ep[0:2] == "V3":
+            encoded_boards = [convert_board(board, False, cube=True, RL=True, player=1) for board in boards]
+        else:
+            encoded_boards = [encode_state(board, player) for board in boards]
+    
     if ep[0] == "O":
         model.load_state_dict(torch.load(os.path.join("Code","RL","One",f"reinforcement_{ep[3:]}.pth"))['model_state_dict'])
+    elif ep[0] == "T":
+        model.load_state_dict(torch.load(os.path.join("Code","RL","Two",f"reinforcement_{ep[3:]}.pth"))['model_state_dict'])
     else:
         model.load_state_dict(torch.load(os.path.join("Code","RL",f"reinforcement_{ep}.pth"))['model_state_dict'])
     # encoded_boards = [encode_state(board) for board in inverted_boards]

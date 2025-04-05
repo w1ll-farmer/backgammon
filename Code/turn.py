@@ -700,7 +700,7 @@ def generate_random_race_board():
             
     return board
 
-def convert_board(board, race=False, cube=False):
+def convert_board(board, race=False, cube=False, RL = True, player=1):
     input_vector = []
     for i in range(24):
         point_encoding = convert_point(board[i])
@@ -730,6 +730,9 @@ def convert_board(board, race=False, cube=False):
     if cube:
         input_vector.append(board[26]/15)
         input_vector.append(board[27]/15)
+    if RL:
+        input_vector[264] == int(player == 1)
+        input_vector[267] = int(player) == -1
     return input_vector
 
 # print(get_legal_move(1, [4, 2, 2, 4, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -5, -2, -3, -2, -3, 0, 0, 0, 0], 6))

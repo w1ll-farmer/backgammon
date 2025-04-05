@@ -16,7 +16,7 @@ class BackgammonEnv(gym.Env):
     def __init__(self, oppstrat):
         super(BackgammonEnv, self).__init__()
         self.observation_space = spaces.Box(
-            low=0, high=1, shape=(198,), dtype=np.float32
+            low=0, high=1, shape=(289,), dtype=np.float32
         )
         
         self.action_space = spaces.Discrete(256)
@@ -107,17 +107,17 @@ class BackgammonEnv(gym.Env):
             player = self.current_player
         elif player == 1 and self.current_player == -1:
             board_state = invert_board(board_state)
-            
-        vector = []
-        for point in range(24):
-            vector += self._encode_point(board_state[point])
-        vector.append(abs(board_state[24]/2))
-        vector.append(board_state[25]/2)
-        vector.append(abs(board_state[26]/15))
-        vector.append(board_state[27]/15)
-        vector.append(int(player == 1))
-        vector.append(int(player == -1))
-        return torch.FloatTensor(vector)
+        return torch.Tensor(convert_board(board_state, False, cube=True, RL=True, player=player))
+    #     vector = []
+    #     for point in range(24):
+    #         vector += self._encode_point(board_state[point])
+    #     vector.append(abs(board_state[24]/2))
+    #     vector.append(board_state[25]/2)
+    #     vector.append(abs(board_state[26]/15))
+    #     vector.append(board_state[27]/15)
+    #     vector.append(int(player == 1))
+    #     vector.append(int(player == -1))
+    #     return torch.FloatTensor(vector)
     
     def _start_turn(self):
         self.roll = roll_dice()
@@ -197,7 +197,7 @@ def load_model(model, path):
     
 def benchmark(episode):
     agent_score, opp_score = 0,0
-    weights1 = f"self_{episode}"
+    weights1 = f"V3_{episode}"
     for i in range(200):
         # w_vector, w_score, b_vector, b_score = main.backgammon(1, "REINFORCEMENT", weights1, "REINFORCEMENT", "self_111000", cube_on=False)
         w_vector, w_score, b_vector, b_score = main.backgammon(1, "REINFORCEMENT", weights1, "GREEDY", None, cube_on=False, w_lookahead=False, b_lookahead=False)
@@ -207,13 +207,13 @@ def benchmark(episode):
     print(f"Episode {episode}: {agent_score}-{opp_score} v Greedy")
     diff = str(agent_score - opp_score)
     ep = str(episode)
-    myFile = open(os.path.join("Data","RL","benchmark2.txt"),"a")
+    myFile = open(os.path.join("Data","RL","benchmark3.txt"),"a")
     myFile.write(f"{ep},{diff}\n")
     myFile.close()
 
 def bench_genetic(episode):
     agent_score, opp_score = 0,0
-    weights1 = f"self_{episode}"
+    weights1 = f"V3_{episode}"
     for i in range(200):
         # w_vector, w_score, b_vector, b_score = main.backgammon(1, "REINFORCEMENT", weights1, "REINFORCEMENT", "self_111000", cube_on=False)
         w_vector, w_score, b_vector, b_score = main.backgammon(1, "REINFORCEMENT", weights1, "GENETIC", [10.0, 21.0, 12.0, 11.0, 15.0, 0.5664383320165035, 10.0, 4.0, 25.0, 6.0, 0.6461166029382669, 0.5378085318259279, 0.5831066576570856, 0.9552318750278183, 0.07412843879077036, 0.17550708535892934, 0.49191128795644823, 0.556755495835094], cube_on=False, w_lookahead=False, b_lookahead=False)
@@ -223,31 +223,47 @@ def bench_genetic(episode):
     print(f"Episode {episode}: {agent_score}-{opp_score} v Genetic")
     diff = str(agent_score - opp_score)
     ep = str(episode)
-    myFile = open(os.path.join("Data","RL","benchmark2genetic.txt"),"a")
+    myFile = open(os.path.join("Data","RL","benchmark3genetic.txt"),"a")
+    myFile.write(f"{ep},{diff}\n")
+    myFile.close()
+
+def bench_V2(episode):
+    agent_score, opp_score = 0,0
+    weights1 = f"V3_{episode}"
+    for i in range(200):
+        # w_vector, w_score, b_vector, b_score = main.backgammon(1, "REINFORCEMENT", weights1, "REINFORCEMENT", "self_111000", cube_on=False)
+        w_vector, w_score, b_vector, b_score = main.backgammon(1, "REINFORCEMENT", weights1, "REINFORCEMENT", "self_170000", cube_on=False, w_lookahead=False, b_lookahead=False)
+        agent_score += w_score
+        opp_score += b_score
+        if i % 50 == 0: print(f"{i} games: {agent_score}-{opp_score}")
+    print(f"Episode {episode}: {agent_score}-{opp_score} v RLv2")
+    diff = str(agent_score - opp_score)
+    ep = str(episode)
+    myFile = open(os.path.join("Data","RL","benchmark3RL2.txt"),"a")
     myFile.write(f"{ep},{diff}\n")
     myFile.close()
 
 def bench_gnubg(episode):
     agent_score, opp_score = 0,0
-    weights1 = f"self_{episode}"
+    weights1 = f"V3_{episode}"
     for i in range(200):
         # w_vector, w_score, b_vector, b_score = main.backgammon(1, "REINFORCEMENT", weights1, "REINFORCEMENT", "self_111000", cube_on=False)
         w_vector, w_score, b_vector, b_score = main.backgammon(1, "GNUBG", None, "REINFORCEMENT", f"self_{episode}", cube_on=False, w_lookahead=False, b_lookahead=False)
         agent_score += b_score
         opp_score += w_score
         if i % 50 ==0: print(f"{i} games: {agent_score}-{opp_score}")
-    print(f"Episode {episode}: {agent_score}-{opp_score} v Beginner")
+    print(f"Episode {episode}: {agent_score}-{opp_score} v Intermediate")
     diff = str(agent_score - opp_score)
     ep = str(episode)
-    myFile = open(os.path.join("Data","RL","benchmark2beginner.txt"),"a")
+    myFile = open(os.path.join("Data","RL","benchmark3intermediate.txt"),"a")
     myFile.write(f"{ep},{diff}\n")
     myFile.close()
     
-model = reinforce_agent.ReinforceNet()
-start_point = 162000
-load_model(model, os.path.join("Code","RL",f"reinforcement_self_{start_point}.pth"))
+model = reinforce_agent.ReinforceNet3()
+start_point = 1000
+load_model(model, os.path.join("Code","RL",f"reinforcement_V3_{start_point}.pth"))
 env = BackgammonEnv("RANDOM")
-bench_genetic(start_point)
+# bench_genetic(start_point)
 for episode in range(1+start_point, 1000001):
     state = env.reset()
     model.reset_eligbility_traces()
@@ -261,6 +277,7 @@ for episode in range(1+start_point, 1000001):
 
         if len(env.valid_raw_boards) > 0:
             # Both players use the same model to decide moves
+            # print(f"Len valid encoded boards: {len(env.valid_encoded_boards)}")
             action_idx = model.select_action(env.valid_encoded_boards)
         else:
             action_idx = None  # No valid move, must pass
@@ -270,12 +287,14 @@ for episode in range(1+start_point, 1000001):
 
         time_steps += 1
     if time_steps >= 500: print(f"Reached {time_steps} time steps")
-    if episode % 100 == 0:
+    if episode % 50 == 0:
         print(f"Episode {episode}")
-    if episode % 500 == 0:
-        save_model(model, episode, path=f"Code/RL/reinforcement_self_{episode}.pth")
-        benchmark(episode)
-    if episode % 1000 == 0:
+    if episode % 200 == 0:
+        save_model(model, episode, path=f"Code/RL/reinforcement_V3_{episode}.pth")
         bench_genetic(episode)
-    if episode % 5000 == 0:
+    if episode % 7500 == 0:
+        bench_V2(episode)
+    if episode % 10000 == 0:
         bench_gnubg(episode)
+    if episode % 10000 == 0:
+        model.epsilon *= 0.1

@@ -4,10 +4,12 @@ from turn import *
 from adaptive_agent import calc_advanced_equity, race_gwc
 from gui import *
 from testfile import invert_board
-
+from reinforce_agent import ReinforceNet
+from reinforce_play import encode_state
 import torch
 import torch.nn as nn
 import torch.nn.functional as F 
+from gnubg_interact import gnubg_accept_double, gnubg_offer_double
 if GUI_FLAG:
     import pygame
     from pygame.locals import *
@@ -131,8 +133,8 @@ def advanced_should_double(equity, doubling_point = 3.4233):
     # doubling_point = 3.4233
     return True if equity > doubling_point else False
 
-def advanced_accept_double(equity, doubling_point=-0.6252):
-    doubling_point = 0.47946108471546767
+def advanced_accept_double(equity, doubling_point=2.4609298125822554):
+    doubling_point = 2.4609298125822554
     # if doubling_point is None: doubling_point = -0.3126
     # doubling_point = -0.6252
     return True if equity > doubling_point else False
@@ -151,7 +153,7 @@ def deep_accept_double(board, player, race):
     model.eval()
     with torch.no_grad():
         decision = model(input_vector).item()  # Get the single output
-        print(decision)
+        # print(decision)
     return (decision > 0.5)
 # deep_accept_double([0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-1,-2,-3,-1,-1,0,0,-7,13], 1, True)
 def deep_offer_double(board, player, race):
@@ -168,9 +170,10 @@ def deep_offer_double(board, player, race):
     model.eval()
     with torch.no_grad():
         decision = model(input_vector).item()  # Get the single output
-        print(decision)
+        # print(decision)
     return (decision > 0.5)
-# deep_offer_double([0, 0, 0, 0, -8, 0, 0, 0, -4, 0, 4, 1, 0, 0, 4, 0, 0, 2, 0, 0, 0, 0, 4, 0, -3, 0, 0, 0], -1, race=False)
+
+
 def user_accept_double(player, cube_val, double_player):
     if not GUI_FLAG:
         user_accept = input("Opponent offer x2. y/n").lower()
@@ -208,6 +211,79 @@ def user_accept_double(player, cube_val, double_player):
                
     return cube_val, double_player, has_double_rejected
 
+def reinforce_accept_double(board, player, ep, double_point = 0.2):
+    """Uses RL model to make accept decision
+
+    Args:
+        board (list(int)): Raw board
+        player (int): The player being doubled
+        ep (str): The episode being used as agent
+        double_point (float, optional): Folding point. Defaults to 0.8.
+
+    Returns:
+        bool: 1 for accept 0 for reject
+    """
+    if player == -1:
+        board = invert_board(board)
+    model = ReinforceNet()
+    if ep[0] == "O":
+        model.load_state_dict(torch.load(os.path.join("Code","RL","One",f"reinforcement_{ep[3:]}.pth"))['model_state_dict'])
+    else:
+        model.load_state_dict(torch.load(os.path.join("Code","RL",f"reinforcement_{ep}.pth"))['model_state_dict'])
+    # encoded_boards = [encode_state(board) for board in inverted_boards]
+    board_tensor = torch.FloatTensor(np.array([encode_state(board, 1)]))
+    with torch.no_grad():
+        outcome_probs = model(board_tensor)  # Shape: [num_boards, 6]
+        # expected_vals = model.expected_value(outcome_probs)
+    # print(outcome_probs[0])
+    win, loss, gwin, gloss, bgwin, bgloss = outcome_probs[0]
+    win = win.item()
+    gwin = gwin.item()
+    bgwin = bgwin.item()
+    loss = loss.item()
+    # PHASE 1
+    # if win > double_point:
+    #     return True
+    # else:
+    #     return False
+    # PHASE 2
+    if win - loss > model.expected_value(outcome_probs) or sum([win,gwin,bgwin]) > 0.2: # cubeless > cubeful?:
+        return False
+    else:
+        return True
+    
+def reinforce_should_double(board, player, ep):
+    if player == -1:
+        board = invert_board(board)
+    model = ReinforceNet()
+    if ep[0] == "O":
+        model.load_state_dict(torch.load(os.path.join("Code","RL","One",f"reinforcement_{ep[3:]}.pth"))['model_state_dict'])
+    else:
+        model.load_state_dict(torch.load(os.path.join("Code","RL",f"reinforcement_{ep}.pth"))['model_state_dict'])
+    # encoded_boards = [encode_state(board) for board in inverted_boards]
+    board_tensor = torch.FloatTensor(np.array([encode_state(board, 1)]))
+    with torch.no_grad():
+        outcome_probs = model(board_tensor)  # Shape: [num_boards, 6]
+        expected_val = model.expected_value(outcome_probs)
+    win, loss, gwin, _, bgwin, _ = outcome_probs[0]
+    win = win.item()
+    gwin = gwin.item()
+    bgwin = bgwin.item()
+    loss = loss.item()
+    # Phase 1
+    if sum([win, gwin, bgwin]) > 0.7:
+        if expected_val > 2: # position too good to double
+            return False
+        else:
+            return True
+    else:
+        return False
+    # # PHASE 2
+    # if win - loss < expected_val:# and expected_val < 2:
+    #     return True
+    # else:
+    #     return False
+
 
 def is_crawford_game(w_score, b_score, score_to, prev_score):
     if prev_score[0] == score_to - 1 or prev_score[1] == score_to - 1:
@@ -220,7 +296,7 @@ def is_crawford_game(w_score, b_score, score_to, prev_score):
 def get_double_rejected_board(player):
     return [int(0.5-(player/2)),0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,int(-0.5-(player/2)),0,0,int(-14.5+(player/2)),int(14.5+(player/2))]
 
-def accept_process(board, player, player_score, oppstrat, opponent_score, first_to, cube_val, double_player):
+def accept_process(board, player, player_score, oppstrat, opponent_score, first_to, cube_val, double_player, ep="self_170000"):
     if player_score + cube_val > first_to:
         return cube_val*2, -player, False
     has_double_rejected = False
@@ -232,32 +308,43 @@ def accept_process(board, player, player_score, oppstrat, opponent_score, first_
                 double_player = -player
             else:
                 has_double_rejected = True
+                
         elif basic_accept_double(calc_equity(board, -player)):
             # Opponent accepts double
             cube_val *= 2
             double_player = -player
         else:
             has_double_rejected = True
+            
     elif oppstrat == "RANDOM":
         if randobot_accept_double():
             cube_val *= 2
             double_player = -player
         else:
             has_double_rejected = True
-    elif oppstrat == "DEEP":
+            
+    elif oppstrat == "DEEP" or oppstrat == "REINFORCEMENT":
         race = all_past(board) or board[26] < 0 or board[27] > 0
         if deep_accept_double(board, -player, race=race):
             cube_val *= 2
             double_player = -player
         else:
             has_double_rejected = True
+            
     elif oppstrat == "USER":
         cube_val, double_player, has_double_rejected = user_accept_double(player, cube_val, double_player)
+    
+    elif oppstrat == "GNUBG":
+        if gnubg_accept_double(board, cube_val, player): # Don't negate player
+            cube_val *=2
+            double_player = -player
+        else:
+            has_double_rejected = True
     else:
         print("Unidentified strategy")
     return cube_val, double_player, has_double_rejected
                             
-def double_process(playerstrat, player, board, oppstrat, cube_val, double_player, player_score, opponent_score, first_to, double_point=None, double_drop=None):
+def double_process(playerstrat, player, board, oppstrat, cube_val, double_player, player_score, opponent_score, first_to, double_point=None, double_drop=None, ep="self_170000"):
     has_double_rejected = False
     double_offered = False
     gwc = -1
@@ -303,13 +390,24 @@ def double_process(playerstrat, player, board, oppstrat, cube_val, double_player
                     )
                     
                             
-        elif playerstrat == "DEEP":
+        elif oppstrat == "DEEP" or oppstrat == "REINFORCEMENT":
             race = all_past(board) or board[26] < 0 or board[27] > 0
             if deep_offer_double(board, player, race=race):
                 cube_val, double_player, has_double_rejected = accept_process(
                     board, player, player_score, oppstrat, opponent_score, first_to, cube_val, double_player
                 )
-                
+        
+        elif playerstrat == "REINFORCEMENT":
+            if reinforce_should_double(board, player, ep):
+                cube_val, double_player, has_double_rejected = accept_process(
+                    board, player, player_score, oppstrat, opponent_score, first_to, cube_val, double_player
+                )      
+        
+        elif playerstrat == "GNUBG":
+            if gnubg_offer_double(board, cube_val, player):
+                cube_val, double_player, has_double_rejected = accept_process(
+                    board, player, player_score, oppstrat, opponent_score, first_to, cube_val, double_player
+                )  
                         
     return cube_val, double_player, has_double_rejected
 
