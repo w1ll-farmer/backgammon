@@ -162,7 +162,7 @@ class ReinforceNet3(nn.Module):
         
         return delta
     
-    def select_action(self, encoded_boards):
+    def select_action(self, encoded_boards, player=1):
         # Epsilon-greedy exploration
         # print(f"Select action between {len(encoded_boards)} boards")
         if self.epsilon > uniform(0,1):

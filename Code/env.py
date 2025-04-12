@@ -37,6 +37,11 @@ class BackgammonEnv(gym.Env):
         self.time_step = 0
         
     def reset(self):
+        """Starts a new game
+
+        Returns:
+            Tensor: Encoded board state
+        """
         self.current_board = make_board()
         self.roll = roll_dice()
         
@@ -55,6 +60,14 @@ class BackgammonEnv(gym.Env):
         return self._get_obs()
     
     def step(self, action_idx):
+        """Plays through one player's turn
+
+        Args:
+            action_idx (int): The index of the chosen move
+
+        Returns:
+            (next_state,reward,done,reward): Variables needed for updating weights
+        """
         if self.done:
             return self._get_obs(), 0, True, {}
 
@@ -103,6 +116,15 @@ class BackgammonEnv(gym.Env):
     
     
     def _encode_state(self, board_state, player=None):
+        """Encodes the board state into input vector for model
+
+        Args:
+            board_state (list(int)): Raw board state
+            player (int, optional): Player who's perspective board is seen thru. Defaults to None.
+
+        Returns:
+            _type_: _description_
+        """
         if player is None:
             player = self.current_player
         elif player == 1 and self.current_player == -1:
@@ -248,7 +270,7 @@ def bench_gnubg(episode):
     weights1 = f"V3_{episode}"
     for i in range(200):
         # w_vector, w_score, b_vector, b_score = main.backgammon(1, "REINFORCEMENT", weights1, "REINFORCEMENT", "self_111000", cube_on=False)
-        w_vector, w_score, b_vector, b_score = main.backgammon(1, "GNUBG", None, "REINFORCEMENT", f"self_{episode}", cube_on=False, w_lookahead=False, b_lookahead=False)
+        w_vector, w_score, b_vector, b_score = main.backgammon(1, "GNUBG", None, "REINFORCEMENT", weights1, cube_on=False, w_lookahead=False, b_lookahead=False)
         agent_score += b_score
         opp_score += w_score
         if i % 50 ==0: print(f"{i} games: {agent_score}-{opp_score}")
@@ -260,8 +282,11 @@ def bench_gnubg(episode):
     myFile.close()
     
 model = reinforce_agent.ReinforceNet3()
-start_point = 1000
+start_point = 31500
+
 load_model(model, os.path.join("Code","RL",f"reinforcement_V3_{start_point}.pth"))
+model.epsilon = model.epsilon**(1+start_point // 50000)
+print(f"Epsilon = {model.epsilon}")
 env = BackgammonEnv("RANDOM")
 # bench_genetic(start_point)
 for episode in range(1+start_point, 1000001):
@@ -289,12 +314,14 @@ for episode in range(1+start_point, 1000001):
     if time_steps >= 500: print(f"Reached {time_steps} time steps")
     if episode % 50 == 0:
         print(f"Episode {episode}")
-    if episode % 200 == 0:
+    if episode % 500 == 0:
         save_model(model, episode, path=f"Code/RL/reinforcement_V3_{episode}.pth")
+    if episode % 1000 == 0:    
         bench_genetic(episode)
-    if episode % 7500 == 0:
+    if episode % 5000 == 0:
         bench_V2(episode)
     if episode % 10000 == 0:
         bench_gnubg(episode)
-    if episode % 10000 == 0:
+    if episode % 50000 == 0:
         model.epsilon *= 0.1
+        print(f"Epsilon = {model.epsilon}")

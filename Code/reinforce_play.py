@@ -39,9 +39,19 @@ def encode_point(point):
         return base
 
 def reinforce_lookahead(board, player, model):
+    """Performs expectimax lookahead using model as evaluator
+
+    Args:
+        board (list(int)): Raw board encoding
+        player (int): The adversary
+        model (ReinforceV3): The model used to estimate the value of the position
+
+    Returns:
+        _type_: _description_
+    """
     equities = []
     for roll1 in range(1, 7):
-        for roll2 in range(1, 7):
+        for roll2 in range(roll1, 7):
             roll = [roll1, roll2]
             moves, boards = get_valid_moves(player, board, roll)
             if len(boards) == 0:
@@ -53,6 +63,8 @@ def reinforce_lookahead(board, player, model):
                 expected_values = model.expected_value(outcome_probs)
             # Opponent will choose move that benefits them most
             # Make it negative so argmax will work in reinforce_play
+            if roll1 != roll2: # Twice probability so append twice
+                equities.append(torch.max(expected_values).item())
             equities.append(torch.max(expected_values).item())
     return np.mean(equities)
             
@@ -70,7 +82,7 @@ def reinforce_play(boards, moves, player, ep="self_170000", board=None, lookahea
         lookahead (bool, optional): Whether or not the agent looks ahead. Defaults to True.
 
     Returns:
-        moves, boards: The moves and the boards
+        (moves,boards): The moves and the boards
     """
     model = ReinforceNet3() if ep[0:2] == "V3" else ReinforceNet()
     if player == -1:

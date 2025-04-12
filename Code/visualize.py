@@ -52,14 +52,14 @@ def head_to_head(myFile):
     # Create scatter plot
 
     plt.figure(figsize=(8, 6))
-    plt.plot(games, white_score, color='blue', label='Deep Score', linewidth=3)
-    plt.plot(games, black_score, color='red', label='Genetic Score', linewidth=3)
-    plt.plot(games, white_wins, color='purple', label='Deep Wins', linewidth=3)
-    plt.plot(games, black_wins, color='orange', label='Genetic Wins', linewidth=3)
+    plt.plot(games, white_score, color='blue', label='Adaptive Score', linewidth=3)
+    plt.plot(games, black_score, color='red', label='Deep Score', linewidth=3)
+    plt.plot(games, white_wins, color='purple', label='Adaptive Wins', linewidth=3)
+    plt.plot(games, black_wins, color='orange', label='Deep Wins', linewidth=3)
     # Add labels, legend, and title
     plt.xlabel('Game Number')
     plt.ylabel('Cumulative Totals')
-    plt.title('Cumulative Scores and Wins Across 100 Cubeful First-to-25 Matches')
+    plt.title('Performance Across 100 Cubeful Matches with Swapped Doubling Strategies')
     plt.legend()
     plt.grid(True)
     plt.show()
@@ -131,7 +131,7 @@ def make_bar(txt_filename):
     positions = []
     colors = []
     spacing = 1  # Start x positions at 1
-    color_palette = ['orange', 'green', 'red', 'purple']#, 'brown', 'pink', 'gray', 'olive', 'cyan']
+    color_palette = ['orange', 'green', 'red', 'purple', 'brown']#, 'pink', 'gray', 'olive', 'cyan']
     
     game_index = 0
     for game in game_groups:
@@ -154,7 +154,7 @@ def make_bar(txt_filename):
         values.append(game[3])
         positions.append(spacing)
         colors.append(game_color)  # Different color per game pair
-        spacing += 2  # Add extra space between different games
+        spacing += 1.8  # Add extra space between different games
         
         game_index += 1
     
@@ -170,12 +170,12 @@ def make_bar(txt_filename):
     # Add the legend
     # Create custom legends for each color used
     legend_labels = {
-        'blue': 'Deep',
-        'orange': 'Adaptive',
-        'green': 'Genetic',
-        'red': 'Expectimax',
-        'purple': 'Greedy',
-        # 'brown': 'Score Win Pair (Brown)',
+        'blue': 'ReinforceV2',
+        'orange': 'Deep',
+        'green': 'Adaptive',
+        'red': 'Genetic',
+        'purple': 'Expectimax',
+        'brown': 'Greedy',
         # 'pink': 'Score Win Pair (Pink)',
         # 'gray': 'Score Win Pair (Gray)',
         # 'olive': 'Score Win Pair (Olive)',
@@ -183,21 +183,21 @@ def make_bar(txt_filename):
     }
     
     handles = [mlines.Line2D([0], [0], color=color, lw=4, label=legend_labels.get(color, color)) for color in color_palette]
-    plt.legend(handles=handles)
+    plt.legend(handles=handles, loc=10)
     
     plt.xlabel("Measure of Performance")
     plt.ylabel("Values")
-    plt.title("Results from the Deep Agent Playing 100 Cubeless First-to-25 Matches")
-    plt.xticks(positions, ["Score", "Score", "Wins", "Wins"]*(len(positions)//4), rotation=15)  # Repeating x-tick labels
+    plt.title("Results from the Reinforcement Agent Playing 50 Cubeless First-to-25 Matches")
+    plt.xticks(positions, ["Score", "Score", "Wins", "Wins"]*(len(positions)//4), rotation=20)  # Repeating x-tick labels
     plt.show()
 
 
 
     
 
-# myFile = open(os.path.join("Data","cubelessdeepexpectimax.txt"))
+# myFile = open(os.path.join("Data","cubelessRLvGREEDY.txt"))
 # head_to_head(myFile)
-myFile = open(os.path.join("Data","RL","benchmark2beginner.txt"))
-plot_scores(myFile)
-# myFile = os.path.join("Data","Results","deep.txt")
-# make_bar(myFile)
+# myFile = open(os.path.join("Data","RL","benchmark2beginner.txt"))
+# plot_scores(myFile)
+myFile = os.path.join("Data","Results","RL2agents.txt")
+make_bar(myFile)
