@@ -282,7 +282,7 @@ def bench_gnubg(episode):
     myFile.close()
     
 model = reinforce_agent.ReinforceNet3()
-start_point = 31500
+start_point = 32000
 
 load_model(model, os.path.join("Code","RL",f"reinforcement_V3_{start_point}.pth"))
 model.epsilon = model.epsilon**(1+start_point // 50000)

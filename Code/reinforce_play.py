@@ -38,7 +38,7 @@ def encode_point(point):
                 base[7] = min((point-3)/2,1)
         return base
 
-def reinforce_lookahead(board, player, model):
+def reinforce_lookahead(b, player, model, version):
     """Performs expectimax lookahead using model as evaluator
 
     Args:
@@ -53,11 +53,21 @@ def reinforce_lookahead(board, player, model):
     for roll1 in range(1, 7):
         for roll2 in range(roll1, 7):
             roll = [roll1, roll2]
-            moves, boards = get_valid_moves(player, board, roll)
+            moves, boards = get_valid_moves(player, b, roll)
             if len(boards) == 0:
-                equities.append(model.expected_value(model(torch.FloatTensor(np.array([encode_state(invert_board(board) if player == -1 else board, 1)])))).item())
+                if version == 3:
+                    equities.append(model.expected_value(model(torch.FloatTensor(np.array(convert_board(invert_board(board) if player ==-1 else board, False, cube=True, RL=True, player=1) for board in boards)))))
+                else:
+                    equities.append(model.expected_value(model(torch.FloatTensor(np.array([encode_state(invert_board(b) if player == -1 else b, 1)])))).item())
                 continue
-            encoded_boards_tensors = torch.FloatTensor(np.array([encode_state(invert_board(next_board) if player ==-1 else next_board, 1) for next_board in boards]))
+            if version != 3:
+                encoded_boards_tensors = torch.FloatTensor(np.array([encode_state(invert_board(next_board) if player ==-1 else next_board, 1) for next_board in boards]))
+            else:
+                if player == 1:
+                    encoded_boards_tensors = torch.FloatTensor(np.array([convert_board(board, False, cube=True, RL=True, player=1) for board in boards]))
+                else:
+                    inverted_boards = [invert_board(i) for i in boards]
+                    encoded_boards_tensors = torch.FloatTensor(np.array([convert_board(board, False, cube=True, RL=True, player=1) for board in inverted_boards]))
             with torch.no_grad():
                 outcome_probs = model(encoded_boards_tensors)
                 expected_values = model.expected_value(outcome_probs)
@@ -85,6 +95,7 @@ def reinforce_play(boards, moves, player, ep="self_170000", board=None, lookahea
         (moves,boards): The moves and the boards
     """
     model = ReinforceNet3() if ep[0:2] == "V3" else ReinforceNet()
+    version = 3 if ep[0:2] == "V3" else 2
     if player == -1:
         inverted_boards = [invert_board(i) for i in boards]
         if ep[0:2] == "V3":
@@ -120,7 +131,7 @@ def reinforce_play(boards, moves, player, ep="self_170000", board=None, lookahea
         best_equity = torch.max(expected_values).item()
 
         # Compute threshold
-        threshold = best_equity - 0.16
+        threshold = best_equity - 0.16 if version != 3 else best_equity - 0.08
 
         # Keep track of indices for pruning
         pruned_data = [(board, move, equity, idx) for idx, (board, move, equity) in enumerate(zip(boards, moves, expected_values)) if equity >= threshold]
@@ -133,7 +144,7 @@ def reinforce_play(boards, moves, player, ep="self_170000", board=None, lookahea
         pruned_boards, pruned_moves, _, pruned_indices = zip(*pruned_data)
 
         # Apply lookahead on pruned boards
-        lookahead_equity = [reinforce_lookahead(pruned_board, -player, model) for pruned_board in pruned_boards]
+        lookahead_equity = [reinforce_lookahead(pruned_board, -player, model, version) for pruned_board in pruned_boards]
 
         # Select the best move based on lookahead
         best_idx = torch.argmin(torch.tensor(lookahead_equity)).item()

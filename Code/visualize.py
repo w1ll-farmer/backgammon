@@ -197,7 +197,7 @@ def make_bar(txt_filename):
 
 # myFile = open(os.path.join("Data","cubelessRLvGREEDY.txt"))
 # head_to_head(myFile)
-# myFile = open(os.path.join("Data","RL","benchmark2beginner.txt"))
-# plot_scores(myFile)
-myFile = os.path.join("Data","Results","RL2agents.txt")
-make_bar(myFile)
+myFile = open(os.path.join("Data","RL","benchmark3RL2.txt"))
+plot_scores(myFile)
+# myFile = os.path.join("Data","Results","RL2agents.txt")
+# make_bar(myFile)
