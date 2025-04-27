@@ -25,7 +25,7 @@ def print_board(board):
 def roll_dice():
     # Returns the value of the two dice rolled
     return randint(1, 6), randint(1, 6)
-    # return 1, 5
+    # return 2, 4
     """return 5, 1 !!! Unsymmetrical AI decisions !!!
     note if its 5, 1 that white wins 25-0, and if other way round causes a loop due to 
     constant hitting, entering and hitting cycle"""
@@ -326,7 +326,8 @@ def game_over(board):
 
 def is_backgammon(board):
     # Checks for a backgammon
-    return sum(board[18:24]) + board[25] > 0 or sum(board[0:6]) + board[24] < 0
+    return is_gammon(board) and (sum(board[18:24]) + board[25] > 0 or sum(board[0:6]) + board[24] < 0)
+
 
 def is_gammon(board):
     # Checks for a gammon
@@ -467,13 +468,15 @@ def prob_opponent_can_hit(player, board, point):
     can_hit = 0
     found = []
     for roll1 in range(1,7):
-        for roll2 in range(1, 7):
+        for roll2 in range(roll1, 7):
             # i = 0
             # found = 0
             for s in start_points:
                 if f"{roll1,roll2}" not in found:
                     if (s + player*roll1 == point or s + player*roll2 == point):
                         can_hit +=1
+                        if roll1 != roll2:
+                            can_hit += 1
                         found.append(f"{roll1,roll2}")
                         
                     elif roll1 == roll2 and can_double_hit(player, point, s, roll1, roll2, board):
@@ -483,13 +486,13 @@ def prob_opponent_can_hit(player, board, point):
                     elif player == 1 and roll1 != roll2:
                         if s+roll1+roll2 == point:
                             if board[s + roll1] <= 1 or board[s + roll2] <= 1: 
-                                can_hit += 1
+                                can_hit += 2
                                 found.append(f"{roll1,roll2}")
                                 
                     elif player == -1 and roll1 != roll2:
                         if s-roll1-roll2 == point:
                             if board[s - roll1] >= -1 or board[s - roll2] >= -1: 
-                                can_hit += 1
+                                can_hit += 2
                                 found.append(f"{roll1,roll2}")          
     return can_hit/36
 
@@ -543,7 +546,7 @@ def calc_blockade_pass_chance(board, player):
             loc -= 1
     
     for roll1 in range(1,7):
-        for roll2 in range(1, 7):
+        for roll2 in range(roll1, 7):
             if player == -1:
                 if furthest+(roll1+roll2)*(1+roll2==roll1) > loc:
                     if is_double([roll1, roll2]):
@@ -560,13 +563,19 @@ def calc_blockade_pass_chance(board, player):
                                 possible = False
                         if possible:
                             passed += 1
+                            if roll1 != roll2:
+                                passed += 1
                     
                     elif furthest + roll1 < block_start or \
                             furthest + roll2 < block_start:
                             passed += 1
+                            if roll1 != roll2:
+                                passed += 1
                             
                     elif furthest + roll1 > loc or furthest + roll2 > loc:
                         passed += 1
+                        if roll1 != roll2:
+                                passed += 1
             else:
                 if furthest-(roll1+roll2)*(1+roll2==roll1) > loc:
                     if is_double([roll1, roll2]):
@@ -583,13 +592,19 @@ def calc_blockade_pass_chance(board, player):
                                 possible = False
                         if possible:
                             passed += 1
+                            if roll1 != roll2:
+                                passed += 1
                     
                     elif furthest - roll1 > block_start or \
                             furthest - roll2 > block_start:
                             passed += 1
+                            if roll1 != roll2:
+                                passed += 1
                             
                     elif furthest - roll1 < loc or furthest - roll2 < loc:
                         passed += 1
+                        if roll1 != roll2:
+                                passed += 1
     return passed/36
 
 def decimal_to_binary(decimal):
@@ -626,6 +641,16 @@ def convert_bar(point):
     return base
 
 def list_to_str(lst, commas=True,spaces=True):
+    """Converts a list to a string in varying formats
+
+    Args:
+        lst (list): The list to be converted
+        commas (bool, optional): Whether commas should be preserved. Defaults to True.
+        spaces (bool, optional): Whether spaces should be between elements. Defaults to True.
+
+    Returns:
+        str: Element converted into a string
+    """
     if not commas:
         str_board = ""
         for i in lst:
@@ -699,36 +724,84 @@ def generate_random_race_board():
             
     return board
 
-def convert_board(board, race=False, cube=False):
+def convert_board(board, race=False, cube=False, RL = False, player=1):
+    """Converts a raw board into an encoding for the Deep or ReinforceV3 agents
+
+    Args:
+        board (list(int)): Raw board encoding
+        race (bool, optional): Removes all exposure features. Adds bear-off progres. Defaults to False.
+        cube (bool, optional): Adds bear-off progress. Defaults to False.
+        RL (bool, optional): Adds who is on roll. Defaults to False.
+        player (int, optional): Which player is to play. Defaults to 1.
+
+    Returns:
+        list: The encoding for input into one of the Deep networks or ReinforceV3
+    """
     input_vector = []
+    import time
+    
     for i in range(24):
         point_encoding = convert_point(board[i])
         input_vector += point_encoding
+    
+    
     if not race:
+        
         for i in range(24):
             input_vector.append(prob_opponent_can_hit(1, board, i))
+        
+        # print((end-start)/24)
+        
+    
     for i in range(24, 26):
         input_vector += convert_bar(board[i])
+    
+    # print((end-start)/24)    
+    
     _, home = get_home_info(1, board)
     _, opp_home = get_home_info(-1, board)
     # % home points occupied
+    
     input_vector.append(len([i for i in home if i > 0])/6)
+    
+    # print(end-start)
+    
     # % opp home points occupied
+    
     input_vector.append(len([i for i in opp_home if i > 0])/6)
+    
+    # print(end-start)
+    
     # % pieces in home
+    
     input_vector.append(sum([i for i in home if i >0])/15)
+    
+    # print(end-start)
+    
     if not race:
         # Prime?
+        
         input_vector.append(1 if calc_prime(board, 1) > 3 else 0)
+        
+        # print(end-start)
     # pip count
+    
     input_vector += decimal_to_binary(calc_pips(board, 1))
     input_vector += decimal_to_binary(calc_pips(board, -1))
+    
+    # print(end-start)
+    
     if not race:
         # chance blockade can't be passed
+        
         input_vector.append(calc_blockade_pass_chance(board, 1))
+        
+        # print(end-start)
+        
     if cube:
         input_vector.append(board[26]/15)
         input_vector.append(board[27]/15)
+    if RL:
+        input_vector[264] == int(player == 1)
+        input_vector[267] = int(player == -1)
     return input_vector
-
-# print(get_legal_move(1, [4, 2, 2, 4, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -5, -2, -3, -2, -3, 0, 0, 0, 0], 6))

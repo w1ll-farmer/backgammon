@@ -190,7 +190,7 @@ def compare_eval_equity(evaluation, equity):
     myFile.close()
     
 def get_eval_equity():
-    myFile = open(os.path.join("Data","evalequitycompare.txt"),'r')
+    myFile = open(os.path.join("Data","RL","Doubling","foldpoint.txt"),'r')
     evaluation = []
     equity = []
     for line in myFile:
@@ -290,6 +290,46 @@ def write_equity(equity, equitytype):
     myFile.write(f"{equity}\n")
     myFile.close()
     
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LogisticRegression
+import joblib
+# Function to predict take/drop decision
+def should_take(x, model):
+    prob_take = model.predict_proba([[x]])[0, 1]  # Probability of "take"
+    return prob_take > 0.5  # Take if probability > 0.5
+    
+def doubling(x_values, y_values):
+    # Train logistic regression model
+    model = LogisticRegression()
+    model.fit(x_values, y_values)
+    joblib.dump(model, os.path.join("Code","RL","Double","contactaccept.pkl")) 
+    
+
+    # Test example
+    x_test = 0.55
+    print("Take" if should_take(x_test, model) else "Drop")
+
+    # Plot decision boundary
+    x_plot = np.linspace(0, 1, 100).reshape(-1, 1)
+    y_plot = model.predict_proba(x_plot)[:, 1]
+
+    plt.plot(x_plot, y_plot, label="Take Probability")
+    plt.axhline(0.5, color='red', linestyle='--', label="Decision Boundary")
+    plt.xlabel("Opponent Win Probability (x)")
+    plt.ylabel("Take Probability")
+    plt.legend()
+    plt.show()
+if __name__ == "__main__":
+    x, y = get_eval_equity()
+    doubling(np.array(x).reshape(-1,1),np.array(y))
+    
+    
+    
+    
+    
+    
 def normalise_equity():
     myFile = open(os.path.join("Data",f"WinnerEquity.txt"),'r')
     equity = []
@@ -364,5 +404,3 @@ def mean_db_equity():
     print(total/div)
     myFile.close()
 
-
-        

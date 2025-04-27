@@ -69,4 +69,4 @@ def predict(left_board, right_board, input_vector_left, input_vector_right, epoc
     with torch.no_grad():
         equity = model(input_vector_left, input_vector_right).item()  # Get the single output
     return equity
-
+    
