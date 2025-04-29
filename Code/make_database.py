@@ -1,5 +1,6 @@
 from turn import *
 from random import randint, uniform, gauss
+from reinforce_play import convert_board
 
 def make_opening(make_stuff=True):
     board = make_board()
@@ -261,8 +262,19 @@ def prep_equity_dataset(end, start = 0, testset=False, cp=True):
                             racetype = "Bearoff"
                         else:
                             racetype = "Midboard"
-                        myFile = open(os.path.join("Data","Deep",f"{racetype}Race","test.txt"),"a")
+                        myFile = open(os.path.join("Data","Deep",f"{racetype}Race","Deeptest.txt"),"a")
                         myFile.write(f"{encoded_board1[1:-1]},{encoded_board2[1:-1]},{Y}\n")
+                        myFile.close()
+                        board1 = board1.strip()
+                        board1 = board1.split(",")
+                        board1 = [int(i) for i in board1 if i != " "]
+                        board2 = board2.strip()
+                        board2 = board2.split(",")
+                        board2 = [int(i) for i in board2 if i != " "]
+                        rl_board1 = str(convert_board(board1))
+                        rl_board2 = str(convert_board(board2))
+                        myFile = open(os.path.join("Data","Deep",f"{racetype}Race","RLtest.txt"),"a")
+                        myFile.write(f"{rl_board1[1:-1]},{rl_board2[1:-1]},{Y}\n")
                         myFile.close()
                     else:
                         myFile = open(os.path.join("Data","Deep","Contact","test.txt"),"a")
@@ -296,8 +308,7 @@ def prep_cube_dataset(cubetype="Offer"):
         encoded_board = str(encode_board_vector(raw_boards[i], cube=True, race=False))
         myFile.write(f"{encoded_board[1:-1]},{decisions[i]}\n")
     myFile.close()
-    
-        
+               
         
         
         
@@ -305,14 +316,14 @@ def prep_cube_dataset(cubetype="Offer"):
     
 if __name__ == "__main__":
     data_size = len(os.listdir(os.path.join("Data","Deep","GNUBG-data","Equity"))) - 1
-    # train_end =int(0.8*data_size)
+    train_end =int(0.7*data_size)
     # print("Train")
     # prep_equity_dataset(train_end, start = 0, testset=False, cp=True)
     # print("Test")
-    # prep_equity_dataset(data_size, start = train_end, testset=True, cp=True)
+    prep_equity_dataset(data_size, start = train_end, testset=True, cp=True)
     # print(data_size)
-    prep_cube_dataset()
-    prep_cube_dataset("Accept")
+    # prep_cube_dataset()
+    # prep_cube_dataset("Accept")
     
     
     

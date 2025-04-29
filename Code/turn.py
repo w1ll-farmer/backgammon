@@ -639,7 +639,7 @@ def convert_bar(point):
             if point >= i and i == 2 or point == i:
                 base[i]=1
     return base
-
+print(convert_bar(3))
 def list_to_str(lst, commas=True,spaces=True):
     """Converts a list to a string in varying formats
 
@@ -699,7 +699,7 @@ def generate_random_race_board():
     # Recall that white heads towards 0 and black heads towards 23
     # white_furthest = randint(0, 17) # Not inside black home
     while white_remaining > 0:
-        pos = randint(0, 11)
+        pos = randint(0, 5)
         if pos < 6:
             rand_num = randint(1,10)
             if rand_num == 1:
@@ -711,7 +711,7 @@ def generate_random_race_board():
         board[pos] += point
         white_remaining -= point
     while black_remaining > 0:
-        pos = randint(12, 23)
+        pos = randint(18, 23)
         if pos > 17:
             rand_num = randint(1,10)
             if rand_num == 1:

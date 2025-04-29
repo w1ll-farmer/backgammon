@@ -1,10 +1,38 @@
 from turn import *
-from main import deep_play, greedy_play
+from main import deep_play, greedy_play, backgammon
 from double import *
 from reinforce_play import reinforce_play
 from adaptive_agent import race_gwc
 global adaptive_weights
+
 adaptive_weights = [0.9966066885314592, -0.9916984096898946, 0.3106830724424913, 0.529168163359478, -0.4710732676896102, 0.5969523488654117, 0.36822981983332415, 0.38958074063216697, 0.02676397245530815, 0.08588282381449319, 0.06094873757931751, 1.1095422351658368, 0.47764793610307643, 0.040753486445243126, 0.5495226441839489, 0.8875009606764003, 0.9333344067224983, 0.1340269726805713, 0.1978868967026618, 1.2096547126804458, 2.379707426788366, 0.6465298771549699, 0.509196585225148, 0.261875669397977, 0.36883752029556166, -0.481342015629518, 0.7098436807557322, 1.0250219115287624, 0.5739284594183071, 0.1796876959733017, 0.2679991261065485]
+
+def generate_symmetrical_race_board():
+    white_remaining = 15
+      
+    board = [0]*28
+    # Recall that white heads towards 0 and black heads towards 23
+    # white_furthest = randint(0, 17) # Not inside black home
+    while white_remaining > 0:
+        pos = randint(0, 11)
+        if pos < 6:
+            rand_num = randint(1,10)
+            if rand_num == 1:
+                pos = 27
+        # if player == 1 and pos != 24 and pos != 26 and board[pos] > -1:
+        point = int(gauss(2.5, 2)) if white_remaining >= 7 else randint(0, white_remaining)
+        while point > white_remaining or point < 0:
+            point = int(gauss(2.5, 2))
+        board[pos] += point
+        white_remaining -= point
+    board[26] = -board[27]
+    for i in range(0,12):
+        board[23-i] = -board[i]
+    return board
+
+    
+
+# print(make_board()[0:10])
 def deep_opening_roll():
     starting_board = make_board()
     player = 1
@@ -18,6 +46,21 @@ def deep_opening_roll():
             MyFile.write(f"{roll1},{roll2},{move}\n")
     MyFile.close()
 
+def race_acc():
+    p1tot, p2tot = 0,0
+    for i in range(100):
+        board = generate_symmetrical_race_board()
+        print(board)
+        _, p1score, _, p2score= backgammon(1, "REINFORCEMENT", "SELF_170000","DEEP",None, starting_board=board, cube_on=False, w_lookahead=True)
+        if p1score > 0:
+            p1tot += p1score
+        else:
+            p2tot += p2score
+        if i % 50 == 0:
+            print("RL Deep")
+            print(p1tot, p2tot)
+    print(p1tot, p2tot)
+    
 def get_double_data(race=False):
     cubePath = os.path.join("Data","Deep","GNUBG-data","Cube")
     if race:
@@ -88,8 +131,8 @@ def test_double(acceptset, offerset, strat, race, test = False):
             
         print(f"Offer accuracy: {100*correct/total}%")
 
-acceptset, offerset = get_double_data(True)
-test_double(acceptset, offerset, "REINFORCEMENT", True, False)
+# acceptset, offerset = get_double_data(True)
+# test_double(acceptset, offerset, "REINFORCEMENT", True, False)
 
 # for i in range(100):
 #     test_double(acceptset, offerset, "REINFORCEMENT", False, True)
