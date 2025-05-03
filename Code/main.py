@@ -1075,9 +1075,11 @@ if __name__ == "__main__":
         # print(update_board(b, (9, 7)))
         score_to = 25
         player1strat = "USER"
-        playerminus1strat = "REINFORCEMENT"
+        playerminus1strat = "DEEP"
         print(player1strat, playerminus1strat)
-        weights1, weights2 = None, "self_170000"
+        weights1, weights2 = None, None
+        if playerminus1strat == "REINFORCEMENT":
+            weights2 = "self_170000"
         if player1strat == "GENETIC":
             # Optimal Weights for first-to-25 victory
             weights1 = [10.0, 21.0, 12.0, 11.0, 15.0, 0.5664383320165035, 10.0, 4.0, 25.0, 6.0, 0.6461166029382669, 0.5378085318259279, 0.5831066576570856, 0.9552318750278183, 0.07412843879077036, 0.17550708535892934, 0.49191128795644823, 0.556755495835094]
