@@ -25,7 +25,7 @@ def print_board(board):
 def roll_dice():
     # Returns the value of the two dice rolled
     return randint(1, 6), randint(1, 6)
-    # return 2, 4
+    # return 6, 5
     """return 5, 1 !!! Unsymmetrical AI decisions !!!
     note if its 5, 1 that white wins 25-0, and if other way round causes a loop due to 
     constant hitting, entering and hitting cycle"""
@@ -318,10 +318,10 @@ def get_valid_moves(colour, board, roll):
                     moves.append([move1, move2])
                     boards.append(final_board)
 
-    
-    if max([len(move) for move in moves]) == 1 and len(moves) > 1:
-        moves = [get_legal_move(colour, board, max(roll))]
-        boards = [update_board(board, moves[0][0])]
+    if len(moves) > 1:
+        if max([len(move) for move in moves]) == 1:
+            moves = [get_legal_move(colour, board, max(roll))]
+            boards = [update_board(board, moves[0][0])]
     return moves, boards
 
 def game_over(board):
@@ -810,4 +810,4 @@ def convert_board(board, race=False, cube=False, RL = False, player=1):
         input_vector[267] = int(player == -1)
     return input_vector
 
-print(get_valid_moves(1, [-2,-2,-2,-2,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-7,13],[1,4]))
+# print(get_valid_moves(1, [-2,-2,-2,-2,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-7,13],[1,4]))
