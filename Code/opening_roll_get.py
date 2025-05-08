@@ -1,5 +1,5 @@
 from turn import *
-from main import deep_play, greedy_play
+from main import deep_play, greedy_play, backgammon
 from double import *
 from reinforce_play import reinforce_play
 from adaptive_agent import race_gwc
@@ -88,9 +88,33 @@ def test_double(acceptset, offerset, strat, race, test = False):
             
         print(f"Offer accuracy: {100*correct/total}%")
 
-acceptset, offerset = get_double_data(True)
-test_double(acceptset, offerset, "REINFORCEMENT", True, False)
 
+def generate_random_symmetrical_race_board():
+    white_remaining = 15
+    black_remaining = 15    
+    board = [0]*28
+    # Recall that white heads towards 0 and black heads towards 23
+    # white_furthest = randint(0, 17) # Not inside black home
+    while white_remaining > 0:
+        pos = randint(0, 11)
+        if pos < 6:
+            rand_num = randint(1,10)
+            if rand_num == 1:
+                pos = 27
+        # if player == 1 and pos != 24 and pos != 26 and board[pos] > -1:
+        point = int(gauss(2.5, 2)) if white_remaining >= 7 else randint(0, white_remaining)
+        while point > white_remaining or point < 0:
+            point = int(gauss(2.5, 2))
+        board[pos] += point
+        white_remaining -= point
+    board[26] = -board[27]
+    for i in range(0, 12):
+        board[23-i] = -board[i]
+    return board
+
+# acceptset, offerset = get_double_data(True)
+# test_double(acceptset, offerset, "REINFORCEMENT", True, False)
+backgammon(5, "REINFORCEMENT","Self_170000", "DEEP", None, starting_board=generate_random_symmetrical_race_board(), cube_on=False, w_lookahead=True)
 # for i in range(100):
 #     test_double(acceptset, offerset, "REINFORCEMENT", False, True)
 # print("ONTO RACE")

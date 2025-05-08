@@ -321,7 +321,14 @@ def get_valid_moves(colour, board, roll):
     if len(moves) > 1:
         if max([len(move) for move in moves]) == 1:
             moves = [get_legal_move(colour, board, max(roll))]
-            boards = [update_board(board, moves[0][0])]
+            if len(moves) == 0:
+                moves = [get_legal_move(colour, board, min(roll))]
+            boards = []
+            for move in moves:
+                temp_board = board.copy()
+                for i in range(len(move)):
+                    temp_board = update_board(temp_board, move[i])
+                boards.append(temp_board)
     return moves, boards
 
 def game_over(board):
