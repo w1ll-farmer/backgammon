@@ -1,76 +1,16 @@
-# Backgammon 
+ # Backgammon
 
-## Board description
- - Len(board) = 28
- - If $board[i]$ is unoccupied, $board[i]=0$
- - If $board[i]$ is occupied, $board[i] = player*number of pieces occupying point$
-    - For example, if player 1 has 4 pieces on item 20, $board[20] = 4$
- - Player 1's home contains items 0-5. If hit, goes to 25. If borne off, goes to 27
- - Player -1's contains items 18-23. If hit, goes to 24. If borne off, goes to 26
+ ## Deep Agent Dataset Information
+  - The dataset for the Deep Agent is yet to be formally annotated - this is coming soon
+  - The network takes 2 289-dimension vectors as input. These vectors each represent a possible board state. The network has completely identical weights for both sides of the network between the input and hidden layer. Then, the weights between the hidden and output layer are equal to the other side of the network multiplied by -1. This ensures that if the boards were input the other way around, the result would be the same
+  - The boards are encoded differently for the different board positions, but generally: 
+    - Each point on the board is encoded into a 10-dimensional binary vector with switches if a point is occupied by > 4 black pieces, 4 black pieces, 3 black pieces, > 1 black piece, 1 black piece, 1 white piece, > 1 white piece, 3 white pieces, 4 white pieces, > 4 white pieces
+    - The probability that a blot occupying a point can get hit off is pre-calculated and added as input for each point
+    - The pip count for each player is encoded as a 7-bit binary string (i.e. if black's pip count is 17, it is represented in binary as 0010001)
+    - The probability of getting past the furthest-forward blockade for each player is precalculated and added as input
+    - The existence of a prime for each player is included
+    - The number of walls in each player's home is included
+    - The number of player's walls in the opponent home is included
+    - The number of the player's pieces in the opponent's home is included
+    - The number of borne-off pieces is included for racing board positions and for the doubling cube decision
  
-## AIs
- - whitestrat (player 1's strategy) and blackstrat (player -1's strategy)
- - At the start of each game the player with the higher initial roll becomes player1 (they start first)
- - At the start of each new round, the winner of the previous round starts first and becomes player1
- - This is done by using player1strat and player2strat
-
-
-## Global Variables and Constants
- - commentary: outputs the board state, what moves are taken, whose turn it is
- - GUI_FLAG: whether or not to display the GUI. Large chunks of code are activated by this flag
- - test: whether or not to run tests during runtime
- - background: the background of the GUI
- - w_score: The score of the white player (1). Updated at the end of each round
- - b_score: The score of the black player (-1). Updated at the end of each round
-
-
-### Turn
-- Contains all backend functions
-    - roll_dice
-    - make_board
-    - print_board
-    - is_double
-    - update_board
-    - all_past
-    - get_home_info
-    - must_enter
-    - can_enter
-    - all_checkers_home
-    - get_legal_moves
-    - get_valid_moves
-    - game_over
-    - is_backgammon
-    - is_gammon
-    - is_error
-
-### genetic_train
-- Trains a genetic agent. Not necessary for debugging
-    - get_parent
-    - reproduce
-    - calc_fitness
-    - calc_overall_fitness
-    - mutate
-    - generate_initial_pop
-    - genetic
-    - co_evolve
-
-### greedy_agent
-- Evaluates moves for the greedy agent to choose
-    - count_blots
-    - count_walls
-    - eevaluate (easy evaluate, not for use on dissertation)
-    - evaluate (actual evaluation function, in use for dissertation)
-
-### gui
-- Not necessary for debugging
-
-### random_agent
-- AI that makes random moves
-    - generate_random_move
-    - randobot_play
-
-### testfile
- - Contains all isolated tests
-    - check_inverted
-    - invert_board
-    - check_moves
