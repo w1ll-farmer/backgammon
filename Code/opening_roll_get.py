@@ -114,7 +114,7 @@ def generate_random_symmetrical_race_board():
 
 # acceptset, offerset = get_double_data(True)
 # test_double(acceptset, offerset, "REINFORCEMENT", True, False)
-backgammon(5, "REINFORCEMENT","Self_170000", "DEEP", None, starting_board=generate_random_symmetrical_race_board(), cube_on=False, w_lookahead=True)
+backgammon(5, "REINFORCEMENT","Self_170000", "DEEP", None, starting_board=generate_random_symmetrical_race_board(), cube_on=False, w_lookahead=False)
 # for i in range(100):
 #     test_double(acceptset, offerset, "REINFORCEMENT", False, True)
 # print("ONTO RACE")

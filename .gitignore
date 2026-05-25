@@ -8,3 +8,6 @@ Docs/Demonstration
 Data/Deep/GNUBG-data
 Data/board_success_known.txt
 Data/board_success_online.txt
+Code/__pycache__
+*.mov
+Error.txt
